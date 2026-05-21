@@ -1,0 +1,394 @@
+import { useEffect, useMemo, useState } from 'react'
+import type { Activity } from '../types/activity.ts'
+import type { Verdict } from '../types/verdict.ts'
+import { YB } from '../utils/theme.ts'
+import { detailPhotos } from '../utils/photos.ts'
+import {
+  X,
+  Pin,
+  Clock,
+  Wallet,
+  StarFilled,
+} from '../icons/index.tsx'
+import { MetaChip } from './MetaChip.tsx'
+import { SectionHeading } from './SectionHeading.tsx'
+import { ActionRow } from './ActionRow.tsx'
+import { PhotoLightbox } from './PhotoLightbox.tsx'
+
+interface DetailModalProps {
+  activity: Activity
+  /** Called when the modal should close (overlay click, X button, eye toggle). */
+  onClose: () => void
+  /** Called with a verdict from the sticky bottom action row. */
+  onVerdict: (verdict: Verdict) => void
+  superRemaining: number
+}
+
+/**
+ * Slide-up bottom-sheet detail view for a single activity. Hosts:
+ * - Hero photo with pagination dots
+ * - Meta-chip strip (duration, difficulty, rating, price, transit)
+ * - Description
+ * - Horizontal scroll-snap photo carousel (12 photos)
+ * - Group placeholder
+ * - Sticky bottom action row (5 buttons, reused from the swipe screen)
+ * - Lightbox overlay when a photo is clicked
+ */
+export function DetailModal({
+  activity,
+  onClose,
+  onVerdict,
+  superRemaining,
+}: DetailModalProps) {
+  const [open, setOpen] = useState(false)
+  const [photoIdx, setPhotoIdx] = useState(0)
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  const photos = useMemo(() => detailPhotos(activity), [activity])
+
+  useEffect(() => {
+    requestAnimationFrame(() => setOpen(true))
+  }, [])
+
+  const close = () => {
+    setOpen(false)
+    window.setTimeout(onClose, 250)
+  }
+
+  const handleAction = (v: Verdict) => {
+    onVerdict(v)
+    close()
+  }
+
+  return (
+    <div
+      onClick={close}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Détail de ${activity.title}`}
+      className="absolute inset-0 z-[30]"
+      style={{
+        background: open ? 'rgba(20,25,40,0.5)' : 'rgba(20,25,40,0)',
+        transition: 'background 0.25s',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        data-testid="detail-sheet"
+        className="absolute left-0 right-0 bottom-0 overflow-y-auto font-sans"
+        style={{
+          top: open ? 0 : '100%',
+          background: YB.paper,
+          transition: 'top 0.35s cubic-bezier(.2,.7,.3,1)',
+          color: YB.ink,
+        }}
+      >
+        {/* Hero photo */}
+        <div
+          className="relative w-full overflow-hidden"
+          style={{
+            aspectRatio: '4 / 4.1',
+            background: `url(${photos[photoIdx]}) center center/cover, ${YB.ink}`,
+          }}
+        >
+          {/* Bottom gradient for title legibility */}
+          <div
+            className="pointer-events-none absolute left-0 right-0 bottom-0"
+            style={{
+              height: '55%',
+              background:
+                'linear-gradient(180deg, rgba(15,18,28,0) 0%, rgba(15,18,28,0.25) 45%, rgba(15,18,28,0.78) 88%, rgba(15,18,28,0.92) 100%)',
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={close}
+            aria-label="fermer"
+            className="absolute z-[3] flex items-center justify-center border-0 cursor-pointer"
+            style={{
+              top: 14,
+              left: 14,
+              width: 38,
+              height: 38,
+              borderRadius: 99,
+              background: 'rgba(255,255,255,0.95)',
+              boxShadow: '0 4px 10px -2px rgba(20,30,50,0.25)',
+            }}
+          >
+            <X color={YB.ink} size={20} />
+          </button>
+
+          {/* Tag chips */}
+          <div
+            className="absolute z-[3] flex"
+            style={{ top: 14, right: 14, gap: 4 }}
+          >
+            {activity.tags.slice(0, 3).map((tag, i) => (
+              <span
+                key={`${tag}-${i}`}
+                className="inline-flex items-center justify-center"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 99,
+                  background: 'rgba(255,255,255,0.95)',
+                  fontSize: 16,
+                  boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
+                }}
+                aria-hidden
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {photos.length > 1 && (
+            <div
+              className="absolute z-[3] flex"
+              style={{ bottom: 88, right: 18, gap: 5 }}
+              role="tablist"
+              aria-label="pagination photos"
+            >
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === photoIdx}
+                  aria-label={`photo ${i + 1}`}
+                  onClick={() => setPhotoIdx(i)}
+                  style={{
+                    width: i === photoIdx ? 18 : 6,
+                    height: 6,
+                    border: 'none',
+                    borderRadius: 99,
+                    background:
+                      i === photoIdx ? '#fff' : 'rgba(255,255,255,0.5)',
+                    cursor: 'pointer',
+                    padding: 0,
+                    transition: 'width 0.2s, background 0.2s',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Title block */}
+          <div
+            className="absolute z-[2] text-white"
+            style={{ left: 20, right: 20, bottom: 18 }}
+          >
+            <div
+              className="font-mono"
+              style={{
+                fontSize: 10.5,
+                letterSpacing: 1.5,
+                opacity: 0.78,
+                marginBottom: 6,
+                textTransform: 'uppercase',
+              }}
+            >
+              Nº{activity.number.toString().padStart(2, '0')}
+            </div>
+            <h1
+              className="m-0 font-sans"
+              style={{
+                fontSize: 30,
+                fontWeight: 700,
+                lineHeight: 1.04,
+                letterSpacing: -0.6,
+                textShadow: '0 2px 12px rgba(0,0,0,0.35)',
+              }}
+            >
+              {activity.title}
+            </h1>
+            <div
+              className="flex items-center"
+              style={{
+                gap: 8,
+                marginTop: 10,
+                fontSize: 13,
+                fontWeight: 500,
+                opacity: 0.95,
+              }}
+            >
+              <Pin color="#fff" size={14} />
+              {activity.location}
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '22px 22px 200px' }}>
+          {/* Meta chips */}
+          <div
+            className="flex flex-wrap"
+            style={{ gap: 8, marginBottom: 26 }}
+          >
+            {activity.duration && (
+              <MetaChip
+                icon={<Clock color={YB.ink} size={14} />}
+                value={activity.duration}
+              />
+            )}
+            {activity.difficulty && (
+              <MetaChip
+                dot={activity.difficulty.dot}
+                value={activity.difficulty.label}
+              />
+            )}
+            <MetaChip
+              icon={<StarFilled color={YB.top} size={14} />}
+              value={activity.rating.toFixed(1)}
+            />
+            <MetaChip
+              icon={<Wallet color={YB.ink} size={14} />}
+              value={activity.price}
+            />
+            {activity.transit && (
+              <MetaChip
+                icon={<span style={{ fontSize: 14 }}>🚗</span>}
+                value={activity.transit}
+              />
+            )}
+          </div>
+
+          <p
+            className="font-sans"
+            style={{
+              margin: '0 0 32px',
+              fontSize: 15.5,
+              lineHeight: 1.55,
+              color: YB.ink,
+              fontWeight: 400,
+              letterSpacing: -0.05,
+            }}
+          >
+            {activity.description}
+          </p>
+
+          {activity.insolite && (
+            <>
+              <SectionHeading>Anecdote</SectionHeading>
+              <p
+                className="font-serif italic"
+                style={{
+                  margin: '0 0 32px',
+                  fontSize: 17,
+                  lineHeight: 1.5,
+                  color: YB.ink2,
+                }}
+              >
+                {activity.insolite}
+              </p>
+            </>
+          )}
+
+          <SectionHeading count={photos.length}>Photos</SectionHeading>
+          <div
+            className="flex"
+            style={{
+              gap: 10,
+              overflowX: 'auto',
+              overflowY: 'visible',
+              scrollSnapType: 'x mandatory',
+              padding: '6px 4px 18px',
+              marginLeft: -4,
+              marginRight: -4,
+              marginBottom: 24,
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {photos.map((src, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`ouvrir la photo ${i + 1}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setLightboxIdx(i)
+                }}
+                style={{
+                  flex: '0 0 auto',
+                  width: 168,
+                  height: 210,
+                  borderRadius: 18,
+                  background: `url(${src}) center/cover, ${YB.ink}`,
+                  cursor: 'pointer',
+                  border: 'none',
+                  outline: 'none',
+                  padding: 0,
+                  scrollSnapAlign: 'start',
+                  boxShadow: '0 6px 16px -8px rgba(20,30,50,0.25)',
+                  transition: 'transform 0.16s',
+                }}
+              />
+            ))}
+          </div>
+
+          <SectionHeading>Le groupe</SectionHeading>
+          <div
+            className="flex items-center font-sans"
+            style={{
+              padding: 18,
+              background: YB.bgSoft,
+              borderRadius: 16,
+              fontSize: 14,
+              color: YB.ink2,
+              lineHeight: 1.55,
+              gap: 12,
+            }}
+          >
+            <span
+              className="inline-flex items-center justify-center"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 99,
+                background: '#fff',
+                fontSize: 16,
+                flexShrink: 0,
+              }}
+              aria-hidden
+            >
+              👥
+            </span>
+            <span>
+              Les votes du groupe apparaîtront ici une fois que tout le monde
+              aura swipé.
+            </span>
+          </div>
+        </div>
+
+        {/* Sticky bottom action bar */}
+        <div
+          className="sticky bottom-0 left-0 right-0"
+          style={{
+            background: 'rgba(255,252,245,0.96)',
+            backdropFilter: 'blur(16px)',
+            borderTop: '1px solid rgba(20,30,50,0.08)',
+            padding: '14px 12px',
+          }}
+        >
+          <ActionRow
+            onAct={handleAction}
+            superRemaining={superRemaining}
+            onToggleDetail={close}
+            detailOpen
+            absolute={false}
+          />
+        </div>
+      </div>
+
+      {lightboxIdx != null && (
+        <PhotoLightbox
+          photos={photos}
+          index={lightboxIdx}
+          onIndex={setLightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+        />
+      )}
+    </div>
+  )
+}

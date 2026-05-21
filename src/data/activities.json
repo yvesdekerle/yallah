@@ -1,0 +1,3794 @@
+[
+  {
+    "id": "a001",
+    "number": 1,
+    "title": "Snorkeling à Blue Bay Marine Park",
+    "tags": [
+      "🌊",
+      "🐅"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Blue Bay (sud-est)",
+    "transit": "~1h–1h15",
+    "description": "Parc marin protégé, visibilité 20–30 m, plus de 50 espèces de coraux, poissons-clowns, perroquets. Excursion classique en bateau à fond de verre puis snorkeling sur 2 spots.",
+    "duration": "~3–4h",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "savoir nager"
+    },
+    "price": "~25–35 €/pers en excursion organisée",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a002",
+    "number": 2,
+    "title": "Plongée sous-marine (baptême ou exploration)",
+    "tags": [
+      "🌊",
+      "🐅"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Flic-en-Flac, Trou aux Biches, Blue Bay (centres PADI partout)",
+    "transit": "~15–20 min",
+    "description": "Maurice = 3ᵉ plus grand récif corallien au monde (200 km), 39 % d'espèces endémiques. Baptême possible dès le 1ᵉʳ jour, sites épaves (Stella Maru, Djabeda).",
+    "duration": "~2h (briefing + plongée)",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "baptême sans prérequis, plongée certifiée niveau 1+"
+    },
+    "price": "Baptême ~55 €, plongée certifiée ~45 €",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a003",
+    "number": 3,
+    "title": "Sous-marin Blue Safari (vrai sous-marin à -35 m)",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Trou aux Biches (nord)",
+    "transit": "~55 min",
+    "description": "Unique au monde. Vrai sous-marin BS600 (5 places) ou BS1100 (10 places), descente à 35 m, épave du Star Hope, coraux, poissons. Diplôme remis à la fin. Aucune compétence requise.",
+    "price": "~110 €/adulte (4 700 MUR)",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a004",
+    "number": 4,
+    "title": "Kayak transparent à Île d'Ambre (mangrove)",
+    "tags": [
+      "🌊",
+      "🌳"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Île d'Ambre (nord-est)",
+    "transit": "~1h15",
+    "description": "Pagaie dans la mangrove, eau peu profonde, faune endémique. Coup de cœur de beaucoup de voyageurs. Demi-journée.",
+    "price": "35–50 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a005",
+    "number": 5,
+    "title": "Pêche au gros",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Black River / Tamarin, Trou aux Biches",
+    "transit": "~5 min (Tamarin/Black River) ou ~55 min (Trou aux Biches)",
+    "description": "Tamarin est LE port historique de la pêche au gros (marlin bleu, thon, dorade). Sorties demi-journée ou journée. Novembre = bon mois pour le marlin.",
+    "duration": "Demi-journée (~3–4h)",
+    "price": "400–700 € le bateau pour la journée (à diviser à 9 ça reste raisonnable)",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a006",
+    "number": 6,
+    "title": "Plongée à l'Île Ronde / Île aux Serpents (requins)",
+    "tags": [
+      "🌊",
+      "🎢",
+      "🐅",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Au large de Cap Malheureux (nord), 22 km de la côte",
+    "transit": "~1h15 jusqu'à Cap Malheureux + bateau",
+    "description": "LE spot avancé. Plongée parmi requins gris, pointes blanches et noires, raies aigle, barracudas. Visibilité 35–50 m. Réservé aux plongeurs confirmés (open water +). Une seule sortie par semaine, opérateur historique.",
+    "duration": "~2h (briefing + plongée)",
+    "difficulty": {
+      "dot": "#FF4757",
+      "label": "Très difficile"
+    },
+    "price": "~70 € la double plongée",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "Très peu fréquenté, expérience de plongée \"advanced\" rare à Maurice."
+  },
+  {
+    "id": "a007",
+    "number": 7,
+    "title": "Canyoning à Tamarin Falls",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Tamarin Falls",
+    "transit": "~15 min",
+    "description": "Descente complète en canyoning : rappels, toboggans naturels, sauts jusqu'à 10 m. Encadrement obligatoire.",
+    "duration": "~3–4h",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "rappels, sauts, bonne condition physique requise"
+    },
+    "price": "80–110 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a008",
+    "number": 8,
+    "title": "Snorkeling avec cachalots / baleines à bosse (saison)",
+    "tags": [
+      "🌊",
+      "🐅",
+      "🎢",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Au large de Tamarin et Black River",
+    "transit": "~0–10 min (sur place)",
+    "description": "Maurice fait partie des **rares spots au monde où nager avec des cachalots** est légal et encadré. **Calendrier précis pour novembre** : (1) **Baleines à bosse** = saison juillet → octobre, donc **probablement déjà parties** pendant ton séjour, peut-être quelques retardataires début nov. (2) **Cachalots** = présents toute l'année mais saison \"in-water\" plus active à partir de novembre. **Novembre est globalement un mois de transition** — moins garanti que août-septembre (baleines à bosse) ou janvier-mars (cachalots), mais possible. Opérateurs respectueux à viser (limite stricte du nombre de personnes en eau, pas de poursuite agressive) :",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "savoir nager, eau profonde au large"
+    },
+    "price": "150–250 €/pers selon opérateur et durée",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "Si la fenêtre joue, c'est probablement l'expérience la plus marquante de ton séjour. Si elle ne joue pas, replier sur n°34 dauphins ou n°6 plongée Île Ronde."
+  },
+  {
+    "id": "a009",
+    "number": 9,
+    "title": "Sortie pêche traditionnelle avec un pêcheur",
+    "tags": [
+      "🌊",
+      "🏛️",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Tamarin, Trou aux Biches, Pointe d'Esny",
+    "transit": "~0–10 min (Tamarin) ou ~55 min (Trou aux Biches) ou ~1h10 (Pointe d'Esny)",
+    "description": "Embarquer à 5h du matin avec un pêcheur local sur sa pirogue, voir comment on pêche au filet, ramener le poisson, déjeuner à la maison. À organiser via guide local ou table d'hôte.",
+    "duration": "~5h",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile"
+    },
+    "price": "40–70 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a010",
+    "number": 10,
+    "title": "Plongée Cathédrale (Flic-en-Flac)",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Flic-en-Flac",
+    "transit": "~55 min (Trou aux Biches) ou ~1h–1h15 (Blue Bay)",
+    "description": "Site cathédrale = grandes failles et arches à -25 m, jeux de lumière spectaculaires. Souvent listé top 10 sites océan Indien.",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "plongeurs niveau 1+ certifiés"
+    },
+    "price": "~55 €",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a011",
+    "number": 11,
+    "title": "Yacht à voile coucher de soleil (Tamarin / Black River)",
+    "tags": [
+      "🌊",
+      "🧘"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Tamarin",
+    "transit": "~0–10 min (sur place)",
+    "description": "Sortie 2h en voilier au moment du coucher de soleil, montagne du Morne en arrière-plan. Apéro à bord. La version chic.",
+    "duration": "~2h",
+    "price": "60–100 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a012",
+    "number": 12,
+    "title": "Sortie sunset chez Authentiseaty (Cap Malheureux)",
+    "tags": [
+      "🌊",
+      "🧘",
+      "🍽️",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Cap Malheureux (nord)",
+    "transit": "~1h15 (Belle Mare) ou ~55 min (Trou aux Biches)",
+    "description": "Julien d'Authentiseaty, petit bateau rapide direction Coin de Mire, snorkeling, apéro Ti Punch + Jus de la Jungle, guitare et chants au coucher du soleil. Privatisable à 9, ambiance plus intime que catamaran touristique.",
+    "price": "60–100 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a013",
+    "number": 13,
+    "title": "Snorkeling de nuit",
+    "tags": [
+      "🌊",
+      "🎢",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Trou aux Biches, Blue Bay (avec opérateur certifié)",
+    "transit": "~55 min",
+    "description": "Snorkeling guidé de nuit avec lampes, faune marine totalement différente (poulpes en sortie, crustacés, certains poissons nocturnes). Très peu d'opérateurs proposent.",
+    "duration": "~3–4h",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "savoir nager, à l'aise dans l'eau de nuit"
+    },
+    "price": "40–70 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a014",
+    "number": 14,
+    "title": "Sortie en pirogue traditionnelle \"à voile latine\"",
+    "tags": [
+      "🌊",
+      "🏛️",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Village de pêcheurs (La Gaulette, Trou d'Eau Douce, Cap Malheureux)",
+    "transit": "~20 min",
+    "description": "Pirogue mauricienne traditionnelle gréée à la voile latine. Quelques pêcheurs perpétuent cet art. Embarquer pour une demi-journée pure poésie.",
+    "duration": "Demi-journée (~3–4h)",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "sortie en mer, calme"
+    },
+    "price": "Négociation directe, 40–80 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a015",
+    "number": 15,
+    "title": "Plongée épaves bataille de Grand Port",
+    "tags": [
+      "🌊",
+      "🏛️"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Vieux Grand Port",
+    "transit": "~0–10 min (Tamarin) ou ~1h15 (Belle Mare)",
+    "description": "Quelques épaves de frégates de la bataille de 1810 sont accessibles en plongée. Plongées historiques, niveau intermédiaire. Très peu de centres le proposent — demande spécifiquement.",
+    "duration": "~2h (briefing + plongée)",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "plongeurs niveau 1+, plongée historique"
+    },
+    "price": "~60–80 €",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a016",
+    "number": 16,
+    "title": "Anse aux Aigrettes (snorkeling secret)",
+    "tags": [
+      "🌊",
+      "🐅",
+      "💎"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Pointe d'Esny",
+    "transit": "~5 min (Black River) ou ~1h (Grand Baie)",
+    "description": "Spot snorkeling discret juste en face de l'île aux Aigrettes, accès par la plage de la Pointe d'Esny. Faune marine quasi intacte, peu de monde.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "savoir nager"
+    },
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a017",
+    "number": 17,
+    "title": "Sub-scooter Blue Safari (scooter sous-marin)",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Trou aux Biches",
+    "transit": "~5 min (Tamarin/Black River)",
+    "description": "Scooter aquatique avec bulle de verre sur la tête, on respire normalement, à -3 m parmi les poissons. Pas besoin de savoir nager.",
+    "price": "~100 €/pers (en duo)",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a018",
+    "number": 18,
+    "title": "Seabob (scooter aquatique propulseur)",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Surtout dans les hôtels haut de gamme (Constance, LUX*, One&Only) ou loueurs Grand Baie",
+    "transit": "~1h",
+    "description": "Engin propulseur électrique qu'on tient à 2 mains, surface ou immersion. Sensation pilote sous-marin.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée"
+    },
+    "price": "80–150 € la session",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a019",
+    "number": 19,
+    "title": "Kitesurf au Morne",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Le Morne (sud-ouest)",
+    "transit": "~20–25 min",
+    "description": "Spot de classe mondiale (top 5 mondial selon nombreux pros). **Saison parfaite mars → novembre**, donc **ton séjour = fin de saison vent fiable** (alizés du sud-est, 15-25 nœuds en moyenne). Trois spots distincts au même endroit : (1) **Kite Lagoon** = eau plate peu profonde (taille adulte sur 1 km), parfait débutants et freestyle ; (2) **Manawa** = vague droite (right-hander) pour intermédiaires/avancés ; (3) **One-Eye** = vague gauche légendaire (left-hander) pour pros seulement. Écoles recommandées : **ION Club**, **Pryde Club**, **Yoaneye Kite Centre**. Cours de 3h à 9h pour débutants. Location uniquement pour kitesurfeurs autonomes (IKO niveau 3 minimum).",
+    "duration": "~3h",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "cours débutants OK, location réservée IKO 3+"
+    },
+    "price": "Cours débutant 3h ~100 €, stage 9h ~250 € | Location matériel 60–80 €/session",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a020",
+    "number": 20,
+    "title": "Observation/spectateur des pros au Morne + sunset session",
+    "tags": [
+      "🌊",
+      "🧘",
+      "🎢",
+      "🗝️"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Plage publique du Morne (parking face à l'hôtel St-Régis ou Beachcomber)",
+    "transit": "~20 min",
+    "description": "**Tu n'as pas besoin de kiter** pour vivre la magie du Morne. Pendant la saison, **One-Eye attire les meilleurs riders mondiaux** (Mitu Monteiro, Keahi de Aboitiz, Camille Delannoy y viennent régulièrement). Spectacle gratuit, surtout vers 14h–17h quand le vent monte. **Combo idéal** : venir vers 15h, regarder les pros sauter au-dessus de la vague d'One-Eye depuis la plage, puis rester pour le coucher du soleil avec le Morne en ombre chinoise et un apéro rhum acheté à la Rhumerie Chamarel (n°123) le matin. Saison vent fiable mars → nov, donc **encore exploitable en novembre mais moins garanti que août-octobre**.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "observation depuis la plage"
+    },
+    "price": "Gratuit (parking gratuit, plage publique)",
+    "rating": 4,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Très peu de touristes pensent à venir juste pour observer ; combiné apéro + sunset, c'est une des meilleures fins de journée du sud-ouest."
+  },
+  {
+    "id": "a021",
+    "number": 21,
+    "title": "Stand-up paddle dans la rivière Tamarin",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Embouchure rivière Tamarin",
+    "transit": "~0–10 min (sur place)",
+    "description": "Paddle calme dans l'estuaire bordé de filaos, accessible à tous. Tôt le matin = lumière magnifique.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "savoir nager, équilibre"
+    },
+    "price": "Location ~15 €/h",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a022",
+    "number": 22,
+    "title": "Marche aquatique dans le lagon (sea trekking / aqua trekking)",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Belle Mare, Trou aux Biches",
+    "transit": "~55 min",
+    "description": "Tu marches au fond du lagon avec un casque qui apporte de l'air, sans masque ni tuba. Tu peux porter des lunettes, parler. Accessible à tous, dès 8 ans.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "savoir nager + tolérer le casque"
+    },
+    "price": "50–80 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a023",
+    "number": 23,
+    "title": "Flyboard / Flyn'Dive (jet d'eau sous les pieds)",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Grand Baie",
+    "transit": "~1h",
+    "description": "Bottes à propulsion d'eau, tu t'élèves à 5–10 m au-dessus du lagon. Sensation Iron Man. Apprentissage 30 min, vol 15–20 min.",
+    "duration": "~1h (apprentissage 30 min + vol 15–20 min)",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "équilibre, savoir nager"
+    },
+    "price": "90–130 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a024",
+    "number": 24,
+    "title": "Kayak transparent de nuit (bioluminescence)",
+    "tags": [
+      "🌊",
+      "🎢",
+      "🗝️"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Île d'Ambre, certaines baies du sud",
+    "transit": "~0–10 min (Tamarin) ou ~25 min (Le Morne) ou ~55 min (Trou aux Biches)",
+    "description": "Saisonnier (selon les conditions, parfois novembre). Plancton bioluminescent qui illumine l'eau au passage des pagaies. Kayaks à fond transparent, expérience magique.",
+    "price": "50–80 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Demande à vérifier la dispo en nov 2026, plutôt rare."
+  },
+  {
+    "id": "a025",
+    "number": 25,
+    "title": "Plongée sur épave Stella Maru (Trou aux Biches)",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Trou aux Biches (nord)",
+    "transit": "~55 min",
+    "description": "Cargo japonais sabordé en 1987 à 24 m de fond. Murène, poisson-scorpion, baliste-titan. Plongée niveau 1 confirmé ou 2.",
+    "duration": "~2h (briefing + plongée)",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "plongeurs niveau 1+ certifiés"
+    },
+    "price": "~55 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a026",
+    "number": 26,
+    "title": "Apnée / freediving cours",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Tamarin, Le Morne, Trou aux Biches",
+    "transit": "~0–10 min (sur place)",
+    "description": "Cours d'apnée AIDA niveau 1 ou 2 (2 jours). Apprends à descendre en profondeur sans bouteille. Alternative plus zen à la plongée scaphandre.",
+    "duration": "Variable (cours 1h, stage plusieurs jours)",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "stage 2 jours, AIDA 1/2, condition physique requise"
+    },
+    "price": "200–350 €/pers le stage",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a027",
+    "number": 27,
+    "title": "Voile / régate en lagon",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Grand Baie, Black River",
+    "transit": "~5–10 min",
+    "description": "Location voilier 8–12 m avec skipper pour la journée, navigation dans le lagon, mouillage privé pour déjeuner. À 9, ça revient raisonnable.",
+    "duration": "Journée complète",
+    "price": "700–1 200 € le bateau/jour",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a028",
+    "number": 28,
+    "title": "Surf trip La Prairie / One Eye / Manawa (regarder, pas faire)",
+    "tags": [
+      "🌊",
+      "🌳"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Le Morne",
+    "transit": "~1h (Grand Baie) ou ~1h15 (Trou d'Eau Douce/Belle Mare)",
+    "description": "Si tu ne surfes pas mais veux voir : aller au coucher du soleil au Morne pour regarder les pros surfer One Eye, vague légendaire. Spectacle gratuit.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a029",
+    "number": 29,
+    "title": "Sortie pêche au gros avec un capitaine français",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Black River, Tamarin",
+    "transit": "~0–10 min (sur place)",
+    "description": "Plusieurs capitaines français basés à Tamarin organisent des sorties pour passionnés (pas le tourisme de masse). Marlin bleu, voilier, thon jaune. Novembre = bonne saison marlin.",
+    "duration": "Demi-journée ou journée (4h ou 8h)",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile"
+    },
+    "price": "800–1 200 € la journée bateau (8 pers)",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a030",
+    "number": 30,
+    "title": "Diving Drift à Belle Mare (plongée de courant)",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Belle Mare (côte est)",
+    "transit": "~1h15",
+    "description": "Plongée en dérive forte sur les passes. Aigles de mer, raies, grosses carangues. Niveau intermédiaire. Beaucoup moins fait que les sites du nord/ouest.",
+    "duration": "~2h (briefing + plongée)",
+    "price": "~55 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a031",
+    "number": 31,
+    "title": "Bassins naturels de Saint-Félix",
+    "tags": [
+      "🌊",
+      "🌳"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Saint-Félix (sud)",
+    "transit": "~1h",
+    "description": "Bassins naturels formés par la barrière de corail, baignade très sûre car protégée des courants. Connu des locaux, ignoré des touristes.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a032",
+    "number": 32,
+    "title": "Sortie crabe trekking (mangroves de l'est)",
+    "tags": [
+      "🌊",
+      "🐅"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Mangroves Île d'Ambre ou Bois des Amourettes",
+    "transit": "~15 min (Flic-en-Flac) ou ~1h (Grand Baie) ou ~1h15 (Belle Mare)",
+    "description": "Marche à marée basse dans les mangroves, observation crabes violonistes, sortie nature très locale. Quelques guides Bois des Amourettes le proposent.",
+    "price": "30–50 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a033",
+    "number": 33,
+    "title": "Fairy Falls (Mare aux Vacoas)",
+    "tags": [
+      "🌊",
+      "🏔️"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Cascade secrète près du réservoir de Mare aux Vacoas, accès par sentier non balisé à travers la forêt. Petite vasque pour baignade. Quasi inconnue.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a034",
+    "number": 34,
+    "title": "Nager avec les dauphins à Tamarin",
+    "tags": [
+      "🌊",
+      "🐅"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Baie de Tamarin",
+    "transit": "~0–10 min (sur place)",
+    "description": "Départ vers 6h30 du matin, dauphins long-bec et souffleurs viennent dans la baie. Privilégier opérateurs respectueux (pas de poursuite agressive).",
+    "duration": "~6h30",
+    "price": "35–50 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a035",
+    "number": 35,
+    "title": "Jet ski",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Grand Baie, Flic-en-Flac, Belle Mare",
+    "transit": "~15–20 min",
+    "description": "Tour du lagon en jet ski, souvent 30 min à 1h. Possibilité de safari jet ski jusqu'au Morne.",
+    "duration": "~1h",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "permis bateau pas nécessaire, briefing avant"
+    },
+    "price": "60–80 € les 30 min",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a036",
+    "number": 36,
+    "title": "Surf à Tamarin",
+    "tags": [
+      "🌊",
+      "🎢"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Plage de Tamarin",
+    "transit": "~0–10 min (sur place)",
+    "description": "Spot historique du surf à Maurice (cf. film *The Forgotten Island of Santosha*). Vague gauche pour confirmés ; spots débutants à proximité.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "équilibre, débutants OK"
+    },
+    "price": "Cours ~50 €, location planche ~15 €/jour",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a037",
+    "number": 37,
+    "title": "Sailfishing / pêche au gros nocturne",
+    "tags": [
+      "🌊"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Black River, Tamarin",
+    "transit": "~0–10 min (sur place)",
+    "description": "Sortie pêche de nuit, plus rare, ambiance différente. Espadon-voilier, requins-mako.",
+    "duration": "Demi-journée ou journée (4h ou 8h)",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "tolérer la mer la nuit"
+    },
+    "price": "500–800 € le bateau",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a038",
+    "number": 38,
+    "title": "Stand-up paddle yoga au lever du soleil",
+    "tags": [
+      "🌊",
+      "🧘"
+    ],
+    "category": "🌊 Mer & Sports nautiques",
+    "location": "Tamarin, Belle Mare",
+    "transit": "~0–10 min (sur place)",
+    "description": "Yoga sur un paddle. Plus chill que ça tu meurs. Surtout à Tamarin où la communauté est active.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "savoir nager, équilibre yoga"
+    },
+    "price": "30–50 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a039",
+    "number": 39,
+    "title": "Île aux Bénitiers en pirogue traditionnelle",
+    "tags": [
+      "🏝️",
+      "🏛️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Sud-ouest",
+    "transit": "~25 min jusqu'à La Gaulette (point d'embarquement)",
+    "description": "Version locale : pirogue à voile latine d'un pêcheur, et non catamaran touristique. Plus lent, plus authentique. À chercher au village de La Gaulette.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "sortie en mer, calme"
+    },
+    "price": "Négociation directe, ~30–50 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a040",
+    "number": 40,
+    "title": "Îlot Mouchoir Rouge (Mahébourg)",
+    "tags": [
+      "🏝️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "En face de Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Petit îlot iconique avec maisonnettes aux toits vermillon. Accessible en kayak ou pirogue, on se baigne autour. Pas touristique du tout.",
+    "price": "Location kayak ~15 €/h",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a041",
+    "number": 41,
+    "title": "Île des Deux Cocos (Blue Bay) — île privée",
+    "tags": [
+      "🏝️",
+      "🌊",
+      "🍽️",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "10 min en bateau depuis Blue Bay",
+    "transit": "~1h–1h15",
+    "description": "Île privée détenue par LUX* Resorts dans le lagon de Blue Bay. Villa centenaire (\"Maison du Gouverneur\") d'un ancien gouverneur britannique. Plage privée, lagon turquoise peu profond. Excursion journée : cocktail d'accueil, visite villa, snorkeling ou bateau fond de verre, déjeuner-buffet (boissons alcoolisées incluses), retour 15h. **À LOUER À 9 EN PRIVÉ pour une journée exclusive.**",
+    "duration": "Journée complète",
+    "price": "Excursion classique ~60–90 €/pers ; location villa complète ~3 000–5 000 €/jour (raisonnable à 9)",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "Possibilité d'**y dormir** (location à la nuit, île à toi)."
+  },
+  {
+    "id": "a042",
+    "number": 42,
+    "title": "Île de la Passe (forteresse de la bataille de Grand Port)",
+    "tags": [
+      "🏝️",
+      "🏛️",
+      "🗝️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Baie de Grand Port (accessible en speedboat depuis Blue Bay)",
+    "transit": "~1h–1h15",
+    "description": "Petite île à l'entrée de la passe de Grand Port, fortifications du XVIIIᵉ siècle. **C'est ici que la bataille navale française de 1810 a commencé** (la seule victoire navale française inscrite sur l'Arc de Triomphe). Canon en place, vestiges, vue sur Mahébourg et la côte. Très peu de touristes. Souvent combiné avec Île au Phare (n°48).",
+    "price": "Excursion 2 îles speedboat ~20–35 €/pers (très accessible)",
+    "rating": 5,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Combo histoire + lagon, atmosphère puissante."
+  },
+  {
+    "id": "a043",
+    "number": 43,
+    "title": "Excursion catamaran île aux Cerfs (journée + BBQ)",
+    "tags": [
+      "🏝️",
+      "🌊",
+      "🍽️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Départ Trou d'Eau Douce (côte est)",
+    "transit": "~1h15",
+    "description": "Le classique mauricien. Croisière dans le lagon est, stop snorkeling, BBQ à bord ou sur l'île, plage paradisiaque. Souvent combiné avec la cascade GRSE.",
+    "duration": "Journée complète",
+    "price": "60–90 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a044",
+    "number": 44,
+    "title": "Sortie catamaran îles du Nord (Coin de Mire, Île Plate, Îlot Gabriel)",
+    "tags": [
+      "🏝️",
+      "🌊"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Départ Grand Baie (côte nord)",
+    "transit": "~1h",
+    "description": "Journée vers 3 îlots du nord, lagon Île Plate réputé pour l'eau cristalline, snorkeling, déjeuner à bord. Alternative à Île aux Cerfs si vous voulez moins de monde.",
+    "duration": "Journée complète",
+    "price": "70–100 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a045",
+    "number": 45,
+    "title": "Île aux Bénitiers + nage avec dauphins",
+    "tags": [
+      "🏝️",
+      "🐅"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Sud-ouest",
+    "transit": "~25 min jusqu'à La Gaulette",
+    "description": "Journée complète : dauphins le matin, île aux Bénitiers pour baignade et BBQ, parfois passage par la \"Crystal Rock\" et le Morne.",
+    "duration": "Journée complète",
+    "price": "50–70 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a046",
+    "number": 46,
+    "title": "Excursion Île aux Bernaches / Île d'Ambre en kayak",
+    "tags": [
+      "🏝️",
+      "🌊"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Nord-est",
+    "transit": "~1h15 jusqu'à la côte nord-est",
+    "description": "Pas de bateau motorisé, juste en kayak depuis la côte. Beaucoup moins fréquenté que les classiques nord/est.",
+    "price": "40–70 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a047",
+    "number": 47,
+    "title": "Île aux Phares (Île Marianne)",
+    "tags": [
+      "🏝️",
+      "🏛️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Sud-est, près de Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Petite île avec phare historique (1864), accessible en pirogue depuis Vieux Grand Port. Histoire de la bataille navale visible, faune marine intacte.",
+    "price": "~30–50 €/pers en pirogue",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a048",
+    "number": 48,
+    "title": "Île aux Fouquets (lighthouse)",
+    "tags": [
+      "🏝️",
+      "🏛️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Sud-est, près de Blue Bay",
+    "transit": "~1h–1h15",
+    "description": "Phare abandonné depuis 1948 sur un îlot accessible en bateau. Escalade jusqu'au sommet du phare pour une vue dingue. Aventure dans un site presque oublié.",
+    "price": "Pirogue ~25–40 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a049",
+    "number": 49,
+    "title": "Grottes de l'îlot Sanchot",
+    "tags": [
+      "🏝️",
+      "🏛️"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Au large de Bel Ombre / Baie du Jacotet",
+    "transit": "~45 min",
+    "description": "Petit îlot avec grottes liées à des histoires de pirates et flibustiers. Accessible en kayak ou pirogue. Bel Ombre Treckbus le fait dans son parcours.",
+    "price": "~30–50 €/pers en excursion",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a050",
+    "number": 50,
+    "title": "Îlot Mangénie (côte est, près de Île aux Cerfs)",
+    "tags": [
+      "🏝️",
+      "🌊"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "À côté de Île aux Cerfs, en face de Trou d'Eau Douce",
+    "transit": "~1h15",
+    "description": "Petit îlot privatisé par le Shangri-La Le Touessrok. Plus calme et plus chic que Île aux Cerfs voisine. Plage parfaite, peu de monde. Accessible si tu loges au Touessrok ou via certaines excursions privées.",
+    "price": "~40–80 €/pers via excursion privée",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a051",
+    "number": 51,
+    "title": "Combo \"Cinq Îles\" speedboat (depuis Trou d'Eau Douce)",
+    "tags": [
+      "🏝️",
+      "🌊"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Côte est, opérateur Totof Maurice",
+    "transit": "~1h15",
+    "description": "Sortie speedboat qui couvre Île aux Cerfs + 4 autres îlots en une journée, plus rapide et flexible qu'un catamaran. Snorkeling sur plusieurs sites, déjeuner BBQ. Privatisable à 9.",
+    "duration": "Journée complète",
+    "price": "70–100 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a052",
+    "number": 52,
+    "title": "Îlot Vacoas (sud-est)",
+    "tags": [
+      "🏝️",
+      "🐅"
+    ],
+    "category": "🏝️ Îles, Lagons & Excursions bateau",
+    "location": "Baie de Grand Port, sud-est",
+    "transit": "~1h–1h15",
+    "description": "Petit îlot peu visité, accessible en pirogue depuis Vieux Grand Port. Réserve d'oiseaux, snorkeling correct. **Demande explicite à un pêcheur local**, pas d'opérateur touristique régulier.",
+    "price": "Pirogue privée ~30–50 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a053",
+    "number": 53,
+    "title": "Île aux Aigrettes (réserve nature MWF)",
+    "tags": [
+      "🐅",
+      "🏛️"
+    ],
+    "category": "🐅 Faune & Rencontres animales",
+    "location": "Au large de Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Réserve gérée par Mauritian Wildlife Foundation, dernière forêt côtière d'ébéniers, tortues géantes Aldabra, oiseaux endémiques (foudi, oiseau-à-lunettes). Visite guidée 2h.",
+    "duration": "~2h",
+    "price": "~20 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a054",
+    "number": 54,
+    "title": "Sortie chauves-souris géantes au crépuscule (Black River Gorges)",
+    "tags": [
+      "🐅",
+      "🌳"
+    ],
+    "category": "🐅 Faune & Rencontres animales",
+    "location": "Black River Gorges",
+    "transit": "~15 min",
+    "description": "Au crépuscule, les ballets aériens des roussettes (chauves-souris géantes de Maurice, espèce endémique) au-dessus des gorges. Spectacle silencieux et impressionnant. Aller au point Gorges View au coucher du soleil.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a055",
+    "number": 55,
+    "title": "Casela Nature Parks",
+    "tags": [
+      "🐅",
+      "🎢"
+    ],
+    "category": "🐅 Faune & Rencontres animales",
+    "location": "Cascavelle (côte ouest)",
+    "transit": "~15–20 min",
+    "description": "Marche avec les lions, safari quad, tyrolienne au-dessus des canyons, interaction avec girafes/zèbres. Le parc d'attractions n°1 de l'océan Indien.",
+    "price": "25–80 €/pers selon options",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a056",
+    "number": 56,
+    "title": "La Vieille Cheminée (équitation chic à Chamarel)",
+    "tags": [
+      "🐅",
+      "🌳"
+    ],
+    "category": "🐅 Faune & Rencontres animales",
+    "location": "Chamarel",
+    "transit": "~30 min",
+    "description": "Ranch en plein cœur de Chamarel, balades à cheval dans la forêt et les plantations. Cadre rare, chevaux bien traités, vues sur la côte. Plus immersif que les sorties plage.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "expérience cheval recommandée pour le galop, balade débutants OK"
+    },
+    "price": "60–100 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a057",
+    "number": 57,
+    "title": "Randonnée du Morne Brabant",
+    "tags": [
+      "🏔️",
+      "🏛️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Le Morne (sud-ouest)",
+    "transit": "~20–25 min",
+    "description": "Montagne UNESCO, ~4h aller-retour, vue à 360° sur le lagon et la \"cascade sous-marine\". Histoire poignante des esclaves marrons. Départ au lever du soleil idéal. Guide quasi obligatoire pour la partie haute.",
+    "duration": "~4h",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~4h A/R, dernière section technique avec guide"
+    },
+    "price": "Guide 30–50 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a058",
+    "number": 58,
+    "title": "Randonnée Piton de la Petite Rivière Noire (point culminant)",
+    "tags": [
+      "🏔️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Parc national Rivière Noire",
+    "transit": "~15 min",
+    "description": "828 m, point culminant de l'île, sentier ~3h A/R, vue panoramique sur tout le sud-ouest. Déjà dans ta wishlist d'après mes infos.",
+    "duration": "~3h",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~3h A/R, 828 m, dénivelé important"
+    },
+    "price": "Gratuit (parc national)",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a059",
+    "number": 59,
+    "title": "Sentier Pieter Both",
+    "tags": [
+      "🏔️",
+      "🎢"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Centre, près de Moka",
+    "transit": "~45 min",
+    "description": "Le sommet emblématique avec sa \"tête\" de pierre. 820 m, l'ascension finale est technique (escalade avec cordes fixes), réservée aux randonneurs expérimentés. Vue exceptionnelle.",
+    "duration": "~5–6h A/R (technique)",
+    "difficulty": {
+      "dot": "#FF4757",
+      "label": "Très difficile",
+      "detail": "~5-6h A/R, escalade finale avec cordes fixes, randonneurs expérimentés"
+    },
+    "price": "Guide recommandé ~50 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a060",
+    "number": 60,
+    "title": "Lever de soleil au Morne (la version sérieuse)",
+    "tags": [
+      "🏔️",
+      "🎢"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Le Morne",
+    "transit": "~20–25 min",
+    "description": "Départ 4h du matin, arrivée au sommet pour le lever de soleil. Vue dingue sur lagon, cascade sous-marine, océan à 360°. Réservé aux randonneurs en forme, guide obligatoire pour la dernière section technique.",
+    "duration": "~4h",
+    "difficulty": {
+      "dot": "#FF4757",
+      "label": "Très difficile",
+      "detail": "départ 4h du matin, ~5h jusqu'au sommet, guide obligatoire"
+    },
+    "price": "Guide ~50 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a061",
+    "number": 61,
+    "title": "Randonnée des 7 cascades de Tamarin",
+    "tags": [
+      "🏔️",
+      "🌳"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Henrietta",
+    "transit": "~20 min",
+    "description": "Canyoning soft ou rando classique, baignades, sauts dans les vasques. Guide obligatoire (terrain glissant).",
+    "duration": "~4h (rando classique) ou ~5h (canyoning)",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~4h rando classique ou ~5h canyoning, terrain glissant"
+    },
+    "price": "50–80 €/pers avec guide",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a062",
+    "number": 62,
+    "title": "Parc national des Gorges de Rivière Noire",
+    "tags": [
+      "🏔️",
+      "🐅"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Sud-ouest",
+    "transit": "~15 min",
+    "description": "6 500 ha de forêt endémique, plusieurs sentiers (Macchabée, Black River Peak), faune endémique (crécerelle de Maurice, pigeon des mares).",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "sentiers balisés niveau variable, choix du parcours"
+    },
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a063",
+    "number": 63,
+    "title": "Sentier des 7 cascades — la version intégrale",
+    "tags": [
+      "🏔️",
+      "🎢"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Henrietta",
+    "transit": "~20 min",
+    "description": "Pas la balade light : le vrai parcours rando + sauts dans les vasques, descente en rappel sur certaines, baignades dans toutes. 4–6h, technique. Réservé aux gens en forme.",
+    "duration": "~6h",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~4h rando classique ou ~5h canyoning, terrain glissant"
+    },
+    "price": "60–100 €/pers avec guide",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a064",
+    "number": 64,
+    "title": "Sentier du Pouce",
+    "tags": [
+      "🏔️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Centre (entre Port-Louis et Moka)",
+    "transit": "~45 min",
+    "description": "Montagne en forme de pouce, 812 m, vue panoramique à 360° sur Port-Louis et le nord. Plus tranquille que le Morne. ~3h A/R.",
+    "duration": "~3h",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~3h A/R, dénivelé soutenu"
+    },
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a065",
+    "number": 65,
+    "title": "Parakeet Trail (Black River Gorges)",
+    "tags": [
+      "🏔️",
+      "🐅"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Black River Gorges",
+    "transit": "~15 min",
+    "description": "7h30 de marche, traversées de rivières, dénivelés. Le sentier le plus exigeant et le plus récompensé de l'île. Observation possible de la perruche endémique de Maurice (parakeet), sauvée de l'extinction.",
+    "duration": "~7h30",
+    "difficulty": {
+      "dot": "#FF4757",
+      "label": "Très difficile",
+      "detail": "7h30 de marche, traversées rivières, dénivelés importants"
+    },
+    "price": "Gratuit, guide recommandé ~50 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a066",
+    "number": 66,
+    "title": "Cascades de la Nicolière (sentier non balisé)",
+    "tags": [
+      "🏔️",
+      "🌊"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Nord, après le réservoir de la Nicolière",
+    "transit": "~1h10",
+    "description": "Sentier forestier non marqué qui mène à des cascades secrètes. À 25 min de marche, pont en bois branlant au-dessus d'une ravine. **Guide obligatoire** sinon tu te perds. Arveen est le guide local recommandé (WhatsApp +230 5902 4487).",
+    "duration": "~25 min",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "~25 min de marche, pont en bois branlant, guide obligatoire"
+    },
+    "price": "Guide ~40–60 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a067",
+    "number": 67,
+    "title": "Sentier des Deux Frères / Domaine Anahita (côte est)",
+    "tags": [
+      "🏔️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Côte est",
+    "transit": "~1h15",
+    "description": "Sentier qui longe la côte sauvage, deux mornes jumeaux. Peu fréquenté, très beau au coucher du soleil.",
+    "duration": "~2–4h selon parcours",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "~2-3h, sentier côtier"
+    },
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a068",
+    "number": 68,
+    "title": "Quatre Sœurs (montagne ignorée du sud-est)",
+    "tags": [
+      "🏔️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Sud-est (à 30 min de Blue Bay)",
+    "transit": "~1h10",
+    "description": "Sommet de 380 m, sentier peu connu. Vue panoramique sur la baie de Grand Port et toute la côte est. **Pas de balisage.** Avec un guide ou un GPS, sinon dur à trouver.",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~2h A/R, 380 m, pas de balisage donc guide ou GPS"
+    },
+    "price": "Gratuit (guide ~40 €)",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a069",
+    "number": 69,
+    "title": "La Nicolière + Lion Mountain",
+    "tags": [
+      "🏔️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Centre-est",
+    "transit": "~1h",
+    "description": "Réservoir de la Nicolière + rando jusqu'au sommet de Lion Mountain (parc national, 480 m). Forme caractéristique de lion couché. Moins fait que Le Pouce mais aussi beau.",
+    "duration": "~2–4h selon parcours",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "~3h A/R, sentier court mais escarpé"
+    },
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a070",
+    "number": 70,
+    "title": "Mare aux Vacoas + Sophie Nature Walk",
+    "tags": [
+      "🏔️",
+      "🌳"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Sentiers à travers jardins endémiques et forêt dense menant au plus grand réservoir de l'île. Très peu fréquenté, paysages \"Highlands\" inattendus à Maurice.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "sentiers à travers jardins et forêt, marche soutenue"
+    },
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a071",
+    "number": 71,
+    "title": "Powder Mills + ancien orphelinat (Pamplemousses)",
+    "tags": [
+      "🏔️",
+      "🏛️"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Pamplemousses (nord)",
+    "transit": "~55 min",
+    "description": "Sentier court à travers la forêt, on croise des chauves-souris géantes. Se termine sur les vestiges d'un ancien orphelinat colonial. Atmosphère mélancolique, presque oubliée.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "sentier ~30 min, terrain irrégulier"
+    },
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a072",
+    "number": 72,
+    "title": "Sentier Mare aux Joncs",
+    "tags": [
+      "🏔️",
+      "🐅"
+    ],
+    "category": "🏔️ Randonnée & Sommets",
+    "location": "Parc national Rivière Noire",
+    "transit": "~15 min",
+    "description": "Un des sentiers les moins fréquentés du parc, mène à un point d'eau où viennent les cerfs et sangliers en fin de journée.",
+    "duration": "Journée complète",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "~3h A/R, sentier forestier"
+    },
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a073",
+    "number": 73,
+    "title": "Cascade Eau Bleue (Cluny) — sans panneau",
+    "tags": [
+      "🌳",
+      "🌊",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Village de Cluny, route B83",
+    "transit": "~1h",
+    "description": "Bassins d'un turquoise quasi irréel, cachés derrière les cannes à sucre. **Aucun panneau**, faut chercher le \"CWA Water Tank\", se garer en bord de champ et marcher dans le sentier qui traverse les cannes. Plusieurs cascades successives.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "Le genre d'endroit où tu doutes d'être au bon endroit jusqu'à arriver."
+  },
+  {
+    "id": "a074",
+    "number": 74,
+    "title": "Rochester Falls (colonnes basaltiques)",
+    "tags": [
+      "🌳",
+      "💎"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Souillac (sud)",
+    "transit": "~1h",
+    "description": "Cascade qui tombe sur des colonnes de basalte hexagonales sculptées par l'érosion. Vraiment singulier. Les locaux y sautent depuis les colonnes (à voir, pas forcément à faire). Accès par champs de canne, panneau quasi inexistant.",
+    "price": "Gratuit (parfois quelqu'un demande 1–2 €)",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a075",
+    "number": 75,
+    "title": "Plage de Cambuse",
+    "tags": [
+      "🌳",
+      "🌊"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud-est (proche Blue Bay)",
+    "transit": "~1h–1h15",
+    "description": "Plage publique très peu fréquentée, sable doré, lagon plus brut. Idéal pour pique-nique avec les locaux le dimanche. À 10 min de Blue Bay.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a076",
+    "number": 76,
+    "title": "Pointe d'Esny (la plage publique cachée)",
+    "tags": [
+      "🌳",
+      "🌊"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud-est, près de Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Une des plus belles plages publiques de l'île, accès par deux petits sentiers. Beaucoup moins fréquentée que les plages d'hôtels. Spot de plongée à proximité.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a077",
+    "number": 77,
+    "title": "Photo du jacaranda en fleur (novembre = pleine floraison)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Curepipe, Floréal, Vacoas, Quatre-Bornes (plateau central)",
+    "transit": "~50 min",
+    "description": "Les jacarandas mauves fleurissent **octobre → début décembre**, **donc pile pendant ton séjour**. Avenues entières en violet, phénomène **furtif** (2 à 3 semaines de pic). Spots à viser :",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a078",
+    "number": 78,
+    "title": "Route des Jacarandas en voiture (boucle plateau central)",
+    "tags": [
+      "🌳",
+      "🧘",
+      "🗝️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Boucle 30–45 km sur le plateau central (~2h de voiture)",
+    "transit": "~45–60 min",
+    "description": "Itinéraire dédié à la floraison violette pendant ton séjour. **Itinéraire suggéré depuis Tamarin** : Tamarin → Curepipe (n°91 Trou aux Cerfs) → Floréal → Vacoas → retour par Phoenix. Total ~3h avec arrêts photo. **À faire un matin avec brume légère sur le plateau** (climat humide à 600 m d'altitude), les jacarandas dans la brume = magie absolue. Combine bien avec Aapravasi Ghat (n°156) ou Route du Thé (n°125) en après-midi.",
+    "duration": "~3h",
+    "price": "Gratuit (juste essence)",
+    "rating": 4,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Tu peux **demander au chauffeur** (si tu prends un taxi ou guide) ou à des locaux **\"montre-moi les plus belles avenues de jacaranda\"** — chaque Mauricien du plateau a SON spot préféré qu'il te montrera fièrement."
+  },
+  {
+    "id": "a079",
+    "number": 79,
+    "title": "Coucher du soleil à La Prairie",
+    "tags": [
+      "🌳",
+      "🧘"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Au pied du Morne",
+    "transit": "~25 min",
+    "description": "Plage publique sauvage avec vue sur le Morne en ombre chinoise. Quasiment vide en fin de journée. Apéro rhum sur la plage avec les copains, parfait pour le groupe.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a080",
+    "number": 80,
+    "title": "Gris-Gris (falaises sauvages)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Souillac (pointe sud)",
+    "transit": "~1h",
+    "description": "LE bout du monde de Maurice. Falaises battues par les rouleaux, pas de baignade (courants mortels), juste la marche sur la falaise et le bruit. Le seul endroit où l'océan attaque directement la côte sans la barrière de corail. Pique-nique sur la pelouse.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a081",
+    "number": 81,
+    "title": "Plage de Riambel",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud, entre Souillac et Saint-Félix",
+    "transit": "~1h",
+    "description": "Immense étendue de sable blanc **quasiment déserte**, ce qui est rare à Maurice. Pas d'hôtels autour. Vrai luxe de calme.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a082",
+    "number": 82,
+    "title": "Vallée de Ferney + Falaise Ferney",
+    "tags": [
+      "🌳",
+      "🏔️",
+      "🐅",
+      "💎"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Vieux Grand Port",
+    "transit": "~1h–1h15",
+    "description": "200 ha de forêt indigène préservée par la Ferney Mauritian Foundation. Cerfs, oiseaux endémiques, sentiers balisés. Programme MWF de réintroduction de la perruche écho. À ta porte.",
+    "price": "Entrée + guide ~25–40 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a083",
+    "number": 83,
+    "title": "Cascade de Chamarel + Terre des 7 couleurs",
+    "tags": [
+      "🌳",
+      "🏛️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Chamarel (sud-ouest)",
+    "transit": "~30 min",
+    "description": "Cascade ~100 m, sable volcanique aux 7 teintes, plantations de canne. Géoparc 13 €/pers.",
+    "price": "13 €/pers entrée",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a084",
+    "number": 84,
+    "title": "Cascade 500 Pieds + Lolo Waterfall (sud)",
+    "tags": [
+      "🌳",
+      "🏔️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud / Chamouny (sur ta wishlist)",
+    "transit": "~1h05",
+    "description": "Cascades plus sauvages, moins fréquentées. Souvent combiné avec Vanillart.",
+    "price": "Variable selon excursion",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a085",
+    "number": 85,
+    "title": "Vanillart — plantation de vanille à Chamouny",
+    "tags": [
+      "🌳",
+      "🍽️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Chamouny (sud)",
+    "transit": "~1h05",
+    "description": "Visite plantation de vanille bourbon, dégustation, achat. Déjà sur ta liste.",
+    "price": "~10–15 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a086",
+    "number": 86,
+    "title": "Jardin botanique Sir Seewoosagur Ramgoolam (Pamplemousses)",
+    "tags": [
+      "🌳",
+      "🏛️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Pamplemousses (nord)",
+    "transit": "~55 min",
+    "description": "Un des plus vieux jardins botaniques tropicaux au monde. Nénuphars géants Victoria amazonica, palmier-talipot, arbres à épices, baobabs.",
+    "price": "~5 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a087",
+    "number": 87,
+    "title": "Domaine de Bel Ombre / Réserve Frédérica",
+    "tags": [
+      "🌳",
+      "🐅",
+      "🎢"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud",
+    "transit": "~50 min–1h",
+    "description": "1 300 ha protégés par la MWF. Safari 4x4, quad, randonnée, faune (cerfs, singes, sangliers). Souvent combiné avec déjeuner au domaine.",
+    "duration": "Demi-journée à journée (3h–6h selon activité)",
+    "price": "50–120 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a088",
+    "number": 88,
+    "title": "Golf",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "14 parcours sur l'île, dont Tamarina Golf, Heritage Le Telfair, Constance Belle Mare",
+    "transit": "~0–10 min (sur place)",
+    "description": "Maurice = destination golf de référence dans l'océan Indien. Greens spectaculaires avec vue lagon.",
+    "price": "Greenfee 70–150 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a089",
+    "number": 89,
+    "title": "Pont Naturel (sud sauvage)",
+    "tags": [
+      "🌳",
+      "🏔️",
+      "🗝️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Au sud de Souillac",
+    "transit": "~1h",
+    "description": "Arche de lave de plusieurs millions d'années sculptée par l'océan. Accès par piste 4x4 + marche, rares touristes. Vue océan brut, falaises battues par les vagues.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Tu auras probablement le site pour toi seul."
+  },
+  {
+    "id": "a090",
+    "number": 90,
+    "title": "Le Souffleur de Souillac",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Près de Souillac (sud)",
+    "transit": "~1h",
+    "description": "Geyser naturel : quand la houle est forte, l'eau jaillit dans les fissures de lave jusqu'à 20 m. Spectaculaire et méconnu. À voir en après-midi de grande marée.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a091",
+    "number": 91,
+    "title": "Trou aux Cerfs (volcan éteint de Curepipe)",
+    "tags": [
+      "🌳",
+      "🏛️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Curepipe (plateau central)",
+    "transit": "~50 min",
+    "description": "Cratère parfaitement circulaire de 350 m de diamètre, 100 m de profondeur, avec lac. Sentier tour du cratère. Témoin de l'activité volcanique de l'île il y a quelques millions d'années. Très peu touristique.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a092",
+    "number": 92,
+    "title": "Tunnel de lave de Roches Noires",
+    "tags": [
+      "🌳",
+      "🎢"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Roches Noires (nord-est)",
+    "transit": "~1h20",
+    "description": "Tunnel de lave souterrain à 7 m de profondeur, formé par les coulées il y a 200 000 ans. Exploration avec guide spéléo local, lampes frontales. Très peu connu des touristes.",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "spéléo, lampes frontales, exploration souterraine"
+    },
+    "price": "Variable, guide ~30 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a093",
+    "number": 93,
+    "title": "VTT électrique dans les champs de canne (Grand Port / Bel Ombre)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud / sud-est",
+    "transit": "~1h10",
+    "description": "Tour guidé en VTT électrique à travers plantations, villages, points de vue. Effort modéré grâce à l'assistance, idéal pour groupe mixte (9 adultes de niveaux variés).",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "assistance électrique, accessible à tous"
+    },
+    "price": "50–80 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a094",
+    "number": 94,
+    "title": "Équitation sur la plage au coucher du soleil",
+    "tags": [
+      "🌳",
+      "🐅"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Domaine de l'Étoile, Haras du Morne, Constance Belle Mare",
+    "transit": "~50 min",
+    "description": "Galop sur la plage au coucher du soleil. Haras du Morne propose des sessions dans le lagon (cheval qui marche dans l'eau).",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "expérience cheval recommandée pour le galop, balade débutants OK"
+    },
+    "price": "60–100 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a095",
+    "number": 95,
+    "title": "Bois Sec et Mare Longue (sentiers ornitho)",
+    "tags": [
+      "🌳",
+      "🐅"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud du parc national",
+    "transit": "~50 min jusqu'au Pétrin (entrée sud du parc)",
+    "description": "Sentiers à crécerelle de Maurice (sauvée de l'extinction par la MWF, 4 individus → 400+), pigeon des mares, perruche écho. Pour qui aime l'ornitho, à faire avec un guide MWF.",
+    "duration": "~2–4h selon parcours",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "marche à crécerelle, sentier facile mais long"
+    },
+    "price": "Visite guidée MWF ~30–50 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a096",
+    "number": 96,
+    "title": "Petite Cabane bleue (Macondé)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Pointe Macondé (sud-ouest, près de Baie du Cap)",
+    "transit": "~45 min",
+    "description": "Cabane bleue solitaire sur falaise, photo culte de Maurice. Route panoramique sinueuse. Point de vue sur la baie du Cap, presque toujours désert.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a097",
+    "number": 97,
+    "title": "Plage Poudre d'Or",
+    "tags": [
+      "🌳",
+      "🏔️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Nord-est",
+    "transit": "~1h20 + accès à pied uniquement",
+    "description": "**Accessible uniquement à pied ou en bateau**. Sauvage, déserte, sable doré. Le village de Poudre d'Or (4 000 habitants) vaut aussi le détour en vélo pour la vie locale.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "accès uniquement à pied ou en bateau"
+    },
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a098",
+    "number": 98,
+    "title": "Centre de Falaise Rouge (sud-est)",
+    "tags": [
+      "🌳",
+      "🌊"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Falaises rouges du sud-est, près de Vieux Grand Port",
+    "transit": "~1h–1h15",
+    "description": "Site spectaculaire caché entre les falaises rouges, vue dégagée sur la mer cobalt. Très peu de visiteurs. Bon spot plongée/snorkeling pour qui sait où chercher.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a099",
+    "number": 99,
+    "title": "Plage de Bel Ombre publique (Saint-Martin)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Bel Ombre (sud)",
+    "transit": "~45 min",
+    "description": "Plage publique sauvage bordée de filaos, lagon turquoise. Pas d'hôtels en arrière. Locaux le dimanche, désert en semaine. Bel arrière-plan montagneux.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a100",
+    "number": 100,
+    "title": "Baie du Jacotet",
+    "tags": [
+      "🌳",
+      "🌊"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud, entre Bel Ombre et Baie du Cap",
+    "transit": "~45 min",
+    "description": "Petite baie protégée, snorkeling correct, eau cristalline. Aucune installation. Le genre d'endroit où tu poses ta serviette et tu n'entends que le vent.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a101",
+    "number": 101,
+    "title": "Maconde Pointe (route panoramique)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Pointe Maconde",
+    "transit": "~35 min",
+    "description": "Route en virage sculptée dans la falaise, point de vue impressionnant. À faire en voiture entre Tamarin et Souillac. Belvédère pour photo. Souvent vide.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a102",
+    "number": 102,
+    "title": "Plage Trou d'Eau Sucrée",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud (entre Riambel et Souillac)",
+    "transit": "~1h",
+    "description": "Plage très méconnue, accès uniquement par les villageois (demander la direction au village). Sable doré, eau peu profonde, presque vide.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a103",
+    "number": 103,
+    "title": "Marche du sucre (canne à sucre à Riche en Eau)",
+    "tags": [
+      "🌳",
+      "🏛️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Riche en Eau (sud-est)",
+    "transit": "~50 min",
+    "description": "Promenade guidée dans les plantations de canne en activité, explication du cycle (récolte juin-décembre = pendant ton séjour). Histoire des engagés indiens dans les champs. À organiser via Otentic ou Domaine de l'Étoile.",
+    "price": "25–40 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a104",
+    "number": 104,
+    "title": "Domaine de l'Étoile (réserve nature + activités)",
+    "tags": [
+      "🌳",
+      "🐅",
+      "🎢"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Centre-est",
+    "transit": "~1h",
+    "description": "1 300 ha de réserve, randonnée, quad, buggy, tyroliennes, équitation, observation de cerfs. Bon plan journée nature.",
+    "duration": "Journée complète",
+    "price": "40–100 €/pers selon activité",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a105",
+    "number": 105,
+    "title": "Vallée des couleurs Nature Park (sud)",
+    "tags": [
+      "🌳",
+      "🎢"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Mare Anguilles (sud)",
+    "transit": "~1h",
+    "description": "Site géologique 23 sables colorés, cascades, et 3ᵉ plus longue tyrolienne du monde (1,5 km au-dessus de la canopée). Possible aussi le \"Nepalese Swing\" et le quad.",
+    "price": "Entrée ~15 €, tyrolienne ~60 €",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a106",
+    "number": 106,
+    "title": "Tour de Maurice en quad",
+    "tags": [
+      "🌳",
+      "🎢"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Casela, Bel Ombre, Domaine de l'Étoile",
+    "transit": "~15–20 min",
+    "description": "Champs de canne, forêts indigènes, points de vue. Souvent 1h à 3h.",
+    "duration": "~1h",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "permis voiture requis pour conduire"
+    },
+    "price": "50–120 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a107",
+    "number": 107,
+    "title": "Savinia Beach (plage secrète)",
+    "tags": [
+      "🌳",
+      "🏔️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Sud, accès par sentier de rando",
+    "transit": "~50 min–1h",
+    "description": "Plage de sable doré accessible uniquement à pied par un sentier étroit. Pas de baignade (courants), mais paysage spectaculaire et solitude garantie.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a108",
+    "number": 108,
+    "title": "Course / running au Bois Chéri ou Petrin Trail",
+    "tags": [
+      "🌳",
+      "🏔️"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Pour les coureurs : sentiers plats à travers plantations de thé ou forêt endémique du Petrin. Trail de Maurice (semi-marathon) en novembre, peut-être à caler avec ?",
+    "duration": "Variable (cours 1h, stage plusieurs jours)",
+    "difficulty": {
+      "dot": "#FF8A00",
+      "label": "Difficile",
+      "detail": "condition physique de coureur"
+    },
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a109",
+    "number": 109,
+    "title": "Trou Kanaka (puits naturel)",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Cavité naturelle remplie d'eau, accessible par un sentier discret. Légendes locales. Quasi inconnu des touristes.",
+    "price": "Gratuit, guide local recommandé",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a110",
+    "number": 110,
+    "title": "Marche dans les rizières de Saint Hubert",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Saint Hubert (centre)",
+    "transit": "~40 min",
+    "description": "Une des rares zones de rizières encore cultivées à Maurice. Paysages inattendus type Asie, photos rares.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a111",
+    "number": 111,
+    "title": "La Roche qui Pleure",
+    "tags": [
+      "🌳"
+    ],
+    "category": "🌳 Terre & Nature",
+    "location": "Près de Gris-Gris (sud)",
+    "transit": "~1h05",
+    "description": "Formation rocheuse côtière qui ressemble à un visage humain en pleurs (sculpté par l'érosion). Petite balade depuis Gris-Gris. Cool pour amateurs de curiosités.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a112",
+    "number": 112,
+    "title": "Hydravion (la vraie expérience cascade sous-marine)",
+    "tags": [
+      "✈️",
+      "🎢"
+    ],
+    "category": "✈️ Activités aériennes",
+    "location": "Décollage Black River",
+    "transit": "~5 min",
+    "description": "Tu m'as dit que vous le feriez probablement pas, mais je le mets pour mémoire — c'est la façon la plus immersive de voir la cascade sous-marine.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "aucun prérequis, juste passager"
+    },
+    "price": "250–400 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a113",
+    "number": 113,
+    "title": "Saut en parachute (tandem)",
+    "tags": [
+      "✈️",
+      "🎢"
+    ],
+    "category": "✈️ Activités aériennes",
+    "location": "Aérodrome Mont Choisy",
+    "transit": "~1h",
+    "description": "Saut en tandem 3 000 m au-dessus du lagon. Vue mer turquoise + montagnes. Une des rares destinations au monde où on saute au-dessus d'un lagon tropical.",
+    "difficulty": {
+      "dot": "#FFB627",
+      "label": "Modérée",
+      "detail": "tandem, aucun prérequis sauf âge minimum"
+    },
+    "price": "250–350 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a114",
+    "number": 114,
+    "title": "Vol en hélicoptère au-dessus du sud (incl. cascade sous-marine)",
+    "tags": [
+      "✈️",
+      "🎢"
+    ],
+    "category": "✈️ Activités aériennes",
+    "location": "Aéroport de Plaisance / hôtels partenaires",
+    "transit": "~1h05 jusqu'à l'aéroport (mais départ aussi possible de certains hôtels)",
+    "description": "Survol du Morne et illusion d'optique de la \"cascade sous-marine\" (courants qui font illusion). Tour 15 min jusqu'à 1h.",
+    "duration": "~1h",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "aucun prérequis, juste passager"
+    },
+    "price": "150–400 €/pers selon durée",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a115",
+    "number": 115,
+    "title": "ULM / paramoteur",
+    "tags": [
+      "✈️",
+      "🎢"
+    ],
+    "category": "✈️ Activités aériennes",
+    "location": "Mont Choisy / nord",
+    "transit": "~1h",
+    "description": "Vol en biplace ouvert, sensation pure, survol côte nord et lagon. Plus accessible que l'hélico.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "aucun prérequis, juste passager en biplace"
+    },
+    "price": "100–200 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a116",
+    "number": 116,
+    "title": "Parachute ascensionnel (parasailing)",
+    "tags": [
+      "✈️",
+      "🌊"
+    ],
+    "category": "✈️ Activités aériennes",
+    "location": "Grand Baie, Trou d'Eau Douce, Belle Mare",
+    "transit": "~1h",
+    "description": "Tracté par un bateau, on s'élève à 50–100 m au-dessus du lagon. Très accessible, vue dingue.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "rester assis dans une bouée tractée"
+    },
+    "price": "50–70 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a117",
+    "number": 117,
+    "title": "L'Aventure du Sucre — coupe de canne + dégustation 12 sucres + rhums",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "🌳",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Beau Plan, Pamplemousses (nord, à côté du jardin botanique)",
+    "transit": "~55 min",
+    "description": "LE site canne à sucre incontournable, ancienne usine de 1797 transformée en éco-musée moderne de 6 000 m² (fermée en 1999). Visite interactive 1h30–3h sur l'histoire (introduction par les Hollandais, esclavage, engagisme indien, héritage technologique). **Dégustation comprise dans le ticket : 12 variétés de sucres non raffinés** (muscovado, demerara, golden, parfumés cannelle/cardamome…), **rhums New Grove** (5 étoiles, Royal Blend), confitures, miels de Rodrigues. **Option premium : expérience \"coupe de canne\"** (600 Rs ~13 €) — tu apprends à couper la canne toi-même dans la plantation avec un ancien travailleur des champs. Résa par email obligatoire. Restaurant **Le Fangourin** sur place (cuisine créole/française à base de produits du domaine, desserts aux sucres bruts).",
+    "duration": "~1h30",
+    "price": "Entrée 575 Rs ~13 €/adulte (incl. dégustation 30 produits) + Coupe de canne 600 Rs ~13 €/pers (sur résa) + visite guidée optionnelle 200 Rs ~4 €. Ouvert lun-sam 10h–16h.",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "La coupe de canne en plantation avec un ancien planteur est unique en son genre, à réserver à l'avance par email (administration@aventuredusucre.com)."
+  },
+  {
+    "id": "a118",
+    "number": 118,
+    "title": "Fangourin (jus de canne frais pressé) à Chamarel",
+    "tags": [
+      "🍽️",
+      "🗝️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Village de Chamarel (sud-ouest)",
+    "transit": "~30 min",
+    "description": "Le **fangourin** = le premier jus pressé de la canne à sucre, boisson emblématique de Maurice. Au pied du village de Chamarel, une famille locale presse la canne à la demande devant toi (presse manuelle ou mécanique). Servi pur ou mélangé avec gingembre, citron vert, fruit de la passion. Texture sirupeuse, parfumée, surprenante. Idéal à boire **juste après une visite de la Rhumerie de Chamarel** (n°123) pour goûter la matière première avant le produit fini. À combiner avec Terre des 7 Couleurs et cascade (n°83).",
+    "price": "50–100 Rs (~1–2 €) le verre",
+    "rating": 4,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Beaucoup de Mauriciens qui vivent dans les champs de canne n'ont jamais goûté le fangourin — c'est l'exemple type de la spécialité oubliée."
+  },
+  {
+    "id": "a119",
+    "number": 119,
+    "title": "Tour des champs de canne en VTT électrique ou char à bœufs (Saint Aubin)",
+    "tags": [
+      "🍽️",
+      "🌳",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Domaine de Saint Aubin (sud, sur la Route du Thé)",
+    "transit": "~1h",
+    "description": "Plus authentique que L'Aventure du Sucre (qui est un musée), **Saint Aubin est une plantation en activité**. Tour des champs de canne soit en VTT électrique (parcours guidé d'1h à travers les plantations), soit, en saison de récolte (juin–déc, **donc pile pendant ton séjour**), en **char à bœufs traditionnel**. Démonstration de coupe à la machette par les ouvriers (récolte en cours), visite du moulin et de la petite distillerie sur place, dégustation du **rhum Saint Aubin à la vanille** (référence mondiale, recommandation locale). Maison coloniale du XIXᵉ classée. Souvent combiné avec dégustation de vanille et de café (le domaine cultive aussi les trois).",
+    "duration": "~1h",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "assistance électrique, accessible à tous"
+    },
+    "price": "Visite guidée + dégustation rhum ~12–15 €/pers ; tour VTT électrique ~40–60 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a120",
+    "number": 120,
+    "title": "Médine Sugar Estate — visite usine en activité (rare)",
+    "tags": [
+      "🍽️",
+      "🌳",
+      "🏛️",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Médine (ouest)",
+    "transit": "~20 min",
+    "description": "Une des **4 dernières usines sucrières en activité de Maurice** (il y en avait 259 au XIXᵉ). Récolte juin–décembre = saison pleine pendant ton séjour, odeur sucrée de mélasse partout, camions chargés de canne, ouvriers en plein labeur. Visite **pas standardisée**, à demander directement par contact (siège à Bambous, à 15 min de Tamarin). Possible aussi : voir les **plantations en récolte** depuis la route Tamarin → Bambous → Petite Rivière, particulièrement spectaculaire au coucher du soleil (canne brûlée avant récolte = ciel orangé).",
+    "duration": "~15 min",
+    "price": "Gratuit (sur demande directe au siège) ; observation depuis la route = libre",
+    "rating": 4,
+    "pepite": true,
+    "secret": true,
+    "insolite": "Aucune signalétique touristique, c'est l'envers du décor de Maurice — l'industrie sucrière réelle, pas son musée."
+  },
+  {
+    "id": "a121",
+    "number": 121,
+    "title": "Gato sucre artisanal et fangourin au marché de Mahébourg",
+    "tags": [
+      "🍽️",
+      "🛍️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Marché de Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Le **lundi matin** au marché de Mahébourg (déjà mentionné n°186), plusieurs stands proposent : **canne à sucre fraîche pelée prête à mâcher** (vendue en bâtons, le geste local par excellence), **fangourin** frais pressé sur place, et **gato sucre** (pâtisseries au sucre brut : poutou, gato patate, gato banane, gato coco — tous aux sucres non raffinés mauriciens). Tu vois en direct la canne broyée, tu mâches le bâton, tu bois le jus, tu manges les gâteaux. Le triptyque complet de la canne pour ~3 €. Ambiance 100 % locale.",
+    "price": "Canne pelée ~30 Rs (~0,60 €), fangourin ~50 Rs (~1 €), gato ~10 Rs pièce (~0,20 €)",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a122",
+    "number": 122,
+    "title": "Cours de cuisine créole mauricienne",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Plusieurs ateliers à Tamarin, Flic-en-Flac, Mahébourg",
+    "transit": "~0–10 min (sur place)",
+    "description": "Apprendre à faire dholl puri, rougaille, gâteau patate, vindaye, briani. 3–4h avec marché + cuisine + déjeuner.",
+    "duration": "~4h",
+    "price": "50–90 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a123",
+    "number": 123,
+    "title": "Dégustation de rhum — Rhumerie de Chamarel",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Chamarel (sud-ouest)",
+    "transit": "~30 min",
+    "description": "Une des meilleures distilleries de l'île, rhum agricole (pur jus de canne). Visite distillerie + dégustation. Vu ton intérêt pour le rhum, c'est un must.",
+    "duration": "~1h (visite + dégustation)",
+    "price": "12–15 €/pers visite + dégustation",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a124",
+    "number": 124,
+    "title": "Distillerie Saint Aubin (rhum + vanille)",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Sud",
+    "transit": "~50 min–1h",
+    "description": "Plus traditionnelle que Chamarel, dans une maison coloniale, rhum arrangé, plantation de vanille attenante. Excellent restaurant créole sur place.",
+    "duration": "~1h (visite + dégustation)",
+    "price": "12 €/pers visite",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a125",
+    "number": 125,
+    "title": "Domaine des Aubineaux + Bois Chéri + Saint Aubin = \"Route du Thé\"",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Sud",
+    "transit": "~50 min–1h",
+    "description": "Combo journée organisée : 3 maisons historiques avec thé, rhum, vanille. Idéal pour comprendre l'histoire coloniale et agricole.",
+    "duration": "Journée complète",
+    "price": "~75 €/pers tour organisé",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a126",
+    "number": 126,
+    "title": "Dîner créole chez l'habitant (table d'hôte)",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Partout — réservation via plateformes (Otentic, MyMoris, etc.)",
+    "transit": "Variable selon le lieu choisi",
+    "description": "Soirée chez une famille mauricienne, cuisine authentique, échange culturel. Souvent le moment le plus marquant d'un séjour.",
+    "price": "25–40 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a127",
+    "number": 127,
+    "title": "Street food tour à Port-Louis",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "🛍️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Port-Louis (avec un guide local)",
+    "transit": "~45 min",
+    "description": "Dholl puri, gâteaux piments, boulettes, alouda, mine frit. Tour guidé 2–3h dans les ruelles. MyMoris est la référence.",
+    "duration": "~3h",
+    "price": "45–60 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a128",
+    "number": 128,
+    "title": "Biscuiterie Rault à Mahébourg",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "🗝️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Fabrique familiale depuis 1870. Biscuits bretons adaptés au manioc local. Atelier rustique, ouvrières en charlotte, ambiance d'un autre âge. Visite + dégustation.",
+    "price": "~5 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Pépite cachée, presque personne en parle."
+  },
+  {
+    "id": "a129",
+    "number": 129,
+    "title": "Atelier rhum arrangé chez un artisan",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Plusieurs distilleries proposent, ou table d'hôte",
+    "transit": "Variable selon le lieu choisi",
+    "description": "Apprendre à composer ton rhum arrangé : sélection des épices, des fruits, dosage. Tu repars avec ta bouteille. Vu ton intérêt pour le rhum, c'est fait pour toi.",
+    "duration": "~2–3h",
+    "price": "40–80 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a130",
+    "number": 130,
+    "title": "Cours de pâtisserie / cuisine indo-mauricienne",
+    "tags": [
+      "🍽️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Triolet, Goodlands (villages indo-mauriciens)",
+    "transit": "~1h15",
+    "description": "Apprendre à faire briani, halwa, gulab jamun, faratas chez une famille indo-mauricienne. Moins fait que la cuisine créole, très intéressant.",
+    "duration": "Variable (cours 1h, stage plusieurs jours)",
+    "price": "40–60 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a131",
+    "number": 131,
+    "title": "Kot Marie-Michelle (table d'hôte de gibier)",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Midlands (centre, près de Curepipe)",
+    "transit": "~50 min",
+    "description": "Une dizaine seulement de tables d'hôte autorisées à Maurice, Marie-Michelle en est une. **Spécialité gibier** : carri de cerf, salmi de cochon marron, kari koson zak. Légumes du jardin. Réservation obligatoire.",
+    "price": "~30–45 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a132",
+    "number": 132,
+    "title": "Kwizine Mama (Mahébourg) — table d'hôte de luxe",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "23 avenue Perdrix, Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Stéphanie et Brigitte, mère et fille. Quartier tranquille, terrasse tropicale. Carri poulet ou vindaye poisson, tartine rougail pistache, crème vanillée avec papaye cristallisée. Très recommandé.",
+    "price": "~35–45 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a133",
+    "number": 133,
+    "title": "Dîner gastronomique dans une bulle (Bois Chéri)",
+    "tags": [
+      "🍽️",
+      "🧘",
+      "🏝️",
+      "🗝️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Plantation Bois Chéri (sud, plateau central)",
+    "transit": "~45–60 min",
+    "description": "Bubble Lodge au bord du lac, en plein cœur des plantations de thé. Dîner gastronomique, nuit sous les étoiles dans une bulle transparente, chauves-souris géantes au-dessus. Très romantique.",
+    "price": "~250–400 € la nuit (couple)",
+    "rating": 5,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Pour Adélaïde si vous voulez une nuit hors du groupe."
+  },
+  {
+    "id": "a134",
+    "number": 134,
+    "title": "Dîner-bulle sur l'île aux Cerfs",
+    "tags": [
+      "🍽️",
+      "🏝️",
+      "🗝️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Île aux Cerfs",
+    "transit": "~1h15",
+    "description": "Seul hébergement sur l'île. Plage privée, dîner gastronomique, douche à ciel ouvert, golf inclus. Le matin tu as l'île pour toi avant l'arrivée des touristes.",
+    "price": "400–700 € la nuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Pas donné, mais expérience rare."
+  },
+  {
+    "id": "a135",
+    "number": 135,
+    "title": "Achat de rhum vieux directement à la distillerie",
+    "tags": [
+      "🍽️",
+      "🛍️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Distilleries Chamarel, Saint Aubin, New Grove, Labourdonnais, Oxenham",
+    "transit": "~30 min",
+    "description": "Pour ton intérêt rhum : achat direct à la distillerie de cuvées non-exportées. New Grove a des single casks vraiment intéressants. Oxenham (Phoenix) fait aussi un rhum.",
+    "duration": "~1h (visite + dégustation)",
+    "price": "25–80 € la bouteille selon cuvée",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a136",
+    "number": 136,
+    "title": "\"Lakaz Café\" (immersion totale, plateau central)",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Concept : tu manges chez les habitants d'un village créole reculé, dans plusieurs maisons successives. Chaque maison = un plat. Tu marches d'une maison à l'autre. Immersion sociologique totale.",
+    "price": "50–80 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a137",
+    "number": 137,
+    "title": "Concours culinaire de \"Mama Sega\" chez l'habitant",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "💎"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Village créole côtier",
+    "transit": "Variable (selon le village)",
+    "description": "Concept : 2-3 familles préparent leur recette signature, tu les goûtes toutes et tu votes pour la meilleure. Format soirée, organisable pour groupe. À demander à MyMoris ou guides locaux indépendants.",
+    "duration": "Variable (cours 1h, stage plusieurs jours)",
+    "price": "50–80 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a138",
+    "number": 138,
+    "title": "Plantation de thé Bois Chéri",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Sud",
+    "transit": "~50 min–1h",
+    "description": "Plus vieille plantation de thé de Maurice (1892), musée, dégustation panoramique. Souvent inclus dans \"Route du Thé\".",
+    "price": "~10 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a139",
+    "number": 139,
+    "title": "Jardin de la Vanille (Saint-Julien d'Hotman)",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Saint-Julien d'Hotman (est)",
+    "transit": "~1h20",
+    "description": "Famille locale qui partage savoir-faire vanille bio et recettes traditionnelles. Pas industriel comme Vanillart, **chez les gens**. Recettes, dégustations, repartez avec quelques produits.",
+    "price": "~15–25 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a140",
+    "number": 140,
+    "title": "Demeure Saint Antoine (maison coloniale de 1835)",
+    "tags": [
+      "🍽️",
+      "🏛️",
+      "🧘"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Nord",
+    "transit": "~1h jusqu'à Mapou (nord)",
+    "description": "Une nuit dans une des plus belles maisons coloniales de l'île, transformée en maison d'hôtes. Table très réputée. Pour qui aime l'histoire et le calme.",
+    "price": "200–350 €/nuit/couple",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a141",
+    "number": 141,
+    "title": "Tea ceremony chez un planteur",
+    "tags": [
+      "🍽️",
+      "🏛️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Bois Chéri, Corson, Curepipe",
+    "transit": "~50 min",
+    "description": "Pas la dégustation touristique du panorama, mais une vraie cérémonie chez un petit planteur. Histoire du thé local, méthode familiale, achat direct. À organiser via guide local.",
+    "price": "20–40 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a142",
+    "number": 142,
+    "title": "Dégustation de fromages mauriciens (oui, ça existe)",
+    "tags": [
+      "🍽️"
+    ],
+    "category": "🍽️ Gastronomie & Spiritueux",
+    "location": "Domaine Saint Antoine, certains marchés",
+    "transit": "Variable selon le marché ou domaine",
+    "description": "Production locale de fromages frais et affinés (ferme de Vacoas, surprenant). Tu peux combiner avec une dégustation de miel local et de café (oui, café cultivé à Maurice).",
+    "price": "Variable",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a143",
+    "number": 143,
+    "title": "Grand Bassin (Ganga Talao) — lac sacré hindou",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Lac de cratère sacré pour les hindous mauriciens, statue géante de Shiva (33 m) et Durga. Atmosphère très spirituelle. Particulièrement vivant en novembre (rituel Ganga Asnan, pleine lune de Kartik Purnima).",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a144",
+    "number": 144,
+    "title": "Atelier séga (cours de danse traditionnelle)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Plusieurs centres culturels, ou via tables d'hôtes",
+    "transit": "Variable selon le lieu choisi",
+    "description": "Le séga = patrimoine immatériel UNESCO, danse héritée des esclaves. Cours de 1h30 avec danseurs traditionnels, instruments (ravanne, maravanne, triangle). Une soirée parfaite pour le groupe.",
+    "duration": "~1h30",
+    "price": "20–40 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a145",
+    "number": 145,
+    "title": "Soirée séga \"tipik\" dans un village",
+    "tags": [
+      "🏛️",
+      "🍽️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Villages côtiers, surtout sud",
+    "transit": "Variable selon le village (le plus proche : ~30 min)",
+    "description": "Soirée chez l'habitant avec spectacle de séga authentique (pas le séga d'hôtel), feu de bois, plats créoles. À organiser via Otentic ou MyMoris.",
+    "price": "40–60 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a146",
+    "number": 146,
+    "title": "Photo nocturne à Grand Bassin",
+    "tags": [
+      "🏛️",
+      "🧘"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Plateau central",
+    "transit": "~45–60 min",
+    "description": "Y aller à la tombée du jour. Statue de Shiva illuminée, lac sacré dans la brume, atmosphère mystique sans la foule du jour. Encore plus intense pendant Maha Shivaratri (février) mais magnifique toute l'année.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a147",
+    "number": 147,
+    "title": "Les pyramides de Plaine Magnien",
+    "tags": [
+      "🏛️",
+      "🌳",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Plaine Magnien (sud-est, près de l'aéroport)",
+    "transit": "~1h–1h15",
+    "description": "7 pyramides en pierres basaltiques, similaires à celles de Tenerife. Origine inconnue : monuments précolombiens ? Tas de pierres agricoles ? Le mystère reste entier. Aucune signalétique, faut un guide local ou demander aux habitants.",
+    "price": "Gratuit (juste le déplacement)",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "Quasi personne n'en parle, même pas dans les guides."
+  },
+  {
+    "id": "a148",
+    "number": 148,
+    "title": "Courses hippiques au Champ de Mars (Port-Louis)",
+    "tags": [
+      "🏛️",
+      "🎢",
+      "🗝️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Champ de Mars, Port-Louis (en contrebas du Fort Adelaide)",
+    "transit": "~45 min",
+    "description": "2ᵉ plus ancien hippodrome du monde (1812, après celui de Turquie). Saison avril → fin novembre, courses le samedi après-midi (~13h–17h, 8 courses par jour, ~9 chevaux par course, 35 min entre chaque). **Pendant ton séjour : 3 samedis possibles (7, 14, 21 nov)**. Spectacle social total : pelouse populaire (sonos, tongs, paris populaires chez les bookmakers ambulants) vs tribunes VIP (smart casual, paris privés, paddock visible). 20 000 à 30 000 spectateurs par journée. Coupes notables qui peuvent tomber pendant ton séjour : Duchess of York Cup, Duke of York Cup (finals de saison).",
+    "duration": "Journée complète",
+    "price": "Pelouse 2 €, tribune 10 €",
+    "rating": 5,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Le truc le plus mauricien que tu puisses faire un samedi. Recommandation : **sam 14 nov = sweet spot** (juste avant le déménagement à Blue Bay le 16, et début de la fin de saison = courses plus disputées)."
+  },
+  {
+    "id": "a149",
+    "number": 149,
+    "title": "Crown Lodge — Loge VIP au Champ de Mars (version premium, journée complète)",
+    "tags": [
+      "🏛️",
+      "🎢",
+      "🍽️",
+      "🗝️",
+      "💎"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Loge privée sur le balcon VIP, à côté de la loge du président du Mauritius Turf Club",
+    "transit": "~45 min jusqu'au Champ de Mars (pickup hôtel inclus)",
+    "description": "LA version chic de l'hippodrome, opérée par **Jacques Ritter** (ancien cavalier) depuis ~20 ans, primée TripAdvisor 3 années consécutives. Programme : **pickup à l'hôtel** vers 11h30–12h, accueil personnalisé à l'entrée principale, installation dans la loge **avec vue directe sur la ligne d'arrivée et le paddock**. Bar ouvert (boissons alcoolisées et non), buffet continu de spécialités mauriciennes (sandwiches, canapés, petits fours). **Conseil paris personnalisé** par les spécialistes de la loge, paris privés depuis la loge (pas besoin de descendre chez les bookmakers). **Pick Six collectif** après la 2ᵉ course (jackpot partagé entre les invités). **Possibilité de visiter le paddock, voir la pesée des jockeys, et de suivre une course en jeep**. Retour à l'hôtel en fin de journée. Dress code : smart casual (pantalon + chemise homme, pas de costume cravate). Ambiance internationale (anglophones surtout, peu de Français), petites tablées de 15–20 personnes, on échange des tuyaux.",
+    "duration": "Journée complète (~11h–17h)",
+    "price": "~6 500 Rs / pers (~135 €/pers) tout inclus (transfert + bar + buffet + paris assistance). Pour 9 = ~1 215 €. Contact : **crown-lodge.net** (Jacques Ritter, réservation à l'avance recommandée).",
+    "rating": 5,
+    "pepite": true,
+    "secret": true,
+    "insolite": "La version qui transforme une journée de courses en moment hors du temps. Beaucoup de clients reviennent depuis 15 ans selon Jacques."
+  },
+  {
+    "id": "a150",
+    "number": 150,
+    "title": "Visite d'une raffinerie de sucre (en activité)",
+    "tags": [
+      "🏛️",
+      "🍽️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Médine ou Riche en Eau (selon ouverture)",
+    "transit": "~20 min",
+    "description": "Pas le musée L'Aventure du Sucre, mais une **vraie raffinerie en activité**. La canne est récoltée juin-décembre, donc novembre = pleine saison, odeur de mélasse partout. Visites parfois possibles via contact direct.",
+    "price": "Gratuit (sur demande)",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a151",
+    "number": 151,
+    "title": "Monument de l'esclave inconnu (pied du Morne)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Au pied du Morne Brabant",
+    "transit": "~20–25 min",
+    "description": "Mémorial à la mémoire des esclaves marrons qui se réfugiaient dans les cavernes du Morne. Selon la légende, certains se jetèrent de la falaise en 1835 quand des soldats anglais montèrent annoncer l'abolition (qu'ils crurent être une capture). Lieu chargé. Souvent ignoré des touristes qui foncent directement au sommet.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a152",
+    "number": 152,
+    "title": "Grottes du Morne (cavernes des marrons)",
+    "tags": [
+      "🏛️",
+      "🏔️",
+      "💎"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Plateau supérieur du Morne",
+    "transit": "~25 min jusqu'au parking + 4h rando",
+    "description": "Plusieurs grottes découvertes dans les années 2000, avec traces de vie remontant à la période hollandaise. Refuges historiques des esclaves marrons. **Guide spécialisé absolument nécessaire** (terrain difficile, pas indiqué). Demande à passer par le Centre Nelson Mandela.",
+    "difficulty": {
+      "dot": "#FF4757",
+      "label": "Très difficile",
+      "detail": "plateau supérieur, terrain difficile, guide spécialisé Centre Nelson Mandela obligatoire"
+    },
+    "price": "Guide ~80–120 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a153",
+    "number": 153,
+    "title": "Bataille de Grand Port — site de la bataille navale (1810)",
+    "tags": [
+      "🏛️",
+      "🌊"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Vieux Grand Port",
+    "transit": "~1h–1h15",
+    "description": "Seule victoire navale française inscrite sur l'Arc de Triomphe (avec Trafalgar défaite). Site de la bataille visible depuis la côte, panneaux explicatifs, petit centre d'interprétation. Plongée possible sur les épaves de frégates françaises et anglaises (n°44 cargo, La Sirène, etc.).",
+    "price": "Gratuit ; plongée ~55 €",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a154",
+    "number": 154,
+    "title": "Bois des Amourettes (village pêcheurs créole)",
+    "tags": [
+      "🏛️",
+      "🌊",
+      "💎"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Sud-est (à 15 min de Mahébourg)",
+    "transit": "~1h–1h15",
+    "description": "Village créole de pêcheurs sur le bord du lagon, sentiers vers les mangroves. Familles de pêcheurs depuis des générations. Sortie pirogue très authentique possible.",
+    "price": "Pirogue avec pêcheur ~30–60 €/pers",
+    "rating": 5,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a155",
+    "number": 155,
+    "title": "Port-Louis : capitale (Caudan, Aapravasi Ghat, Citadelle)",
+    "tags": [
+      "🏛️",
+      "🛍️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Port-Louis",
+    "transit": "~45 min",
+    "description": "Aapravasi Ghat (UNESCO, histoire des engagés indiens), Citadelle Fort Adelaide (panorama), waterfront Caudan, China Town. Le concentré de la diversité mauricienne.",
+    "price": "Gratuit (quelques sites payants à 5–10 €)",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a156",
+    "number": 156,
+    "title": "Aapravasi Ghat (au-delà du coup d'œil rapide)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Port-Louis",
+    "transit": "~45 min",
+    "description": "Pas juste un photo-stop. Musée UNESCO + visite guidée approfondie sur l'engagisme indien (1834–1920) : 500 000 travailleurs sous contrat passés ici. Comprendre la matrice de la société mauricienne actuelle.",
+    "price": "~5 € entrée musée, guide privé ~30 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a157",
+    "number": 157,
+    "title": "Pagode chinoise Kwan Tee + cimetière chinois",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Port-Louis (Chinatown)",
+    "transit": "~45 min",
+    "description": "Plus ancien temple chinois de l'hémisphère sud (1842). Combiné avec une balade Chinatown : herboristeries, gargotes de mine frit, ambiance hors du temps. Tour à pied recommandé.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a158",
+    "number": 158,
+    "title": "Église Notre-Dame Auxiliatrice de Cap Malheureux",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Pointe nord",
+    "transit": "~1h15 jusqu'à Cap Malheureux",
+    "description": "La petite église au toit rouge sur fond de Coin de Mire turquoise = LA carte postale de Maurice. Charmante, vide hors mariage, lieu idéal pour photo + balade nord.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a159",
+    "number": 159,
+    "title": "Maison Eureka (maison coloniale créole)",
+    "tags": [
+      "🏛️",
+      "🍽️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Moka (centre)",
+    "transit": "~45 min",
+    "description": "Magnifique maison coloniale de 1830, 109 portes (oui), restaurée. Visite + déjeuner créole sur la véranda, jardin tropical. Atmosphère de roman.",
+    "price": "Entrée ~10 €, déjeuner ~25 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a160",
+    "number": 160,
+    "title": "Domaine de Labourdonnais",
+    "tags": [
+      "🏛️",
+      "🍽️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Mapou (nord)",
+    "transit": "~1h",
+    "description": "Maison coloniale + verger + distillerie de rhum agricole. Visite, dégustation rhum vieux, déjeuner au restaurant La Table du Château. Bel ensemble.",
+    "price": "Entrée + dégustation ~15 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a161",
+    "number": 161,
+    "title": "Phare d'Albion",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Albion (côte ouest, à 30 min de Tamarin)",
+    "transit": "~0–10 min (sur place)",
+    "description": "Seul phare en activité de Maurice, construit en 1910, 46 m de haut. Rayé rouge et blanc, planté sur une falaise de roche volcanique noire. Photo magnifique, peu de monde. Accès sur RDV.",
+    "price": "Gratuit (sur demande)",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a162",
+    "number": 162,
+    "title": "Spectacle de feu et séga sur la plage",
+    "tags": [
+      "🏛️",
+      "🎢"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Domaine Anna ou plages d'hôtels du sud",
+    "transit": "~30 min",
+    "description": "Soirée privative avec danseurs séga et cracheurs de feu. À organiser pour le groupe.",
+    "price": "~30–60 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a163",
+    "number": 163,
+    "title": "Cimetière des esclaves de Bois Marchand",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Bois Marchand (nord, près de Goodlands)",
+    "transit": "~1h15",
+    "description": "Site sacré et silencieux, sépultures collectives d'esclaves du XIXᵉ. Visite respectueuse, rarement signalée. Pour comprendre l'autre versant de l'histoire de Maurice (avec Aapravasi Ghat qui raconte celle des engagés indiens).",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a164",
+    "number": 164,
+    "title": "Marie Reine de la Paix (Port-Louis)",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Sainte-Croix (Port-Louis)",
+    "transit": "~45 min",
+    "description": "Monument et jardin sur les hauteurs de Port-Louis, vue panoramique sur la capitale et la rade. Lieu de prière du pape Jean-Paul II en 1989. Calme absolu, à 5 min de la ville bouillonnante.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a165",
+    "number": 165,
+    "title": "Vieux cimetière historique (Port-Louis)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Port-Louis (Cimetière de l'Ouest, quartier de Casernes)",
+    "transit": "~45 min",
+    "description": "Tombes XVIIIᵉ et XIXᵉ, marins, gouverneurs, familles coloniales françaises et anglaises. Allées sous les flamboyants, atmosphère hors du temps. Quelques pierres tombales en créole.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a166",
+    "number": 166,
+    "title": "Tour Martello (La Preneuse)",
+    "tags": [
+      "🏛️",
+      "🏔️",
+      "💎"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "La Preneuse",
+    "transit": "~10 min",
+    "description": "Une des 5 tours de défense anglaises construites en 1830 contre une éventuelle attaque française. Petit musée à l'intérieur, vue sur le lagon. À 10 min de ta base, presque personne ne s'arrête.",
+    "price": "~5 €",
+    "rating": 4,
+    "pepite": true,
+    "secret": false
+  },
+  {
+    "id": "a167",
+    "number": 167,
+    "title": "Treckbus de Bel Ombre",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Bel Ombre (sud)",
+    "transit": "~45 min",
+    "description": "Bus historique aménagé qui parcourt 11 arrêts en 1h30 entre Bel Ombre et Baie du Cap. Pirates, batailles, plantations, villages préservés. Format original et plutôt méconnu des touristes français.",
+    "duration": "~1h30",
+    "price": "~30–40 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a168",
+    "number": 168,
+    "title": "Pointe du Diable (forts français + canon)",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Côte est, sud du Trou d'Eau Douce",
+    "transit": "~1h15",
+    "description": "Vieille batterie française du XVIIIᵉ, canons rouillés, vue spectaculaire sur l'océan. Lieu chargé, **aucun panneau**, faut savoir où chercher. Sentier 15 min depuis la route.",
+    "duration": "~15 min",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a169",
+    "number": 169,
+    "title": "Centre Nelson Mandela pour la culture créole",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Sainte-Croix (Port-Louis)",
+    "transit": "~45 min",
+    "description": "Documentation, expositions, événements sur la culture créole et africaine de Maurice. Activités culturelles ponctuelles. Adresse pour vraiment comprendre Maurice. Très peu visité par les touristes.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a170",
+    "number": 170,
+    "title": "Temple Kaylasson (Sainte-Croix)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Sainte-Croix, Port-Louis",
+    "transit": "~45 min",
+    "description": "Temple tamil aux sculptures dravidiennes spectaculaires, l'un des plus impressionnants de Maurice. Très peu de touristes, pourtant à 10 min du centre. Architecturalement plus intéressant que beaucoup de temples plus connus.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a171",
+    "number": 171,
+    "title": "Pèlerinage du Père Laval (9 septembre, mais tombeau visitable toute l'année)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Sainte-Croix, Port-Louis",
+    "transit": "~45 min",
+    "description": "Tombeau de Jacques-Désiré Laval, \"apôtre des Noirs\", béatifié par Jean-Paul II. Pèlerinage le 9 septembre rassemble 100 000 personnes (toutes religions confondues). Hors pèlerinage, lieu très tranquille, atmosphère mystique.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a172",
+    "number": 172,
+    "title": "Village de pêcheurs Baie du Cap",
+    "tags": [
+      "🏛️",
+      "🍽️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Sud (sur la route panoramique)",
+    "transit": "~45 min jusqu'à Baie du Cap",
+    "description": "Vrai village mauricien préservé, peu touristique. Pêcheurs au matin, gargotes locales, sentiers vers la mer. Bon arrêt déjeuner sur la route Tamarin → Souillac.",
+    "price": "Repas gargote ~5–10 €",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a173",
+    "number": 173,
+    "title": "Église en bois de Souillac (Saint Jacques)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Souillac",
+    "transit": "~1h",
+    "description": "Église en bois du XIXᵉ, unique architecture créole d'inspiration normande. Cimetière marin attenant avec tombes coloniales. Atmosphère hors du temps.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a174",
+    "number": 174,
+    "title": "Cimetière marin de Souillac",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Souillac",
+    "transit": "~1h",
+    "description": "Petit cimetière en bord de falaise, tombes XVIIIᵉ tournées vers l'océan. Robert-Edward Hart (poète mauricien) y est enterré. Vue mer + atmosphère mélancolique digne d'un tableau romantique.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a175",
+    "number": 175,
+    "title": "Musée naval et historique de Mahébourg",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Ancienne maison coloniale, collections sur la bataille navale de Grand Port (1810, seule victoire navale française inscrite sur l'Arc de Triomphe). Petit mais charmant.",
+    "price": "~3 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a176",
+    "number": 176,
+    "title": "Ruines de Balaclava",
+    "tags": [
+      "🏛️",
+      "🌳"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Côte nord-ouest",
+    "transit": "~50 min jusqu'à Balaclava (nord-ouest)",
+    "description": "Site historique français du XVIIIᵉ : fonderie, minoterie, ateliers d'armes, batterie de défense, hôpital. Explosion meurtrière en 1774. Aménagements hydrauliques visibles. Site rarement ouvert mais accessible côté plage.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a177",
+    "number": 177,
+    "title": "Mosquée Jummah de Port-Louis",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Port-Louis centre",
+    "transit": "~45 min",
+    "description": "Mosquée du XIXᵉ siècle, architecture mauresque + indienne magnifique. Ouverte aux visiteurs hors prière. Très peu connue des touristes français.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a178",
+    "number": 178,
+    "title": "Statue de Notre-Dame de la Salette (Grande Rivière Sud Est)",
+    "tags": [
+      "🏛️",
+      "🏔️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Près de Trou d'Eau Douce",
+    "transit": "~1h15",
+    "description": "Pèlerinage chrétien important pour les Mauriciens, vue impressionnante. Plus connu pour la cascade GRSE à côté, mais le sanctuaire en lui-même vaut le détour culturel.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a179",
+    "number": 179,
+    "title": "Visite d'un temple Tamil pour Tahmasha / Cavadee",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Plusieurs temples (Bel Air, Grand Baie, Quartier Militaire)",
+    "transit": "~1h",
+    "description": "Si Thaipoosam Cavadee tombe pendant votre séjour (généralement janvier-février, à vérifier 2026), c'est exceptionnel. Sinon, visite normale des temples tamils, architecture dravidienne dépaysante.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a180",
+    "number": 180,
+    "title": "Bassin des Esclaves Noirs (Pamplemousses)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Pamplemousses (nord)",
+    "transit": "~55 min",
+    "description": "Lieu de mémoire des esclaves utilisés pour les travaux sucriers. Aucune indication touristique, intégré dans le tissu local. Pèlerinage le 1ᵉʳ février (journée commémorative).",
+    "duration": "Journée complète",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a181",
+    "number": 181,
+    "title": "Tombeau de Malartic (Place d'Armes, Port-Louis)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Centre de Port-Louis",
+    "transit": "~45 min",
+    "description": "Obélisque caché en plein centre, tombe d'Anne-Joseph-Hippolyte de Maurès de Malartic, dernier gouverneur français de l'île (1800). Quasi personne ne le remarque, pourtant il est sur le passage du marché.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a182",
+    "number": 182,
+    "title": "Mémorial du Travessa (Bel Ombre)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Bel Ombre (sud)",
+    "transit": "~45 min",
+    "description": "Mémorial au naufrage du Travessa (1923), drame maritime peu connu. Survivants en canots de sauvetage pendant 23 jours. Histoire fascinante racontée sur place.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a183",
+    "number": 183,
+    "title": "Robert Edward Hart Museum (Souillac)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Souillac",
+    "transit": "~1h",
+    "description": "Maison du poète mauricien (1891-1954), face à la mer, sur le site de \"La Nef\" où il vivait. Petit musée intime, manuscrits et objets personnels. À combiner avec le cimetière marin juste à côté.",
+    "price": "~3 €",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a184",
+    "number": 184,
+    "title": "Cimetière de Saint Martin (pierres tombales coloniales)",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Saint Martin (sud-ouest)",
+    "transit": "~40 min",
+    "description": "Petit cimetière colonial avec pierres tombales du XVIIIᵉ, histoires de marins français et anglais. Atmosphère hors du temps, totalement vide.",
+    "price": "Gratuit",
+    "rating": 2,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a185",
+    "number": 185,
+    "title": "Visite de la prison historique de Mahébourg",
+    "tags": [
+      "🏛️"
+    ],
+    "category": "🏛️ Culture, Histoire & Mémoire",
+    "location": "Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Ancienne prison coloniale, parfois ouverte aux visites. Histoire macabre, atmosphère particulière. À vérifier sur place.",
+    "price": "Gratuit ou ~3 €",
+    "rating": 2,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a186",
+    "number": 186,
+    "title": "Marché de Mahébourg (lundi matin)",
+    "tags": [
+      "🛍️",
+      "🍽️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Mahébourg",
+    "transit": "~1h–1h15",
+    "description": "Marché authentique, moins touristique que Port-Louis, surtout le lundi. Poissons frais, fruits, épices.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a187",
+    "number": 187,
+    "title": "Marché central de Port-Louis",
+    "tags": [
+      "🛍️",
+      "🍽️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Port-Louis",
+    "transit": "~45 min",
+    "description": "Fruits, épices, dholl puri, gato pima, alouda. Y aller le matin (mardi à samedi).",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a188",
+    "number": 188,
+    "title": "Marché de Centre de Flacq (mercredi/dimanche)",
+    "tags": [
+      "🛍️",
+      "🍽️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Centre de Flacq (centre-est)",
+    "transit": "~1h20",
+    "description": "Le plus grand marché de Maurice mais **resté authentique** car peu touristique (loin des hôtels). Mercredi et dimanche. Beaucoup plus vivant et local que celui de Port-Louis.",
+    "price": "Gratuit",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a189",
+    "number": 189,
+    "title": "Atelier teinture / artisanat dans un village",
+    "tags": [
+      "🛍️",
+      "🏛️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Goodlands, Vacoas",
+    "transit": "~45 min",
+    "description": "Visite d'ateliers de modèles de bateaux miniatures (artisanat phare de Maurice), poterie créole, vannerie. Moins touristique que les boutiques de Grand Baie.",
+    "duration": "~2–3h",
+    "price": "Visite gratuite, achats variables",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a190",
+    "number": 190,
+    "title": "Foire de Quatre-Bornes (jeudi et dimanche)",
+    "tags": [
+      "🛍️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Quatre-Bornes (centre)",
+    "transit": "~40 min",
+    "description": "Spécialisée tissus, vêtements, chaussures à très petits prix. Pas du tout touristique. L'expérience est dans le marchandage et l'observation.",
+    "price": "Gratuit",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a191",
+    "number": 191,
+    "title": "Atelier sablage de verre / cristal Phoenix",
+    "tags": [
+      "🛍️",
+      "🏛️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Phoenix (centre)",
+    "transit": "~40 min",
+    "description": "Phoenix Beverages a un atelier où on souffle et taille le verre. Démonstration + possibilité d'acheter des pièces uniques. Très peu fait.",
+    "duration": "~2–3h",
+    "price": "Visite gratuite, pièces variables",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a192",
+    "number": 192,
+    "title": "Atelier de fabrication de modèles réduits de bateaux",
+    "tags": [
+      "🛍️",
+      "🏛️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Curepipe (plusieurs ateliers historiques)",
+    "transit": "~50 min",
+    "description": "Artisanat patrimonial : modèles réduits ultra-précis des grands voiliers historiques (Bounty, Cutty Sark, Victory). Voir les artisans en plein travail, possibilité de commander.",
+    "duration": "~2–3h",
+    "price": "Visite gratuite, modèles 50–2 000 €",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a193",
+    "number": 193,
+    "title": "Atelier de poterie créole",
+    "tags": [
+      "🛍️",
+      "🏛️"
+    ],
+    "category": "🛍️ Marchés & Artisanat",
+    "location": "Goodlands, Plaine des Roches",
+    "transit": "~1h15",
+    "description": "Quelques potiers continuent la tradition. Démonstration au tour, possibilité de fabriquer ta propre pièce, cuisson traditionnelle.",
+    "duration": "~2–3h",
+    "price": "25–40 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a194",
+    "number": 194,
+    "title": "Coucher de soleil à Flic-en-Flac ou Albion",
+    "tags": [
+      "🧘",
+      "🌳"
+    ],
+    "category": "🧘 Bien-être & Détente",
+    "location": "Côte ouest (Flic-en-Flac à 20 min de Tamarin, phare d'Albion un peu plus loin)",
+    "transit": "~0–10 min (sur place)",
+    "description": "LE moment iconique de Maurice. Le phare d'Albion offre un point de vue plus spectaculaire et moins touristique que Flic-en-Flac. Apéro rhum recommandé.",
+    "price": "Gratuit",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a195",
+    "number": 195,
+    "title": "Soirée astronomique / observation des étoiles",
+    "tags": [
+      "🧘",
+      "🌳"
+    ],
+    "category": "🧘 Bien-être & Détente",
+    "location": "Plateau central, sud sauvage, sommet du Morne (privatisable)",
+    "transit": "~1h05",
+    "description": "Hémisphère sud = ciel différent, Croix du Sud visible, Voie lactée magnifique. Quelques astronomes amateurs proposent des soirées avec télescope. Hôtels du sud parfois aussi.",
+    "price": "30–80 €/pers ou gratuit (allongé sur la plage)",
+    "rating": 5,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a196",
+    "number": 196,
+    "title": "Stargazing organisé au Morne ou Pétrin",
+    "tags": [
+      "🧘",
+      "🌳",
+      "🗝️"
+    ],
+    "category": "🧘 Bien-être & Détente",
+    "location": "Sommet du Morne (privatisable) ou plateau du Pétrin",
+    "transit": "~50 min",
+    "description": "Sortie nocturne organisée, télescope, identification des constellations australes (Croix du Sud, Centaurus, Nuages de Magellan visibles en novembre). Quelques astronomes amateurs proposent.",
+    "price": "30–80 €/pers",
+    "rating": 5,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Vraiment pas grand monde fait ça à Maurice."
+  },
+  {
+    "id": "a197",
+    "number": 197,
+    "title": "Spa / massage à l'hôtel ou indépendant",
+    "tags": [
+      "🧘"
+    ],
+    "category": "🧘 Bien-être & Détente",
+    "location": "Partout — beaucoup d'hôtels ont des spas marques (Givenchy, Clarins, Cinq Mondes)",
+    "transit": "Variable selon le lieu choisi",
+    "description": "Massage ayurvédique, balinais, signature. Une journée de spa = pause bienvenue pour le groupe.",
+    "price": "60–150 €/soin",
+    "rating": 4,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a198",
+    "number": 198,
+    "title": "Yoga sur la plage / cours collectif",
+    "tags": [
+      "🧘"
+    ],
+    "category": "🧘 Bien-être & Détente",
+    "location": "Beaucoup d'écoles à Tamarin et Le Morne",
+    "transit": "~0–10 min (sur place)",
+    "description": "Cours sunrise très répandus à Tamarin (communauté yoga active). Bonne option pour un matin tranquille.",
+    "duration": "Variable (cours 1h, stage plusieurs jours)",
+    "price": "15–25 €/cours",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a199",
+    "number": 199,
+    "title": "Escape game \"Save the Last Dodo\"",
+    "tags": [
+      "🎢",
+      "🏛️",
+      "🗝️"
+    ],
+    "category": "🎢 Sensations fortes",
+    "location": "Grand Baie (Dodo Quest)",
+    "transit": "~1h",
+    "description": "Escape game thématique sur l'histoire du dodo et de Maurice. 1h, équipes de 4–6. Activité parfaite pour une soirée groupe ou un jour de pluie.",
+    "duration": "~1h",
+    "price": "~25–35 €/pers",
+    "rating": 4,
+    "pepite": false,
+    "secret": true,
+    "insolite": "Personne ne pense à faire un escape game en vacances, et c'est franchement bon."
+  },
+  {
+    "id": "a200",
+    "number": 200,
+    "title": "Tyrolienne géante",
+    "tags": [
+      "🎢"
+    ],
+    "category": "🎢 Sensations fortes",
+    "location": "Casela, Vallée des Couleurs (la plus longue)",
+    "transit": "~15–20 min",
+    "description": "Plusieurs parcours, des familiaux aux énormes (1,5 km). Au-dessus de canyons et cascades.",
+    "difficulty": {
+      "dot": "#22C268",
+      "label": "Facile",
+      "detail": "aucun prérequis, juste savoir descendre"
+    },
+    "price": "30–70 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  },
+  {
+    "id": "a201",
+    "number": 201,
+    "title": "Cinéma en plein air (drive-in)",
+    "tags": [
+      "🎢"
+    ],
+    "category": "🎢 Sensations fortes",
+    "location": "Belle Mare ou Grand Baie selon la programmation",
+    "transit": "~1h",
+    "description": "Quelques événements de cinéma en plein air ponctuels en novembre. À vérifier le calendrier local. Expérience originale et locale.",
+    "price": "~10 €/pers",
+    "rating": 3,
+    "pepite": false,
+    "secret": false
+  }
+]
