@@ -9,7 +9,7 @@ interface TopBarProps {
 export function TopBar({ dark = false }: TopBarProps) {
   return (
     <div
-      className="pointer-events-none absolute left-0 right-0 z-[8]"
+      className="phone-topbar pointer-events-none absolute left-0 right-0 z-[8]"
       style={{ top: 40, height: 44 }}
     >
       <div

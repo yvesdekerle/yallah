@@ -79,6 +79,30 @@ Les photos sont chargées via [LoremFlickr](https://loremflickr.com) (gratuit, p
 
 Push vers GitHub puis lier le repo à un projet Vercel — pas de variables d'environnement à configurer en v1. La config dans `vercel.json` ajoute des en-têtes de sécurité (CSP, X-Frame-Options, etc.) et redirige les routes inconnues vers `index.html` (SPA).
 
+## Installer sur ton téléphone (mode "app")
+
+L'app est une **PWA** : ajoutée à l'écran d'accueil, elle s'ouvre en plein écran sans barre d'adresse, comme une vraie app native.
+
+### iPhone / iPad (Safari uniquement)
+
+1. Ouvre l'URL Vercel dans **Safari** (Chrome ne propose pas l'ajout)
+2. Tape le bouton **Partager** (carré avec flèche, en bas au centre)
+3. Fais défiler et tape **« Sur l'écran d'accueil »**
+4. Renomme si besoin (défaut : "Yallah"), puis **Ajouter**
+5. L'icône apparaît sur ton home — tape dessus, l'app s'ouvre en plein écran. La barre Safari disparaît, le swipe se fait à pleine surface.
+
+> **Note iOS** : pour l'instant l'icône est un SVG basique (fond jaune + "yallah"). Si l'iOS rend une vignette grise au lieu de l'icône, c'est parce qu'iOS <17 ne supporte pas SVG pour `apple-touch-icon`. Pour fixer ça : dépose un PNG 180x180 dans `public/apple-touch-icon.png` puis redeploie.
+
+### Android (Chrome)
+
+1. Ouvre l'URL dans Chrome
+2. Menu (⋮) → **Installer l'application** (ou "Ajouter à l'écran d'accueil")
+3. L'icône apparaît dans le drawer + sur le home. L'app s'ouvre en standalone.
+
+### Bonus desktop
+
+Le bouton **plein écran** en bas-gauche de la bottom-bar (icône YouTube-style ↗ ↙) bascule le navigateur en fullscreen via l'API native. Marche sur Chrome / Firefox / Safari desktop et Safari iPad. iPhone Safari ne le supporte pas (le bouton ne s'affiche pas).
+
 ## Étendre les activités
 
 1. Édite `activites-maurice.md` en gardant le format existant (`#### n°N — Titre`, puis champs `**Tags**`, `**Lieu**`, etc.)

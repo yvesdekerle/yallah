@@ -36,7 +36,9 @@ export function BottomNav({ active = 0, dark = false }: BottomNavProps) {
         borderTop: dark
           ? '1px solid rgba(255,255,255,0.08)'
           : '1px solid rgba(20,30,50,0.08)',
-        paddingBottom: 6,
+        // Extend the bar through the iOS home-indicator area in standalone mode.
+        paddingBottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
+        boxSizing: 'content-box',
       }}
     >
       {supported && (

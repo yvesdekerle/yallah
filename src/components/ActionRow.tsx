@@ -110,7 +110,12 @@ export function ActionRow({
 }: ActionRowProps) {
   const noSuper = superRemaining <= 0
   const positionStyle = absolute
-    ? { position: 'absolute' as const, bottom: 84, left: 0, right: 0 }
+    ? {
+        position: 'absolute' as const,
+        bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))',
+        left: 0,
+        right: 0,
+      }
     : { position: 'relative' as const }
 
   return (

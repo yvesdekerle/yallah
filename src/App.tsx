@@ -87,7 +87,7 @@ export default function App() {
 
         {!done ? (
           <div
-            className="absolute"
+            className="phone-card-area absolute"
             style={{
               top: 94,
               left: 10,
