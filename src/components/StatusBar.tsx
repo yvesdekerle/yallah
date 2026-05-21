@@ -9,7 +9,7 @@ interface StatusBarProps {
 export function StatusBar({ color = YB.ink }: StatusBarProps) {
   return (
     <div
-      className="absolute left-0 right-0 z-[8] flex items-center justify-between font-sans font-semibold"
+      className="phone-statusbar absolute left-0 right-0 z-[8] flex items-center justify-between font-sans font-semibold"
       style={{
         top: 12,
         padding: '0 30px',

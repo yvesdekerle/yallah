@@ -41,4 +41,17 @@ describe('BottomNav', () => {
       'false',
     )
   })
+
+  it('renders the fullscreen toggle when the API is available', () => {
+    // jsdom doesn't implement requestFullscreen by default — stub it.
+    Object.defineProperty(document.documentElement, 'requestFullscreen', {
+      configurable: true,
+      writable: true,
+      value: () => Promise.resolve(),
+    })
+    render(<BottomNav />)
+    expect(
+      screen.getByLabelText('passer en plein écran'),
+    ).toBeInTheDocument()
+  })
 })

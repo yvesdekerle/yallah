@@ -46,4 +46,9 @@ body {
   .phone-screen {
     border-radius: 0 !important;
   }
+  /* The fake iOS status bar (9:41 + signal + battery) is redundant with the
+     real phone OS status bar — hide it on phone-sized viewports. */
+  .phone-statusbar {
+    display: none !important;
+  }
 }

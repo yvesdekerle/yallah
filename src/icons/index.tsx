@@ -266,3 +266,59 @@ export function WhyNotChevron(p: IconProps = {}) {
     </svg>
   )
 }
+
+/** Fullscreen "expand" — two diagonal arrows pointing outward (YouTube-style). */
+export function FullscreenEnter(p: IconProps = {}) {
+  return (
+    <svg {...base(p, 22)}>
+      <path
+        d="M14 4h6v6"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 20H4v-6"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 4l-7 7M4 20l7-7"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+/** Fullscreen "shrink" — two diagonal arrows pointing inward. */
+export function FullscreenExit(p: IconProps = {}) {
+  return (
+    <svg {...base(p, 22)}>
+      <path
+        d="M14 10V4h6"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 14v6H4"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 10l6-6M10 14l-6 6"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
