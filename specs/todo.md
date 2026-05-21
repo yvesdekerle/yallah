@@ -174,14 +174,14 @@
 
 ## Phase 14 — Docs et déploiement
 
-- [ ] **14.1** `README.md` : description, dev/build/test commands, structure, deployment
-- [ ] **14.2** `CLAUDE.md` : conventions pour Claude (style gymtracker)
-- [ ] **14.3** `SETUP.md` : étapes pour démarrer en local (clone, npm install, npm run parse:activities, npm run dev)
-- [ ] **14.4** Vérifier `npm run build` produit un bundle correct dans `dist/`
-- [ ] **14.5** Vérifier que les routes Vercel sont OK (`vercel.json` rewrites → index.html)
-- [ ] **14.6** Lancer toute la suite : `npm run lint && npm test && npm run build && npm run test:e2e` → tout vert
-- [ ] **14.7** Init git, premier commit, push vers GitHub (nouveau repo `yallah`)
-- [ ] **14.8** Lien le repo à Vercel (manuel via dashboard — instructions dans README)
+- [x] ✅ **14.1** `README.md` : description, commands, structure, photos, deployment, étendre les activités — 2026-05-21
+- [x] ✅ **14.2** `CLAUDE.md` : conventions, archi, commands, parser, photos, storage keys, scope — 2026-05-21
+- [ ] **14.3** `SETUP.md` séparé — pas nécessaire, le README couvre tout ce qu'il faut pour démarrer
+- [x] ✅ **14.4** `npm run build` → bundle `dist/` clean (335 KB minifié, 100 KB gzip) — 2026-05-21
+- [x] ✅ **14.5** `vercel.json` : SPA rewrites + CSP — 2026-05-21
+- [x] ✅ **14.6** Toute la suite verte : 101 unit + 10 e2e + lint + build — 2026-05-21
+- [x] ✅ **14.7** Repo init, commit, push vers `git@github.com:yvesdekerle/yallah.git` — 2026-05-21
+- [ ] **14.8** Connexion à Vercel — à faire manuellement par l'utilisateur via dashboard.vercel.com → Import du repo `yvesdekerle/yallah` → Deploy (pas d'env var nécessaire)
 
 ---
 
