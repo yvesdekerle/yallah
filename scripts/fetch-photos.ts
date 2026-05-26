@@ -10,12 +10,13 @@
  *   PEXELS_API_KEY=xxx npm run fetch:photos -- --throttle=300 --max=200    # fast batch (rolling 1h cap)
  *
  * Pexels free tier: 200 requests/hour on a **rolling window**. We do 1
- * search call per activity. Recommended workflow:
- *   1. Blast the first ~200 activities at full speed (throttle=300, max=200)
- *   2. Wait 1h
- *   3. Re-run the script with no args — it resumes the missing ones
- * Progress is saved to disk after every successful fetch, so the script is
- * always safe to interrupt and resume.
+ * search call per activity (201 total). The script bursts at full speed
+ * — you'll have ~200 activities populated in ~1 minute. When Pexels
+ * returns 429, we read X-Ratelimit-Reset and pause until the window
+ * frees up (~1h after the first call), then finish the last activity.
+ * Total wall time: ~1h either way, but most data is available almost
+ * immediately. Progress is saved to disk after every successful fetch,
+ * so the script is always safe to interrupt and resume.
  *
  * Manual override per activity: edit `scripts/photo-queries.json`, e.g.
  *   { "a012": "catamaran sunset mauritius" }
@@ -40,9 +41,11 @@ const PHOTOS_PATH = resolve(ROOT, 'src/data/photos.json')
 const QUERIES_PATH = resolve(ROOT, 'scripts/photo-queries.json')
 
 const PHOTOS_PER_ACTIVITY = 12
-// 200 req/hour ≈ 1 request every 18s; default 19s keeps us safely below the
-// rolling 1h cap. Override with --throttle=Nms (e.g. 300 for a fast batch).
-const DEFAULT_THROTTLE_MS = 19_000
+// Fast burst by default — fire requests as quickly as politeness allows.
+// If we hit Pexels' 200/h ceiling, the 429 handler reads
+// X-Ratelimit-Reset and waits until the rolling window has room.
+// Pass --throttle=N if you want a slower steady pace.
+const DEFAULT_THROTTLE_MS = 300
 
 const PEXELS_KEY = process.env.PEXELS_API_KEY
 if (!PEXELS_KEY) {
