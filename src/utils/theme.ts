@@ -30,6 +30,9 @@ export const YB = {
   neutre: '#4D8BF5',
   top: '#EFBF04',
   topLight: '#FFD84D',
+
+  // Misc accents
+  green: '#22C268',
 } as const
 
 export type YBKey = keyof typeof YB

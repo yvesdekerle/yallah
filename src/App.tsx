@@ -149,7 +149,12 @@ export default function App() {
           />
         )}
 
-        {activeTab === 2 && <GroupScreen />}
+        {activeTab === 2 && (
+          <GroupScreen
+            currentUserProgress={history.length}
+            total={ACTIVITIES.length}
+          />
+        )}
 
         {toast && (
           <Toast

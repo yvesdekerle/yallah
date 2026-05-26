@@ -5,7 +5,7 @@ import { PARTICIPANTS } from '../data/participants.ts'
 
 describe('GroupScreen', () => {
   it('shows the group headline', () => {
-    render(<GroupScreen />)
+    render(<GroupScreen currentUserProgress={0} total={201} />)
     expect(screen.getByText('Le groupe')).toBeInTheDocument()
     expect(
       screen.getByText('9 personnes pour Maurice — novembre 2026.'),
@@ -13,14 +13,14 @@ describe('GroupScreen', () => {
   })
 
   it('renders all 9 participants', () => {
-    render(<GroupScreen />)
+    render(<GroupScreen currentUserProgress={0} total={201} />)
     for (const p of PARTICIPANTS) {
       expect(screen.getByText(p.name)).toBeInTheDocument()
     }
   })
 
   it('participants are listed in alphabetical order', () => {
-    render(<GroupScreen />)
+    render(<GroupScreen currentUserProgress={0} total={201} />)
     expect(PARTICIPANTS.map((p) => p.name)).toEqual([
       'Adé',
       'Alex',
@@ -32,5 +32,26 @@ describe('GroupScreen', () => {
       'Quentin',
       'Yves',
     ])
+  })
+
+  it('uses the local user progress for Yves, fake values for everyone else', () => {
+    render(<GroupScreen currentUserProgress={37} total={201} />)
+    const yvesRow = screen.getByTestId('participant-yves')
+    expect(yvesRow).toHaveTextContent('37 / 201')
+    expect(yvesRow).toHaveTextContent('toi')
+
+    const aleRow = screen.getByTestId('participant-alex')
+    expect(aleRow).toHaveTextContent('142 / 201')
+  })
+
+  it('shows ✓ fini when a participant reached the total', () => {
+    render(<GroupScreen currentUserProgress={0} total={201} />)
+    // Audrey is hard-coded at fakeProgress=201 == total.
+    expect(screen.getByTestId('participant-audrey')).toHaveTextContent('fini')
+  })
+
+  it('shows ✓ fini for the local user once they finish the deck', () => {
+    render(<GroupScreen currentUserProgress={201} total={201} />)
+    expect(screen.getByTestId('participant-yves')).toHaveTextContent('fini')
   })
 })
