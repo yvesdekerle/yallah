@@ -10,7 +10,8 @@
  *   - Total budget for 201 × 12 = ~70 MB on disk
  *
  * Usage:
- *   npm run download:photos                  # resume, skip existing files
+ *   npm run download:photos                  # safe default (1 req/1.2s, ~50/min)
+ *   npm run download:photos -- --fast        # 2 parallel × 500ms (risks 429s)
  *   npm run download:photos -- --force       # redownload everything
  *   npm run download:photos -- --only=a012   # only this activity
  *   npm run download:photos -- --delay=10m   # wait 10 min before starting
@@ -40,10 +41,16 @@ const HERO_H = 1000
 const THUMB_W = 400
 const THUMB_H = 500
 const JPEG_QUALITY = 78
-// Pexels' CDN rate-limits bulk downloads aggressively. Serial + 500ms
-// inter-request delay keeps us out of trouble most of the time.
-const MAX_CONCURRENT = 2
-const INTER_REQUEST_MS = 500
+// Pexels' CDN appears to allow ~50-100 req/min sustained from a single
+// IP. Sending faster than that triggers a long 60s+ throttle (the
+// previous "burst then wait" pattern was net-slower than going steady).
+// 1 worker × 1.2s/req = 50 req/min — comfortably below the limit, no
+// 429s expected. Total run ≈ 50 minutes for 2400 files.
+// Pass --fast to bring back the parallel mode if Pexels is feeling generous.
+const SLOW_CONCURRENT = 1
+const SLOW_INTER_REQUEST_MS = 1200
+const FAST_CONCURRENT = 2
+const FAST_INTER_REQUEST_MS = 500
 const RETRY_DELAY_MS = 3000
 const MAX_RETRIES = 8
 const DEFAULT_429_PAUSE_MS = 60_000
@@ -67,6 +74,9 @@ const onlyArg = process.argv.find((a) => a.startsWith('--only='))
 const onlyIds = onlyArg
   ? new Set(onlyArg.slice('--only='.length).split(','))
   : null
+const fastMode = args.has('--fast')
+const MAX_CONCURRENT = fastMode ? FAST_CONCURRENT : SLOW_CONCURRENT
+const INTER_REQUEST_MS = fastMode ? FAST_INTER_REQUEST_MS : SLOW_INTER_REQUEST_MS
 const delayArg = process.argv.find((a) => a.startsWith('--delay='))
 // Accepts `--delay=10` (minutes) or `--delay=10m` / `--delay=600s` / `--delay=1h`
 function parseDelayMs(raw: string | undefined): number {
@@ -265,8 +275,12 @@ async function main(): Promise<void> {
     return
   }
 
+  const reqPerSec = MAX_CONCURRENT * (1000 / INTER_REQUEST_MS)
+  const etaMin = Math.round(tasks.length / reqPerSec / 60)
   console.log(
-    `${tasks.length} files to download (${Object.keys(photos).length} activities, ${MAX_CONCURRENT} parallel).`,
+    `${tasks.length} files to download — ${MAX_CONCURRENT} worker(s), ${INTER_REQUEST_MS}ms between requests` +
+      (fastMode ? ' (--fast)' : '') +
+      `\nEstimated ~${etaMin} min if Pexels cooperates (longer if we hit 429s).`,
   )
 
   let done = 0
