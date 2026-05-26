@@ -42,16 +42,12 @@ export function heroPhotoUrl(activity: Activity): string {
 }
 
 /**
- * Returns 12 photo URLs for the detail carousel. If the activity has fewer
- * than 12 Pexels entries (or none at all), repeats / falls back to the
- * placeholder so the UI always renders 12 slots.
+ * Returns up to 12 photo URLs for the detail carousel — fewer is fine, the
+ * UI shrinks accordingly. Activities without any Pexels entries fall back
+ * to the single bundled placeholder.
  */
 export function detailPhotos(activity: Activity): string[] {
   const urls = PHOTOS[activity.id]
-  if (!urls || urls.length === 0) {
-    return Array.from({ length: 12 }, () => PLACEHOLDER)
-  }
-  return Array.from({ length: 12 }, (_, i) =>
-    withSize(urls[i % urls.length]!, 900, 900),
-  )
+  if (!urls || urls.length === 0) return [PLACEHOLDER]
+  return urls.slice(0, 12).map((u) => withSize(u, 900, 900))
 }

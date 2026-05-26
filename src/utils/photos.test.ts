@@ -25,12 +25,7 @@ describe('heroPhotoUrl', () => {
 })
 
 describe('detailPhotos', () => {
-  it('always returns 12 entries', () => {
-    expect(detailPhotos(make('a999'))).toHaveLength(12)
-  })
-
-  it('falls back to 12 placeholders when nothing is mapped', () => {
-    const photos = detailPhotos(make('a999'))
-    expect(photos.every((p) => p === '/photos/hero.jpg')).toBe(true)
+  it('returns a single placeholder when the activity has no entries', () => {
+    expect(detailPhotos(make('a999'))).toEqual(['/photos/hero.jpg'])
   })
 })

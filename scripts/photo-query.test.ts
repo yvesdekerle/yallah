@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { autoQuery, fallbackQuery, stripAccents } from './photo-query.ts'
+import { autoQuery, stripAccents } from './photo-query.ts'
 import type { Activity } from '../src/types/activity.ts'
 
 function make(overrides: Partial<Activity>): Activity {
@@ -87,19 +87,3 @@ describe('autoQuery', () => {
   })
 })
 
-describe('fallbackQuery', () => {
-  it('combines category hint with "mauritius"', () => {
-    expect(fallbackQuery(make({ category: '🌊 Mer & Sports nautiques' }))).toBe(
-      'ocean beach mauritius',
-    )
-    expect(
-      fallbackQuery(make({ category: '🏔️ Randonnée & Sommets' })),
-    ).toBe('mountain hiking mauritius')
-  })
-
-  it('falls back to "tropical mauritius" for unknown categories', () => {
-    expect(fallbackQuery(make({ category: 'unknown' }))).toBe(
-      'tropical mauritius',
-    )
-  })
-})

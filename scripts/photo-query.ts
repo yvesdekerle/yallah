@@ -326,28 +326,6 @@ const STOPWORDS = new Set([
   'courant', 'baptme', 'exploration',
 ])
 
-// Category → fallback search keyword used by the fetcher when the primary
-// "<title> mauritius" search returns too few photos. Kept thematic but
-// generic enough to always pull 12+ photos.
-export const CATEGORY_FALLBACK: Record<string, string> = {
-  '🌊 Mer & Sports nautiques': 'ocean beach',
-  '🏝️ Îles, Lagons & Excursions bateau': 'lagoon island',
-  '🐅 Faune & Rencontres animales': 'tropical wildlife',
-  '🏔️ Randonnée & Sommets': 'mountain hiking',
-  '🌳 Terre & Nature': 'nature jungle',
-  '✈️ Activités aériennes': 'aerial helicopter',
-  '🍽️ Gastronomie & Spiritueux': 'food restaurant',
-  '🏛️ Culture, Histoire & Mémoire': 'historic colonial',
-  '🛍️ Marchés & Artisanat': 'market crafts',
-  '🧘 Bien-être & Détente': 'spa wellness',
-  '🎢 Sensations fortes': 'adventure',
-}
-
-/** Returns the Pexels fallback query for an activity. */
-export function fallbackQuery(activity: Activity): string {
-  const cat = CATEGORY_FALLBACK[activity.category] ?? 'tropical'
-  return `${cat} mauritius`
-}
 
 export function stripAccents(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
