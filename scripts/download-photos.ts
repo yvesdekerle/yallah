@@ -11,6 +11,7 @@
  *
  * Usage:
  *   npm run download:photos                  # safe default (1 req/1.2s, ~50/min)
+ *   npm run download:photos -- --probe       # test if Pexels is throttling us
  *   npm run download:photos -- --fast        # 2 parallel × 500ms (risks 429s)
  *   npm run download:photos -- --force       # redownload everything
  *   npm run download:photos -- --only=a012   # only this activity
@@ -70,6 +71,7 @@ const MAX_PAUSE_MS = 30 * 60 * 1000 // cap at 30 min
 
 const args = new Set(process.argv.slice(2))
 const force = args.has('--force')
+const probeMode = args.has('--probe')
 const onlyArg = process.argv.find((a) => a.startsWith('--only='))
 const onlyIds = onlyArg
   ? new Set(onlyArg.slice('--only='.length).split(','))
@@ -219,10 +221,69 @@ function isLocalUrl(u: string): boolean {
   return u.startsWith('/photos/')
 }
 
+async function probe(): Promise<void> {
+  const photos: Record<string, string[]> = JSON.parse(
+    readFileSync(PHOTOS_JSON, 'utf8'),
+  )
+  let url: string | null = null
+  for (const urls of Object.values(photos)) {
+    for (const u of urls) {
+      if (!u.startsWith('/photos/')) {
+        url = u
+        break
+      }
+    }
+    if (url) break
+  }
+  if (!url) {
+    console.log('All photos in photos.json are already local — nothing left to probe.')
+    return
+  }
+  console.log(`Probing Pexels with: ${url}\n`)
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': USER_AGENT,
+        Accept: 'image/avif,image/webp,image/jpeg,*/*',
+        Referer: 'https://www.pexels.com/',
+        Range: 'bytes=0-0', // only ask for 1 byte to keep it light
+      },
+    })
+    console.log(`Status: ${res.status} ${res.statusText}`)
+    const ra = res.headers.get('Retry-After')
+    const rl = res.headers.get('X-Ratelimit-Remaining')
+    if (ra) console.log(`Retry-After: ${ra}s`)
+    if (rl) console.log(`X-Ratelimit-Remaining: ${rl}`)
+    if (res.status === 200 || res.status === 206) {
+      console.log('\n✓ Quota OK — you can run `npm run download:photos` now.')
+    } else if (res.status === 429) {
+      const seconds = ra ? Number.parseInt(ra, 10) : 60
+      const min = Math.ceil(seconds / 60)
+      console.log(
+        `\n✗ Still throttled — wait at least ${min} min, then re-run --probe.`,
+      )
+      console.log(
+        `  Or queue the download for after the cooldown:`,
+      )
+      console.log(`    npm run download:photos -- --delay=${min}m`)
+    } else {
+      console.log(`\n? Unexpected status ${res.status}.`)
+    }
+  } catch (err) {
+    console.log(`Network error: ${(err as Error).message}`)
+  }
+}
+
 async function main(): Promise<void> {
   if (!existsSync(PHOTOS_JSON)) {
     console.error(`No photos.json at ${PHOTOS_JSON}. Run \`npm run fetch:photos\` first.`)
     process.exit(1)
+  }
+
+  if (probeMode) {
+    await probe()
+    return
   }
 
   if (delayMs > 0) {
