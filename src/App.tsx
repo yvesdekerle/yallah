@@ -12,13 +12,15 @@ import { YB } from './utils/theme.ts'
 import { Phone } from './components/Phone.tsx'
 import { StatusBar } from './components/StatusBar.tsx'
 import { TopBar } from './components/TopBar.tsx'
-import { BottomNav } from './components/BottomNav.tsx'
+import { BottomNav, type TabIndex } from './components/BottomNav.tsx'
 import { UndoButton } from './components/UndoButton.tsx'
 import { ActionRow } from './components/ActionRow.tsx'
 import { Toast } from './components/Toast.tsx'
 import { DetailModal } from './components/DetailModal.tsx'
 import { DeckDone } from './components/DeckDone.tsx'
 import { SwipeDeck, type SwipeDeckHandle } from './components/SwipeDeck.tsx'
+import { ResultsScreen } from './components/ResultsScreen.tsx'
+import { GroupScreen } from './components/GroupScreen.tsx'
 
 interface ToastState {
   id: number
@@ -34,6 +36,7 @@ export default function App() {
   const [toast, setToast] = useState<ToastState | null>(null)
   const [done, setDone] = useState(false)
   const [detail, setDetail] = useState<Activity | null>(null)
+  const [activeTab, setActiveTab] = useState<TabIndex>(0)
   const deckRef = useRef<SwipeDeckHandle>(null)
 
   const superRemaining = useMemo(() => {
@@ -72,8 +75,10 @@ export default function App() {
   const handleReset = useCallback(() => {
     setHistory([])
     setDone(false)
-    setToast(null)
+    setToast({ id: Date.now(), text: 'Votes réinitialisés', emoji: '↺' })
   }, [setHistory])
+
+  const onSwipeTab = activeTab === 0
 
   return (
     <Phone bg={YB.bgSun}>
@@ -83,36 +88,68 @@ export default function App() {
       >
         <StatusBar />
         <TopBar />
-        <UndoButton enabled={history.length > 0 && !done} onClick={handleUndo} />
 
-        {!done ? (
-          <div
-            className="phone-card-area absolute"
-            style={{
-              top: 94,
-              left: 10,
-              right: 10,
-              bottom: 79,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <SwipeDeck
-              ref={deckRef}
-              activities={ACTIVITIES}
-              history={history}
-              superRemaining={superRemaining}
-              onVerdict={handleVerdict}
-              onComplete={() =>
-                window.setTimeout(() => setDone(true), EXIT_MS)
-              }
-              onOpenDetail={(a) => setDetail(a)}
+        {onSwipeTab && (
+          <>
+            <UndoButton
+              enabled={history.length > 0 && !done}
+              onClick={handleUndo}
             />
-          </div>
-        ) : (
-          <DeckDone history={history} bg={YB.bgSun} onReset={handleReset} />
+            {!done ? (
+              <div
+                className="phone-card-area absolute"
+                style={{
+                  top: 94,
+                  left: 10,
+                  right: 10,
+                  bottom: 79,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <SwipeDeck
+                  ref={deckRef}
+                  activities={ACTIVITIES}
+                  history={history}
+                  superRemaining={superRemaining}
+                  onVerdict={handleVerdict}
+                  onComplete={() =>
+                    window.setTimeout(() => setDone(true), EXIT_MS)
+                  }
+                  onOpenDetail={(a) => setDetail(a)}
+                />
+              </div>
+            ) : (
+              <DeckDone history={history} bg={YB.bgSun} onReset={handleReset} />
+            )}
+            {!done && (
+              <ActionRow
+                onAct={handleAction}
+                superRemaining={superRemaining}
+                onToggleDetail={() => {
+                  if (detail) {
+                    setDetail(null)
+                  } else {
+                    const current = ACTIVITIES[history.length]
+                    if (current) setDetail(current)
+                  }
+                }}
+                detailOpen={detail !== null}
+              />
+            )}
+          </>
         )}
+
+        {activeTab === 1 && (
+          <ResultsScreen
+            history={history}
+            activities={ACTIVITIES}
+            onReset={handleReset}
+          />
+        )}
+
+        {activeTab === 2 && <GroupScreen />}
 
         {toast && (
           <Toast
@@ -123,25 +160,9 @@ export default function App() {
           />
         )}
 
-        {!done && (
-          <ActionRow
-            onAct={handleAction}
-            superRemaining={superRemaining}
-            onToggleDetail={() => {
-              if (detail) {
-                setDetail(null)
-              } else {
-                const current = ACTIVITIES[history.length]
-                if (current) setDetail(current)
-              }
-            }}
-            detailOpen={detail !== null}
-          />
-        )}
+        <BottomNav active={activeTab} onChange={setActiveTab} />
 
-        <BottomNav active={0} />
-
-        {detail && (
+        {detail && onSwipeTab && (
           <DetailModal
             activity={detail}
             onClose={() => setDetail(null)}

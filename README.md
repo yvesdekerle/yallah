@@ -99,10 +99,6 @@ L'app est une **PWA** : ajoutée à l'écran d'accueil, elle s'ouvre en plein é
 2. Menu (⋮) → **Installer l'application** (ou "Ajouter à l'écran d'accueil")
 3. L'icône apparaît dans le drawer + sur le home. L'app s'ouvre en standalone.
 
-### Bonus desktop
-
-Le bouton **plein écran** en bas-gauche de la bottom-bar (icône YouTube-style ↗ ↙) bascule le navigateur en fullscreen via l'API native. Marche sur Chrome / Firefox / Safari desktop et Safari iPad. iPhone Safari ne le supporte pas (le bouton ne s'affiche pas).
-
 ## Étendre les activités
 
 1. Édite `activites-maurice.md` en gardant le format existant (`#### n°N — Titre`, puis champs `**Tags**`, `**Lieu**`, etc.)

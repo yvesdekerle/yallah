@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Phone } from './Phone.tsx'
 import { TopBar } from './TopBar.tsx'
 import { BottomNav } from './BottomNav.tsx'
@@ -24,14 +25,14 @@ describe('TopBar', () => {
 
 describe('BottomNav', () => {
   it('renders all three tabs', () => {
-    render(<BottomNav />)
+    render(<BottomNav active={0} onChange={() => {}} />)
     expect(screen.getByLabelText('swipe')).toBeInTheDocument()
     expect(screen.getByLabelText('résultats')).toBeInTheDocument()
     expect(screen.getByLabelText('groupe')).toBeInTheDocument()
   })
 
   it('marks the active tab via aria-pressed', () => {
-    render(<BottomNav active={1} />)
+    render(<BottomNav active={1} onChange={() => {}} />)
     expect(screen.getByLabelText('résultats')).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -42,16 +43,10 @@ describe('BottomNav', () => {
     )
   })
 
-  it('renders the fullscreen toggle when the API is available', () => {
-    // jsdom doesn't implement requestFullscreen by default — stub it.
-    Object.defineProperty(document.documentElement, 'requestFullscreen', {
-      configurable: true,
-      writable: true,
-      value: () => Promise.resolve(),
-    })
-    render(<BottomNav />)
-    expect(
-      screen.getByLabelText('passer en plein écran'),
-    ).toBeInTheDocument()
+  it('calls onChange when a tab is tapped', async () => {
+    const onChange = vi.fn()
+    render(<BottomNav active={0} onChange={onChange} />)
+    await userEvent.setup().click(screen.getByLabelText('résultats'))
+    expect(onChange).toHaveBeenCalledWith(1)
   })
 })

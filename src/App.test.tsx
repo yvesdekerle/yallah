@@ -87,4 +87,39 @@ describe('App (integration)', () => {
     fireEvent.click(screen.getByLabelText('voir le détail'))
     expect(screen.getByTestId('detail-sheet')).toBeInTheDocument()
   })
+
+  it('switches to the résultats tab and shows the current vote counts', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('oui'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('résultats'))
+    expect(screen.getByText(/1 \/ 201/)).toBeInTheDocument()
+    expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
+  })
+
+  it('switches to the groupe tab and lists the 9 participants', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('groupe'))
+    expect(screen.getByText('Le groupe')).toBeInTheDocument()
+    expect(screen.getByText('Yves')).toBeInTheDocument()
+    expect(screen.getByText('Adé')).toBeInTheDocument()
+  })
+
+  it('reset from résultats clears history after confirmation', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('oui'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('résultats'))
+    fireEvent.click(screen.getByLabelText('réinitialiser les votes'))
+    expect(screen.getByText('Tout effacer ?')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Tout effacer'))
+    expect(screen.getByText('0 / 201 activités swipées.')).toBeInTheDocument()
+    expect(
+      JSON.parse(window.localStorage.getItem('yallah.history.v1')!),
+    ).toEqual([])
+  })
 })
