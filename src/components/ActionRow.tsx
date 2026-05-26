@@ -125,6 +125,13 @@ export function ActionRow({
       style={{ ...positionStyle, gap: 8 }}
     >
       <ActionButton
+        color="#9A93A6"
+        verdict="skip"
+        onAct={onAct}
+        icon={<Skip color="#9A93A6" size={22} />}
+        ariaLabel="skip"
+      />
+      <ActionButton
         color={YB.non}
         verdict="non"
         onAct={onAct}
@@ -137,13 +144,6 @@ export function ActionRow({
         onAct={onAct}
         icon={<WhyNotChevron color={YB.neutre} size={22} />}
         ariaLabel="why not"
-      />
-      <ActionButton
-        color={YB.oui}
-        verdict="oui"
-        onAct={onAct}
-        icon={<Heart color={YB.oui} fill={YB.oui} size={22} />}
-        ariaLabel="oui"
       />
       <ActionButton
         color={YB.top}
@@ -161,11 +161,11 @@ export function ActionRow({
         ariaLabel="super like"
       />
       <ActionButton
-        color="#9A93A6"
-        verdict="skip"
+        color={YB.oui}
+        verdict="oui"
         onAct={onAct}
-        icon={<Skip color="#9A93A6" size={22} />}
-        ariaLabel="skip"
+        icon={<Heart color={YB.oui} fill={YB.oui} size={22} />}
+        ariaLabel="like"
       />
       <button
         type="button"

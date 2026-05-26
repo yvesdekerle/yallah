@@ -8,7 +8,7 @@ test('votes survive a page reload', async ({ page }) => {
   await page.evaluate(() => window.localStorage.clear())
   await page.reload({ waitUntil: 'domcontentloaded' })
 
-  await page.getByLabel('oui').click()
+  await page.getByLabel('like').click()
   await page.waitForTimeout(700)
   await page.getByLabel('non').click()
   await page.waitForTimeout(700)

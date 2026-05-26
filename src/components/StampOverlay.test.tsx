@@ -30,7 +30,7 @@ describe('StampOverlay', () => {
 describe('HeartStamp', () => {
   it('renders the OUI text', () => {
     render(<HeartStamp intensity={1} />)
-    expect(screen.getByText('OUI')).toBeInTheDocument()
+    expect(screen.getByText('LIKE')).toBeInTheDocument()
   })
 
   it('renders an SVG heart', () => {

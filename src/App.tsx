@@ -101,7 +101,7 @@ export default function App() {
       if (meta?.quotaHit) {
         setToast({
           id: Date.now(),
-          text: 'Plus de super-likes — converti en oui',
+          text: 'Plus de super-likes — converti en like',
           emoji: '⭐',
         })
       }

@@ -35,7 +35,7 @@ test('closes the detail modal via the X button', async ({ page }) => {
 test('voting from the detail modal records the vote', async ({ page }) => {
   await page.getByLabel('voir le détail').click()
   // The sticky bottom bar reuses the same labels; scope to dialog.
-  await page.getByRole('dialog').getByLabel('oui').click()
+  await page.getByRole('dialog').getByLabel('like').click()
   await page.waitForTimeout(900)
   // Modal closes; first card has moved on.
   await expect(

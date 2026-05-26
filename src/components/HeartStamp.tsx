@@ -50,7 +50,7 @@ export function HeartStamp({ intensity }: HeartStampProps) {
           textShadow: '0 2px 4px rgba(0,0,0,0.15)',
         }}
       >
-        OUI
+        LIKE
       </div>
     </div>
   )

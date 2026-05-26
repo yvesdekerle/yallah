@@ -28,7 +28,7 @@ describe('App (integration)', () => {
 
   it('voting through the action row advances the deck', () => {
     render(<App />)
-    fireEvent.click(screen.getByLabelText('oui'))
+    fireEvent.click(screen.getByLabelText('like'))
     // After the exit animation a different activity is on top.
     act(() => {
       vi.advanceTimersByTime(800)
@@ -60,7 +60,7 @@ describe('App (integration)', () => {
 
   it('undo removes the last vote and re-disables when empty', () => {
     render(<App />)
-    fireEvent.click(screen.getByLabelText('oui'))
+    fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
     })
@@ -97,7 +97,7 @@ describe('App (integration)', () => {
 
   it('switches to the résultats tab and shows the current vote counts', () => {
     render(<App />)
-    fireEvent.click(screen.getByLabelText('oui'))
+    fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
     })
@@ -120,7 +120,7 @@ describe('App (integration)', () => {
 
   it('reset from résultats clears history after confirmation', () => {
     render(<App />)
-    fireEvent.click(screen.getByLabelText('oui'))
+    fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
     })

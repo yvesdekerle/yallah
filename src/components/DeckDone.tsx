@@ -10,7 +10,7 @@ interface DeckDoneProps {
 }
 
 const SUMMARY_ENTRIES: { key: Verdict; label: string }[] = [
-  { key: 'oui', label: '♥ oui' },
+  { key: 'oui', label: '♥ like' },
   { key: 'top', label: '★ super like' },
   { key: 'whynot', label: '↑ why not' },
   { key: 'skip', label: '⊘ plus tard' },

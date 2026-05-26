@@ -112,7 +112,7 @@ describe('DetailModal', () => {
         superRemaining={5}
       />,
     )
-    fireEvent.click(screen.getByLabelText('oui'))
+    fireEvent.click(screen.getByLabelText('like'))
     expect(onVerdict).toHaveBeenCalledWith('oui')
     vi.advanceTimersByTime(500)
     expect(onClose).toHaveBeenCalled()
