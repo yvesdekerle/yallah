@@ -91,21 +91,17 @@ Les photos sont servies depuis le CDN **Pexels** (gratuit, pas de bande passante
 
 > `.env` est déjà gitignored. Si tu préfères ne pas créer de fichier, tu peux toujours passer la clé inline : `PEXELS_API_KEY=xxx npm run fetch:photos`.
 
-> Pexels limite à **200 req/h sur fenêtre glissante**. Par défaut le script throttle à 19s entre les appels → ~1h pour les 201 activités.
+> Pexels limite à **200 req/h sur fenêtre glissante**. Avec 201 activités, le run prend ~1h dans tous les cas. Le script gère le rate-limit automatiquement : quand Pexels renvoie un 429, il lit le header `X-Ratelimit-Reset` et attend exactement le temps qu'il faut avant de reprendre.
 
-**Workflow rapide en 2 batchs** (recommandé pour finir en ~2 min de boulot actif + 1h d'attente) :
+Tu peux donc tout lancer d'un coup :
 
 ```bash
-# Batch 1 — blast les 200 premières activités au throttle minimum
-PEXELS_API_KEY=xxx npm run fetch:photos -- --throttle=300 --max=200
-# ~1 minute → photos.json contient 200 entrées
-
-# Attends 1h glissante depuis le 1ᵉʳ appel (sors prendre un café)
-
-# Batch 2 — finis le reste (1 activité)
 PEXELS_API_KEY=xxx npm run fetch:photos
-# Le script skip les 200 déjà faites et fetch juste la dernière
 ```
+
+Laisse tourner. Le script affiche en live ce qu'il fait, sauve `photos.json` après chaque activité, et reprend où il s'est arrêté si tu l'interromps.
+
+**Si tu veux aller plus vite** (à condition d'avoir un quota Pexels plus élevé que 200/h) : `--throttle=300` pour réduire le délai entre appels.
 
 Flags utiles :
 - `--throttle=Nms` — pause entre les appels (défaut `19000`)

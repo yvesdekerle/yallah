@@ -83,21 +83,31 @@ async function searchPexels(
   perPage = PHOTOS_PER_ACTIVITY,
 ): Promise<PexelsPhoto[]> {
   const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${perPage}&orientation=portrait`
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  // Loop until success — on rate-limit, wait until Pexels' own reset
+  // timestamp (rolling 1h window) instead of guessing.
+  while (true) {
     const res = await fetch(url, {
       headers: { Authorization: PEXELS_KEY! },
     })
     if (res.status === 429) {
-      const backoff = 60_000 * attempt
-      console.warn(`  ⚠ rate-limited, sleeping ${backoff / 1000}s...`)
-      await sleep(backoff)
+      const resetHeader = res.headers.get('X-Ratelimit-Reset')
+      const reset = resetHeader ? Number.parseInt(resetHeader, 10) : 0
+      const nowSec = Math.floor(Date.now() / 1000)
+      // Add a 5s safety buffer; never wait less than 30s in case the header
+      // is missing or already past.
+      const waitSec = Math.max(30, reset - nowSec + 5)
+      const mm = Math.floor(waitSec / 60)
+      const ss = waitSec % 60
+      console.warn(
+        `\n  ⏳ rate limit hit — waiting ${mm}m${ss.toString().padStart(2, '0')}s for the window to reset...`,
+      )
+      await sleep(waitSec * 1000)
       continue
     }
     if (!res.ok) throw new Error(`Pexels API ${res.status}: ${await res.text()}`)
     const data = (await res.json()) as PexelsSearchResponse
     return data.photos
   }
-  throw new Error('Exceeded retry attempts')
 }
 
 /**
