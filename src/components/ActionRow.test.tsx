@@ -36,7 +36,7 @@ describe('ActionRow', () => {
     await user.click(screen.getByLabelText('oui'))
     await user.click(screen.getByLabelText('super like'))
     expect(onAct).toHaveBeenNthCalledWith(1, 'non')
-    expect(onAct).toHaveBeenNthCalledWith(2, 'neutre')
+    expect(onAct).toHaveBeenNthCalledWith(2, 'whynot')
     expect(onAct).toHaveBeenNthCalledWith(3, 'oui')
     expect(onAct).toHaveBeenNthCalledWith(4, 'top')
   })

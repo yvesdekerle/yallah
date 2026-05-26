@@ -11,7 +11,7 @@ interface DeckDoneProps {
 const SUMMARY_ENTRIES: { key: Verdict; label: string }[] = [
   { key: 'oui', label: '♥ oui' },
   { key: 'top', label: '★ super like' },
-  { key: 'neutre', label: '↑ why not' },
+  { key: 'whynot', label: '↑ why not' },
   { key: 'non', label: '✕ non' },
 ]
 
@@ -19,7 +19,13 @@ const SUMMARY_ENTRIES: { key: Verdict; label: string }[] = [
  * End-of-deck celebration. Shows a small recap and a "restart" button.
  */
 export function DeckDone({ history, bg, onReset }: DeckDoneProps) {
-  const counts: Record<Verdict, number> = { oui: 0, non: 0, neutre: 0, top: 0 }
+  const counts: Record<Verdict, number> = {
+    oui: 0,
+    non: 0,
+    whynot: 0,
+    top: 0,
+    skip: 0,
+  }
   for (const h of history) {
     if (h.verdict === 'oui' && h.quotaHit) {
       // Quota-converted super-likes still show as "oui" in the recap; we

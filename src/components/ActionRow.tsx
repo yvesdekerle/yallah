@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   WhyNotChevron,
+  Skip,
 } from '../icons/index.tsx'
 
 interface ActionRowProps {
@@ -121,7 +122,7 @@ export function ActionRow({
   return (
     <div
       className="z-[7] flex items-center justify-center"
-      style={{ ...positionStyle, gap: 12 }}
+      style={{ ...positionStyle, gap: 8 }}
     >
       <ActionButton
         color={YB.non}
@@ -132,7 +133,7 @@ export function ActionRow({
       />
       <ActionButton
         color={YB.neutre}
-        verdict="neutre"
+        verdict="whynot"
         onAct={onAct}
         icon={<WhyNotChevron color={YB.neutre} size={22} />}
         ariaLabel="why not"
@@ -158,6 +159,13 @@ export function ActionRow({
         badge={superRemaining}
         disabled={noSuper}
         ariaLabel="super like"
+      />
+      <ActionButton
+        color="#9A93A6"
+        verdict="skip"
+        onAct={onAct}
+        icon={<Skip color="#9A93A6" size={22} />}
+        ariaLabel="skip"
       />
       <button
         type="button"

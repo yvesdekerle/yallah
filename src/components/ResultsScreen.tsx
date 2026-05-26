@@ -10,12 +10,15 @@ interface ResultsScreenProps {
   history: VoteEntry[]
   activities: Activity[]
   onReset: () => void
+  /** Fired when a row is clicked. Parent opens the detail modal. */
+  onSelectActivity?: (activity: Activity) => void
 }
 
 const SUMMARY: { key: Verdict; label: string }[] = [
   { key: 'oui', label: '♥ oui' },
   { key: 'top', label: '★ super like' },
-  { key: 'neutre', label: '↑ why not' },
+  { key: 'whynot', label: '↑ why not' },
+  { key: 'skip', label: '⊘ plus tard' },
   { key: 'non', label: '✕ non' },
 ]
 
@@ -27,11 +30,18 @@ export function ResultsScreen({
   history,
   activities,
   onReset,
+  onSelectActivity,
 }: ResultsScreenProps) {
   const [confirming, setConfirming] = useState(false)
 
   const counts = useMemo(() => {
-    const c: Record<Verdict, number> = { oui: 0, non: 0, neutre: 0, top: 0 }
+    const c: Record<Verdict, number> = {
+      oui: 0,
+      non: 0,
+      whynot: 0,
+      top: 0,
+      skip: 0,
+    }
     for (const h of history) c[h.verdict] += 1
     return c
   }, [history])
@@ -57,6 +67,15 @@ export function ResultsScreen({
     () =>
       history
         .filter((h) => h.verdict === 'oui')
+        .map((h) => byId.get(h.id))
+        .filter((a): a is Activity => a !== undefined),
+    [history, byId],
+  )
+
+  const skipped = useMemo(
+    () =>
+      history
+        .filter((h) => h.verdict === 'skip')
         .map((h) => byId.get(h.id))
         .filter((a): a is Activity => a !== undefined),
     [history, byId],
@@ -143,6 +162,7 @@ export function ResultsScreen({
             icon={<StarFilled color={YB.top} size={14} />}
             activities={superLikes}
             accentColor={YB.top}
+            onSelectActivity={onSelectActivity}
           />
         )}
 
@@ -152,6 +172,17 @@ export function ResultsScreen({
             icon={<span style={{ fontSize: 14, color: YB.oui }}>♥</span>}
             activities={likes}
             accentColor={YB.oui}
+            onSelectActivity={onSelectActivity}
+          />
+        )}
+
+        {skipped.length > 0 && (
+          <ResultsSection
+            title="À décider plus tard"
+            icon={<span style={{ fontSize: 14, color: '#9A93A6' }}>⊘</span>}
+            activities={skipped}
+            accentColor="#9A93A6"
+            onSelectActivity={onSelectActivity}
           />
         )}
 
@@ -217,6 +248,7 @@ interface ResultsSectionProps {
   icon: React.ReactNode
   activities: Activity[]
   accentColor: string
+  onSelectActivity?: (activity: Activity) => void
 }
 
 function ResultsSection({
@@ -224,6 +256,7 @@ function ResultsSection({
   icon,
   activities,
   accentColor,
+  onSelectActivity,
 }: ResultsSectionProps) {
   return (
     <div style={{ marginBottom: 26 }}>
@@ -258,46 +291,81 @@ function ResultsSection({
         </span>
       </div>
       <div className="flex flex-col" style={{ gap: 6 }}>
-        {activities.map((a) => (
-          <div
-            key={a.id}
-            className="flex items-center font-sans"
-            style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '10px 12px',
-              gap: 10,
-              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
-            }}
-          >
-            <span
-              className="inline-flex items-center justify-center font-mono"
+        {activities.map((a) => {
+          const clickable = !!onSelectActivity
+          const Tag = clickable ? 'button' : ('div' as const)
+          return (
+            <Tag
+              key={a.id}
+              {...(clickable
+                ? {
+                    type: 'button' as const,
+                    onClick: () => onSelectActivity!(a),
+                    'aria-label': `Voir le détail de ${a.title}`,
+                  }
+                : {})}
+              className="flex items-center font-sans text-left w-full border-0"
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 99,
-                background: accentColor,
-                color: '#fff',
-                fontSize: 10,
-                fontWeight: 700,
-                flexShrink: 0,
+                background: '#fff',
+                borderRadius: 12,
+                padding: '10px 12px',
+                gap: 10,
+                boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
+                cursor: clickable ? 'pointer' : 'default',
+                transition: 'transform 0.12s, box-shadow 0.12s',
               }}
-              aria-hidden
+              onMouseDown={
+                clickable
+                  ? (e) =>
+                      (e.currentTarget.style.transform = 'scale(0.98)')
+                  : undefined
+              }
+              onMouseUp={
+                clickable
+                  ? (e) => (e.currentTarget.style.transform = 'scale(1)')
+                  : undefined
+              }
+              onMouseLeave={
+                clickable
+                  ? (e) => (e.currentTarget.style.transform = 'scale(1)')
+                  : undefined
+              }
             >
-              {a.number.toString().padStart(2, '0')}
-            </span>
-            <span
-              style={{
-                fontSize: 13.5,
-                lineHeight: 1.3,
-                color: YB.ink,
-                fontWeight: 500,
-              }}
-            >
-              {a.title}
-            </span>
-          </div>
-        ))}
+              <span
+                className="inline-flex items-center justify-center font-mono"
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 99,
+                  background: accentColor,
+                  color: '#fff',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+                aria-hidden
+              >
+                {a.number.toString().padStart(2, '0')}
+              </span>
+              <span
+                style={{
+                  fontSize: 13.5,
+                  lineHeight: 1.3,
+                  color: YB.ink,
+                  fontWeight: 500,
+                  flex: 1,
+                }}
+              >
+                {a.title}
+              </span>
+              {clickable && (
+                <span style={{ color: YB.muted, fontSize: 16 }} aria-hidden>
+                  ›
+                </span>
+              )}
+            </Tag>
+          )
+        })}
       </div>
     </div>
   )

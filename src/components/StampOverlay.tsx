@@ -10,7 +10,8 @@ interface StampOverlayProps {
 const ROTATION: Record<Verdict, number> = {
   oui: -10,
   non: 10,
-  neutre: -4,
+  whynot: -4,
+  skip: 0,
   top: 0,
 }
 

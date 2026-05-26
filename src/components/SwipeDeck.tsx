@@ -242,7 +242,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
           >
             <Card activity={exiting.card} />
             {exiting.verdict === 'oui' && <HeartStamp intensity={1} />}
-            {(exiting.verdict === 'non' || exiting.verdict === 'neutre') && (
+            {(exiting.verdict === 'non' || exiting.verdict === 'whynot') && (
               <StampOverlay verdict={exiting.verdict} intensity={1} />
             )}
           </div>
@@ -250,7 +250,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
 
         {/* Drag stamps — centred at deck while dragging only. */}
         {verdict === 'oui' && <HeartStamp intensity={intensity} />}
-        {(verdict === 'non' || verdict === 'neutre') && (
+        {(verdict === 'non' || verdict === 'whynot') && (
           <StampOverlay verdict={verdict} intensity={intensity} />
         )}
 

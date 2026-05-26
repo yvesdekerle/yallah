@@ -267,3 +267,38 @@ export function WhyNotChevron(p: IconProps = {}) {
   )
 }
 
+/** Skip / "decide later" — a circle with a diagonal slash. */
+export function Skip(p: IconProps = {}) {
+  return (
+    <svg {...base(p, 22)}>
+      <circle
+        cx={12}
+        cy={12}
+        r={9}
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+      />
+      <path
+        d="M6 18L18 6"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+/** Equal-sign — used on the card when re-going through the deck to confirm a previous vote. */
+export function Equal(p: IconProps = {}) {
+  return (
+    <svg {...base(p, 22)}>
+      <path
+        d="M5 9h14M5 15h14"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.6}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+

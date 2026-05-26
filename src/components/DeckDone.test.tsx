@@ -8,7 +8,7 @@ const history: VoteEntry[] = [
   { id: 'a001', verdict: 'oui' },
   { id: 'a002', verdict: 'oui' },
   { id: 'a003', verdict: 'top' },
-  { id: 'a004', verdict: 'neutre' },
+  { id: 'a004', verdict: 'whynot' },
   { id: 'a005', verdict: 'non' },
   { id: 'a006', verdict: 'non' },
   { id: 'a007', verdict: 'non' },
@@ -24,7 +24,7 @@ describe('DeckDone', () => {
     render(<DeckDone history={history} bg="#FFCB45" onReset={() => {}} />)
     expect(screen.getByTestId('summary-oui')).toHaveTextContent('2')
     expect(screen.getByTestId('summary-top')).toHaveTextContent('1')
-    expect(screen.getByTestId('summary-neutre')).toHaveTextContent('1')
+    expect(screen.getByTestId('summary-whynot')).toHaveTextContent('1')
     expect(screen.getByTestId('summary-non')).toHaveTextContent('3')
   })
 

@@ -9,8 +9,8 @@ describe('StampOverlay', () => {
     expect(screen.getByText('NON')).toBeInTheDocument()
   })
 
-  it('renders WHY NOT for the neutre verdict', () => {
-    render(<StampOverlay verdict="neutre" intensity={0.5} />)
+  it('renders WHY NOT for the whynot verdict', () => {
+    render(<StampOverlay verdict="whynot" intensity={0.5} />)
     expect(screen.getByText('WHY NOT')).toBeInTheDocument()
   })
 

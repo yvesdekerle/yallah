@@ -43,7 +43,7 @@ describe('ResultsScreen', () => {
       { id: 'a002', verdict: 'top' },
       { id: 'a003', verdict: 'non' },
       { id: 'a004', verdict: 'non' },
-      { id: 'a005', verdict: 'neutre' },
+      { id: 'a005', verdict: 'whynot' },
     ]
     render(
       <ResultsScreen
@@ -54,7 +54,7 @@ describe('ResultsScreen', () => {
     )
     expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
     expect(screen.getByTestId('results-top')).toHaveTextContent('1')
-    expect(screen.getByTestId('results-neutre')).toHaveTextContent('1')
+    expect(screen.getByTestId('results-whynot')).toHaveTextContent('1')
     expect(screen.getByTestId('results-non')).toHaveTextContent('2')
   })
 

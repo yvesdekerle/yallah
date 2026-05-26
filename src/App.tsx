@@ -28,14 +28,36 @@ interface ToastState {
   emoji?: string
 }
 
+// Legacy verdict-id migration: the "neutre" id was renamed to "whynot".
+// Anyone with an existing local history needs their entries rewritten so
+// they keep counting against the right bucket.
+interface LegacyVoteEntry extends Omit<VoteEntry, 'verdict'> {
+  verdict: VoteEntry['verdict'] | 'neutre'
+}
+function migrateHistory(raw: VoteEntry[] | LegacyVoteEntry[]): VoteEntry[] {
+  return (raw as LegacyVoteEntry[]).map((e) =>
+    e.verdict === 'neutre' ? { ...e, verdict: 'whynot' } : (e as VoteEntry),
+  )
+}
+
 export default function App() {
-  const [history, setHistory] = useLocalStorage<VoteEntry[]>(
+  const [rawHistory, setHistory] = useLocalStorage<VoteEntry[]>(
     STORAGE_KEYS.history,
     [],
   )
+  // useMemo so callers don't see a fresh array on every render unless the
+  // underlying storage changed.
+  const history = useMemo(() => migrateHistory(rawHistory), [rawHistory])
   const [toast, setToast] = useState<ToastState | null>(null)
   const [done, setDone] = useState(false)
-  const [detail, setDetail] = useState<Activity | null>(null)
+  // `detail` carries both the activity AND how the modal was opened.
+  // From the swipe screen, voting buttons trigger the deck commit (advance
+  // to next card). From the results screen, voting buttons UPDATE the
+  // previous vote in place — no deck navigation.
+  const [detail, setDetail] = useState<
+    | { activity: Activity; source: 'swipe' | 'review' }
+    | null
+  >(null)
   const [activeTab, setActiveTab] = useState<TabIndex>(0)
   const deckRef = useRef<SwipeDeckHandle>(null)
 
@@ -78,6 +100,37 @@ export default function App() {
     setToast({ id: Date.now(), text: 'Votes réinitialisés', emoji: '↺' })
   }, [setHistory])
 
+  // Vote handler that's wired into the detail modal. Behaviour depends on
+  // where the modal was opened from:
+  // - `swipe`  → forward to the deck so it advances to the next card
+  // - `review` → patch the existing history entry for this activity (or
+  //              append one if there isn't one yet)
+  const handleDetailVerdict = useCallback(
+    (verdict: Verdict) => {
+      if (!detail) return
+      if (detail.source === 'swipe') {
+        deckRef.current?.commit(verdict)
+        return
+      }
+      const id = detail.activity.id
+      setHistory((h) => {
+        const idx = h.findIndex((e) => e.id === id)
+        if (idx < 0) {
+          return [...h, { id, verdict }]
+        }
+        const next = [...h]
+        next[idx] = { ...next[idx]!, verdict }
+        return next
+      })
+      setToast({
+        id: Date.now(),
+        text: 'Vote mis à jour',
+        emoji: '✏️',
+      })
+    },
+    [detail, setHistory],
+  )
+
   const onSwipeTab = activeTab === 0
 
   return (
@@ -117,7 +170,9 @@ export default function App() {
                   onComplete={() =>
                     window.setTimeout(() => setDone(true), EXIT_MS)
                   }
-                  onOpenDetail={(a) => setDetail(a)}
+                  onOpenDetail={(a) =>
+                    setDetail({ activity: a, source: 'swipe' })
+                  }
                 />
               </div>
             ) : (
@@ -132,7 +187,7 @@ export default function App() {
                     setDetail(null)
                   } else {
                     const current = ACTIVITIES[history.length]
-                    if (current) setDetail(current)
+                    if (current) setDetail({ activity: current, source: 'swipe' })
                   }
                 }}
                 detailOpen={detail !== null}
@@ -146,6 +201,9 @@ export default function App() {
             history={history}
             activities={ACTIVITIES}
             onReset={handleReset}
+            onSelectActivity={(a) =>
+              setDetail({ activity: a, source: 'review' })
+            }
           />
         )}
 
@@ -167,12 +225,12 @@ export default function App() {
 
         <BottomNav active={activeTab} onChange={setActiveTab} />
 
-        {detail && onSwipeTab && (
+        {detail && (
           <DetailModal
-            activity={detail}
+            activity={detail.activity}
             onClose={() => setDetail(null)}
             superRemaining={superRemaining}
-            onVerdict={(v) => deckRef.current?.commit(v)}
+            onVerdict={handleDetailVerdict}
           />
         )}
       </div>
