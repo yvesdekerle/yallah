@@ -49,6 +49,18 @@ function escapeHtml(s: string): string {
 // down to the 240×240 grid cell visually, no big deal for bandwidth on
 // a debug page.
 
+/**
+ * Photos.json stores web-rooted paths like "/photos/a012/3.jpg" because
+ * those work when the app is served by Vite or Vercel. But this preview
+ * page lives at the repo root and is opened via file://, so the same
+ * absolute path would resolve to the filesystem root. Rewrite to a
+ * sibling-relative path so the browser finds the actual JPEG.
+ */
+function rewriteLocalPath(url: string): string {
+  if (url.startsWith('/photos/')) return 'public' + url
+  return url
+}
+
 function buildHtml(
   activities: Activity[],
   photos: Record<string, string[]>,
@@ -76,12 +88,13 @@ function buildHtml(
 
       const grid = urls.length
         ? urls
-            .map(
-              (u, i) => `
-        <a href="${escapeHtml(u)}" target="_blank" rel="noopener" title="photo ${i + 1}">
-          <img data-src="${escapeHtml(u)}" alt="" />
-        </a>`,
-            )
+            .map((u, i) => {
+              const browserUrl = rewriteLocalPath(u)
+              return `
+        <a href="${escapeHtml(browserUrl)}" target="_blank" rel="noopener" title="photo ${i + 1}">
+          <img data-src="${escapeHtml(browserUrl)}" alt="" />
+        </a>`
+            })
             .join('')
         : '<div class="empty">Aucune photo récupérée pour cette activité.</div>'
 
