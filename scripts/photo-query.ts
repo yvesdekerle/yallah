@@ -19,82 +19,42 @@
 
 import type { Activity } from '../src/types/activity.ts'
 
-// Place/brand names to wipe from the title. IMPORTANT: longest / most
-// specific patterns FIRST so e.g. "tamarin falls" matches before a bare
-// "tamarin" eats half the phrase.
+// Mauritius landmark names we KEEP (they help Pexels find Mauritius photos).
+// We only strip private brand names and obscure spots that won't yield any
+// matches even with "mauritius" appended.
 const PLACE_BRAND_PATTERNS: RegExp[] = [
-  // Multi-word brand / place compounds
+  // Multi-word brand / experience names — never indexed on Pexels.
   /\bsave the last dodo\b/g,
-  /\bvallee des couleurs\b/g,
-  /\bblack river gorges?\b/g,
-  /\bpointe aux canonniers\b/g,
-  /\bpointe d['\s]esny\b/g,
-  /\btrou aux biches\b/g,
-  /\btrou d['\s]eau douce\b/g,
-  /\btamarin falls?\b/g,
-  /\ble morne\b/g,
-  /\bblue bay\b/g,
   /\bblue safari\b/g,
-  /\bblack river\b/g,
-  /\bgrand baie\b/g,
-  /\bgrand port\b/g,
-  /\bcap malheureux\b/g,
-  /\bbelle mare\b/g,
-  /\bla gaulette\b/g,
-  /\bbel ombre\b/g,
-  /\briviere noire\b/g,
-  /\bport louis\b/g,
-  /\bocean indien\b/g,
-  /\bsous l['\s]eau\b/g,
-  /\bcristal\s+blue\b/g,
+  /\bdodo quest\b/g,
+  /\blokal adventures?\b/g,
+  /\bsea lovers?\b/g,
+  /\bcrown lodge\b/g,
   /\bkite lagoon\b/g,
   /\bone[- ]eye\b/g,
+  /\bcristal\s+blue\b/g,
 
-  // Île + Îlot compounds
-  /\bile aux benitiers?\b/g,
-  /\bile aux aigrettes?\b/g,
-  /\bile aux serpents?\b/g,
-  /\bile aux cerfs?\b/g,
-  /\bile aux phares?\b/g,
-  /\bile d['\s]ambre\b/g,
-  /\bile de la passe\b/g,
-  /\bile des deux cocos\b/g,
-  /\bile fouquets?\b/g,
-  /\bile marianne\b/g,
-  /\bile plate\b/g,
-  /\bile ronde\b/g,
+  // Single-word brand / vessel / niche names.
+  /\bauthentiseaty\b/g,
+  /\bstella maru\b/g,
+  /\bdjabeda\b/g,
+  /\bstar hope\b/g,
+  /\bmaradiva\b/g,
+  /\bmanawa\b/g,
+  /\bbs\s*\d+/g, // submarine model "BS600" / "BS1100"
+
+  // Obscure islets without dedicated Pexels coverage.
   /\bilot bernaches\b/g,
   /\bilot gabriel\b/g,
   /\bilot mangenie\b/g,
   /\bilot mouchoir rouge\b/g,
   /\bilot sanchot\b/g,
   /\bilot vacoas\b/g,
-  /\bcoin de mire\b/g,
-
-  // Single-word names (run after compounds so they don't eat prefixes)
-  /\bauthentiseaty\b/g,
-  /\bstella maru\b/g,
-  /\bdjabeda\b/g,
-  /\bstar hope\b/g,
-  /\bcasela\b/g,
-  /\bcrown lodge\b/g,
-  /\blokal adventures?\b/g,
-  /\bmaradiva\b/g,
-  /\bsea lovers?\b/g,
-  /\bdodo quest\b/g,
-  /\bmanawa\b/g,
-  /\bchamarel\b/g,
-  /\bpamplemousses?\b/g,
-  /\bmahebourg\b/g,
-  /\btamarin\b/g,
-  /\bflic[- ]en[- ]flac\b/g,
-  /\bmorne\b/g,
-  /\bjacotet\b/g,
-  /\bbenitiers?\b/g,
-  /\bmangenie\b/g,
-  /\baigrettes?\b/g,
-  /\bcerfs?\b/g,
-  /\bbs\s*\d+/g, // submarine model "BS600" / "BS1100"
+  /\bile fouquets?\b/g,
+  /\bile marianne\b/g,
+  /\bile de la passe\b/g,
+  /\bile des deux cocos\b/g,
+  /\bile aux phares?\b/g,
 ]
 
 // Multi-word French phrases → English. Applied BEFORE single-word translation.
@@ -366,20 +326,27 @@ const STOPWORDS = new Set([
   'courant', 'baptme', 'exploration',
 ])
 
-// Category → trailing keyword. Acts as the "theme" anchor when the title
-// doesn't carry enough activity-specific words.
-const CATEGORY_HINTS: Record<string, string> = {
-  '🌊 Mer & Sports nautiques': 'ocean tropical',
-  '🏝️ Îles, Lagons & Excursions bateau': 'tropical island lagoon',
-  '🐅 Faune & Rencontres animales': 'wildlife tropical',
+// Category → fallback search keyword used by the fetcher when the primary
+// "<title> mauritius" search returns too few photos. Kept thematic but
+// generic enough to always pull 12+ photos.
+export const CATEGORY_FALLBACK: Record<string, string> = {
+  '🌊 Mer & Sports nautiques': 'ocean beach',
+  '🏝️ Îles, Lagons & Excursions bateau': 'lagoon island',
+  '🐅 Faune & Rencontres animales': 'tropical wildlife',
   '🏔️ Randonnée & Sommets': 'mountain hiking',
-  '🌳 Terre & Nature': 'tropical jungle',
-  '✈️ Activités aériennes': 'aerial sky',
+  '🌳 Terre & Nature': 'nature jungle',
+  '✈️ Activités aériennes': 'aerial helicopter',
   '🍽️ Gastronomie & Spiritueux': 'food restaurant',
   '🏛️ Culture, Histoire & Mémoire': 'historic colonial',
   '🛍️ Marchés & Artisanat': 'market crafts',
   '🧘 Bien-être & Détente': 'spa wellness',
   '🎢 Sensations fortes': 'adventure',
+}
+
+/** Returns the Pexels fallback query for an activity. */
+export function fallbackQuery(activity: Activity): string {
+  const cat = CATEGORY_FALLBACK[activity.category] ?? 'tropical'
+  return `${cat} mauritius`
 }
 
 export function stripAccents(s: string): string {
@@ -422,7 +389,7 @@ export function autoQuery(activity: Activity): string {
     if (focused.length >= 6) break
   }
 
-  const hint = CATEGORY_HINTS[activity.category] ?? 'tropical'
-  // Hint words are kept distinct from title words.
-  return `${focused.join(' ')} ${hint}`.replace(/\s+/g, ' ').trim()
+  // Always anchor the search to Mauritius so Pexels biases toward
+  // location-specific photos rather than generic stock tropical shots.
+  return `${focused.join(' ')} mauritius`.replace(/\s+/g, ' ').trim()
 }

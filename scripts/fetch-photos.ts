@@ -31,7 +31,7 @@ import {
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Activity } from '../src/types/activity.ts'
-import { autoQuery } from './photo-query.ts'
+import { autoQuery, fallbackQuery } from './photo-query.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -78,8 +78,11 @@ interface PexelsSearchResponse {
   total_results: number
 }
 
-async function searchPexels(query: string): Promise<PexelsPhoto[]> {
-  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${PHOTOS_PER_ACTIVITY}&orientation=portrait`
+async function searchPexels(
+  query: string,
+  perPage = PHOTOS_PER_ACTIVITY,
+): Promise<PexelsPhoto[]> {
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${perPage}&orientation=portrait`
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(url, {
       headers: { Authorization: PEXELS_KEY! },
@@ -95,6 +98,44 @@ async function searchPexels(query: string): Promise<PexelsPhoto[]> {
     return data.photos
   }
   throw new Error('Exceeded retry attempts')
+}
+
+/**
+ * Fetch up to 12 photos for one activity. Tries the specific query first
+ * (anchored on "mauritius") and pads with a broader category-based fallback
+ * if Pexels returned fewer than 12 unique photos.
+ */
+async function fetchForActivity(
+  activity: Activity,
+  customQuery?: string,
+): Promise<{ urls: string[]; sources: string[] }> {
+  const primary = customQuery ?? autoQuery(activity)
+  const primaryResults = await searchPexels(primary, 40)
+  const seen = new Set<number>()
+  const urls: string[] = []
+  for (const p of primaryResults) {
+    if (seen.has(p.id)) continue
+    seen.add(p.id)
+    urls.push(p.src.large)
+    if (urls.length >= PHOTOS_PER_ACTIVITY) break
+  }
+  const sources = [`primary: "${primary}" → ${urls.length}`]
+
+  if (urls.length < PHOTOS_PER_ACTIVITY) {
+    const fb = fallbackQuery(activity)
+    await sleep(throttleMs) // throttle BETWEEN the two API calls too
+    const fbResults = await searchPexels(fb, 40)
+    const startedAt = urls.length
+    for (const p of fbResults) {
+      if (seen.has(p.id)) continue
+      seen.add(p.id)
+      urls.push(p.src.large)
+      if (urls.length >= PHOTOS_PER_ACTIVITY) break
+    }
+    sources.push(`fallback: "${fb}" → +${urls.length - startedAt}`)
+  }
+
+  return { urls, sources }
 }
 
 function sleep(ms: number): Promise<void> {
@@ -142,17 +183,16 @@ async function main(): Promise<void> {
   let done = 0
   for (let i = 0; i < todo.length && done < maxFetches; i++) {
     const a = todo[i]!
-    const query = queries[a.id] ?? autoQuery(a)
-    process.stdout.write(`[${done + 1}/${batchSize}] ${a.id} "${query}" ... `)
+    const custom = queries[a.id]
+    process.stdout.write(`[${done + 1}/${batchSize}] ${a.id} ... `)
     try {
-      const results = await searchPexels(query)
-      const urls = results.slice(0, PHOTOS_PER_ACTIVITY).map((p) => p.src.large)
+      const { urls, sources } = await fetchForActivity(a, custom)
       if (urls.length === 0) {
-        console.log('NO RESULTS')
+        console.log(`NO RESULTS (${sources.join(' | ')})`)
       } else {
         photos[a.id] = urls
         saveJson(PHOTOS_PATH, photos)
-        console.log(`${urls.length} photos ✓`)
+        console.log(`${urls.length} photos ✓ (${sources.join(' | ')})`)
       }
       done += 1
     } catch (err) {
