@@ -4,14 +4,18 @@
  * we only persist the URLs, which keeps the repo small.
  *
  * Usage:
- *   PEXELS_API_KEY=xxx npm run fetch:photos          # fetch missing entries
- *   PEXELS_API_KEY=xxx npm run fetch:photos -- --force  # refetch everything
- *   PEXELS_API_KEY=xxx npm run fetch:photos -- --only a012,a045  # only these
+ *   PEXELS_API_KEY=xxx npm run fetch:photos                                # fetch missing entries (safe pace)
+ *   PEXELS_API_KEY=xxx npm run fetch:photos -- --force                     # refetch everything
+ *   PEXELS_API_KEY=xxx npm run fetch:photos -- --only=a012,a045            # only these activities
+ *   PEXELS_API_KEY=xxx npm run fetch:photos -- --throttle=300 --max=200    # fast batch (rolling 1h cap)
  *
- * Pexels free tier allows 200 requests/hour. We do 1 search call per
- * activity (with `per_page=15`), so 201 activities ≈ 1h with throttling.
- * The script saves progress to disk after every fetch — safe to interrupt
- * and resume.
+ * Pexels free tier: 200 requests/hour on a **rolling window**. We do 1
+ * search call per activity. Recommended workflow:
+ *   1. Blast the first ~200 activities at full speed (throttle=300, max=200)
+ *   2. Wait 1h
+ *   3. Re-run the script with no args — it resumes the missing ones
+ * Progress is saved to disk after every successful fetch, so the script is
+ * always safe to interrupt and resume.
  *
  * Manual override per activity: edit `scripts/photo-queries.json`, e.g.
  *   { "a012": "catamaran sunset mauritius" }
@@ -35,8 +39,9 @@ const PHOTOS_PATH = resolve(ROOT, 'src/data/photos.json')
 const QUERIES_PATH = resolve(ROOT, 'scripts/photo-queries.json')
 
 const PHOTOS_PER_ACTIVITY = 12
-// 200 req/hour ≈ 1 request every 18s; we sleep 19s to stay safely below.
-const THROTTLE_MS = 19_000
+// 200 req/hour ≈ 1 request every 18s; default 19s keeps us safely below the
+// rolling 1h cap. Override with --throttle=Nms (e.g. 300 for a fast batch).
+const DEFAULT_THROTTLE_MS = 19_000
 
 const PEXELS_KEY = process.env.PEXELS_API_KEY
 if (!PEXELS_KEY) {
@@ -51,6 +56,14 @@ const onlyArg = process.argv.find((a) => a.startsWith('--only='))
 const onlyIds = onlyArg
   ? new Set(onlyArg.slice('--only='.length).split(','))
   : null
+const throttleArg = process.argv.find((a) => a.startsWith('--throttle='))
+const throttleMs = throttleArg
+  ? Number.parseInt(throttleArg.slice('--throttle='.length), 10)
+  : DEFAULT_THROTTLE_MS
+const maxArg = process.argv.find((a) => a.startsWith('--max='))
+const maxFetches = maxArg
+  ? Number.parseInt(maxArg.slice('--max='.length), 10)
+  : Infinity
 
 // Category → secondary keyword. Helps Pexels narrow down a generic activity
 // title to the right vibe.
@@ -161,19 +174,22 @@ async function main(): Promise<void> {
     return !photos[a.id] || photos[a.id]!.length < PHOTOS_PER_ACTIVITY
   })
 
+  const batchSize = Math.min(todo.length, maxFetches)
   console.log(
     `${activities.length} activities, ${todo.length} to fetch ` +
-      `(${force ? 'force' : 'skipping existing'}).`,
+      `(${force ? 'force' : 'skipping existing'}), ` +
+      `processing ${batchSize}, throttle=${throttleMs}ms.`,
   )
-  if (todo.length === 0) {
+  if (batchSize === 0) {
     console.log('Nothing to do.')
     return
   }
 
-  for (let i = 0; i < todo.length; i++) {
+  let done = 0
+  for (let i = 0; i < todo.length && done < maxFetches; i++) {
     const a = todo[i]!
     const query = queries[a.id] ?? autoQuery(a)
-    process.stdout.write(`[${i + 1}/${todo.length}] ${a.id} "${query}" ... `)
+    process.stdout.write(`[${done + 1}/${batchSize}] ${a.id} "${query}" ... `)
     try {
       const results = await searchPexels(query)
       const urls = results.slice(0, PHOTOS_PER_ACTIVITY).map((p) => p.src.large)
@@ -184,15 +200,20 @@ async function main(): Promise<void> {
         saveJson(PHOTOS_PATH, photos)
         console.log(`${urls.length} photos ✓`)
       }
+      done += 1
     } catch (err) {
       console.log(`ERROR: ${(err as Error).message}`)
     }
-    if (i < todo.length - 1) {
-      await sleep(THROTTLE_MS)
+    if (done < maxFetches && i < todo.length - 1) {
+      await sleep(throttleMs)
     }
   }
 
-  console.log(`\nDone. Wrote ${PHOTOS_PATH}.`)
+  const remaining = todo.length - done
+  console.log(`\nDone. ${done} fetched, ${remaining} still pending.`)
+  if (remaining > 0) {
+    console.log(`Wait an hour, then re-run \`npm run fetch:photos\` to finish.`)
+  }
 }
 
 main().catch((err) => {

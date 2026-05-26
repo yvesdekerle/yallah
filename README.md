@@ -78,14 +78,33 @@ Les photos sont servies depuis le CDN **Pexels** (gratuit, pas de bande passante
 ### Régénérer les URLs (script `fetch:photos`)
 
 1. Crée un compte sur [pexels.com/api](https://www.pexels.com/api/) (30s, gratuit), récupère ta clé
-2. Mets-la dans un `.env` à la racine : `PEXELS_API_KEY=ta_clef_ici`
-3. Lance :
+2. Lance avec la clé en variable d'env :
    ```bash
-   npm run fetch:photos
+   PEXELS_API_KEY=ta_clef_ici npm run fetch:photos
    ```
-4. Le script interroge Pexels pour chaque activité (mot-clé auto depuis le titre + catégorie), sauve les URLs dans `src/data/photos.json`, et commit-tu peux interrompre/reprendre à tout moment.
+3. Le script interroge Pexels pour chaque activité (mot-clé auto depuis le titre + catégorie), sauve les URLs dans `src/data/photos.json` après chaque appel, et reprend où il s'est arrêté à la prochaine exécution.
 
-> ⚠️ Pexels limite à 200 req/heure → ~1h pour les 201 activités (le script throttle automatiquement). Tu peux relancer en cas d'interruption, ça reprend là où il s'est arrêté.
+> Pexels limite à **200 req/h sur fenêtre glissante**. Par défaut le script throttle à 19s entre les appels → ~1h pour les 201 activités.
+
+**Workflow rapide en 2 batchs** (recommandé pour finir en ~2 min de boulot actif + 1h d'attente) :
+
+```bash
+# Batch 1 — blast les 200 premières activités au throttle minimum
+PEXELS_API_KEY=xxx npm run fetch:photos -- --throttle=300 --max=200
+# ~1 minute → photos.json contient 200 entrées
+
+# Attends 1h glissante depuis le 1ᵉʳ appel (sors prendre un café)
+
+# Batch 2 — finis le reste (1 activité)
+PEXELS_API_KEY=xxx npm run fetch:photos
+# Le script skip les 200 déjà faites et fetch juste la dernière
+```
+
+Flags utiles :
+- `--throttle=Nms` — pause entre les appels (défaut `19000`)
+- `--max=N` — stop après N succès et exit proprement
+- `--only=a012,a045` — ne fetch que ces ids
+- `--force` — refetch tout, même les entrées existantes
 
 ### Personnaliser certaines activités
 
