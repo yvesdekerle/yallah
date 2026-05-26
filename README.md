@@ -78,11 +78,18 @@ Les photos sont servies depuis le CDN **Pexels** (gratuit, pas de bande passante
 ### Régénérer les URLs (script `fetch:photos`)
 
 1. Crée un compte sur [pexels.com/api](https://www.pexels.com/api/) (30s, gratuit), récupère ta clé
-2. Lance avec la clé en variable d'env :
+2. Crée un `.env` à la racine (copie `.env.example` puis remplace la valeur) :
    ```bash
-   PEXELS_API_KEY=ta_clef_ici npm run fetch:photos
+   cp .env.example .env
+   # puis édite .env pour y mettre ta vraie clé Pexels
    ```
-3. Le script interroge Pexels pour chaque activité (mot-clé auto depuis le titre + catégorie), sauve les URLs dans `src/data/photos.json` après chaque appel, et reprend où il s'est arrêté à la prochaine exécution.
+3. Lance :
+   ```bash
+   npm run fetch:photos
+   ```
+4. Le script interroge Pexels pour chaque activité (mot-clé auto depuis le titre + catégorie), sauve les URLs dans `src/data/photos.json` après chaque appel, et reprend où il s'est arrêté à la prochaine exécution.
+
+> `.env` est déjà gitignored. Si tu préfères ne pas créer de fichier, tu peux toujours passer la clé inline : `PEXELS_API_KEY=xxx npm run fetch:photos`.
 
 > Pexels limite à **200 req/h sur fenêtre glissante**. Par défaut le script throttle à 19s entre les appels → ~1h pour les 201 activités.
 

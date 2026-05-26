@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "parse:activities": "tsx scripts/parse-activities.ts",
-    "fetch:photos": "tsx scripts/fetch-photos.ts"
+    "fetch:photos": "tsx --env-file-if-exists=.env scripts/fetch-photos.ts"
   },
   "dependencies": {
     "react": "^19.2.4",
