@@ -250,6 +250,23 @@ function buildHtml(
       background: #fde0d8;
     }
     .grid a:hover img { transform: scale(1.03); }
+    .grid a.failed { cursor: pointer; position: relative; }
+    .grid a.failed::after {
+      content: "↻ retry";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--coral);
+      background: rgba(255, 224, 216, 0.75);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+    .grid a.retrying::after { content: "..."; color: var(--ink2); }
     #progress {
       position: fixed;
       bottom: 16px;
@@ -263,8 +280,23 @@ function buildHtml(
       z-index: 100;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     #progress.done { opacity: 0; transition: opacity 0.4s 1s; pointer-events: none; }
+    #progress button {
+      background: var(--coral);
+      color: #fff;
+      border: 0;
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #progress button:disabled { opacity: 0.4; cursor: default; }
     .empty {
       padding: 24px;
       background: var(--sand);
@@ -287,25 +319,69 @@ function buildHtml(
   </header>
   <main>${sections}
   </main>
-  <div id="progress">0 / 0</div>
+  <div id="progress">
+    <span id="progress-text">0 / 0</span>
+    <button id="retry-all" hidden>↻ retry échecs</button>
+  </div>
   <script>
     // Lazy-load + bounded-concurrency image queue. Avoids Pexels'
     // concurrency_exceeded errors when the page first opens.
     (function () {
-      const MAX_CONCURRENT = 6
-      const RETRY_DELAY = 800
-      const MAX_RETRIES = 3
+      const MAX_CONCURRENT = 4
+      const RETRY_DELAY_MS = 1500
+      const MAX_RETRIES = 5
       const imgs = Array.from(document.querySelectorAll('img[data-src]'))
       const total = imgs.length
       let loaded = 0
+      let failed = 0
       let inFlight = 0
       const queue = []
+      const failedImgs = new Set()
+      const progressText = document.getElementById('progress-text')
+      const retryAllBtn = document.getElementById('retry-all')
       const progress = document.getElementById('progress')
 
-      function bumpProgress() {
-        loaded += 1
-        progress.textContent = loaded + ' / ' + total + ' photos chargées'
-        if (loaded >= total) progress.classList.add('done')
+      function updateProgress() {
+        const done = loaded + failed
+        let text = done + ' / ' + total + ' photos'
+        if (failed > 0) text += ' (' + failed + ' échecs)'
+        progressText.textContent = text
+        retryAllBtn.hidden = failed === 0
+        if (done >= total && failed === 0) progress.classList.add('done')
+        else progress.classList.remove('done')
+      }
+
+      function markFailed(img) {
+        img.classList.add('failed')
+        img.alt = '(échec)'
+        const link = img.closest('a')
+        if (link) {
+          link.classList.add('failed')
+          link.addEventListener('click', onRetryClick, { once: true })
+        }
+        failedImgs.add(img)
+        failed += 1
+      }
+
+      function clearFailed(img) {
+        img.classList.remove('failed')
+        const link = img.closest('a')
+        if (link) link.classList.remove('failed', 'retrying')
+        failedImgs.delete(img)
+        failed -= 1
+      }
+
+      function onRetryClick(e) {
+        e.preventDefault()
+        const link = e.currentTarget
+        const img = link.querySelector('img')
+        if (!img || !failedImgs.has(img)) return
+        link.classList.add('retrying')
+        link.classList.remove('failed')
+        clearFailed(img)
+        updateProgress()
+        queue.push(img)
+        pump()
       }
 
       function pump() {
@@ -317,26 +393,37 @@ function buildHtml(
             img.onload = () => {
               img.classList.add('loaded')
               inFlight -= 1
-              bumpProgress()
+              loaded += 1
+              updateProgress()
               pump()
             }
             img.onerror = () => {
               if (attempt < MAX_RETRIES) {
                 attempt += 1
-                setTimeout(tryLoad, RETRY_DELAY * attempt)
+                // Exponential-ish backoff: 1.5s, 3s, 4.5s, 6s, 7.5s
+                setTimeout(tryLoad, RETRY_DELAY_MS * attempt)
               } else {
-                img.classList.add('failed')
-                img.alt = '(échec)'
+                markFailed(img)
                 inFlight -= 1
-                bumpProgress()
+                updateProgress()
                 pump()
               }
             }
+            // Force fresh load — break any stale cache state from a previous attempt.
+            img.src = ''
             img.src = img.dataset.src
           }
           tryLoad()
         }
       }
+
+      retryAllBtn.addEventListener('click', () => {
+        const toRetry = Array.from(failedImgs)
+        toRetry.forEach((img) => clearFailed(img))
+        updateProgress()
+        toRetry.forEach((img) => queue.push(img))
+        pump()
+      })
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -351,7 +438,7 @@ function buildHtml(
         { rootMargin: '400px' },
       )
       imgs.forEach((img) => observer.observe(img))
-      progress.textContent = '0 / ' + total + ' photos chargées'
+      updateProgress()
     })()
   </script>
 </body>
