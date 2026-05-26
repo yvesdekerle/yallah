@@ -41,20 +41,13 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
-function withSize(url: string, w: number, h: number): string {
-  if (!url.includes('images.pexels.com')) return url
-  try {
-    const u = new URL(url)
-    u.searchParams.set('auto', 'compress')
-    u.searchParams.set('cs', 'tinysrgb')
-    u.searchParams.set('fit', 'crop')
-    u.searchParams.set('w', String(w))
-    u.searchParams.set('h', String(h))
-    return u.toString()
-  } catch {
-    return url
-  }
-}
+// Note: we deliberately do NOT override Pexels' default size params here.
+// The URLs in photos.json already point at a pre-processed 940x650 large
+// version that's CDN-cached. Adding our own w/h/fit forces Pexels to
+// re-process the image on every request and tends to trigger 503s /
+// concurrency_exceeded under load. The browser scales the larger image
+// down to the 240×240 grid cell visually, no big deal for bandwidth on
+// a debug page.
 
 function buildHtml(
   activities: Activity[],
@@ -86,7 +79,7 @@ function buildHtml(
             .map(
               (u, i) => `
         <a href="${escapeHtml(u)}" target="_blank" rel="noopener" title="photo ${i + 1}">
-          <img data-src="${escapeHtml(withSize(u, 240, 240))}" alt="" />
+          <img data-src="${escapeHtml(u)}" alt="" />
         </a>`,
             )
             .join('')
@@ -327,9 +320,9 @@ function buildHtml(
     // Lazy-load + bounded-concurrency image queue. Avoids Pexels'
     // concurrency_exceeded errors when the page first opens.
     (function () {
-      const MAX_CONCURRENT = 4
-      const RETRY_DELAY_MS = 1500
-      const MAX_RETRIES = 5
+      const MAX_CONCURRENT = 2
+      const RETRY_DELAY_MS = 2000
+      const MAX_RETRIES = 6
       const imgs = Array.from(document.querySelectorAll('img[data-src]'))
       const total = imgs.length
       let loaded = 0
