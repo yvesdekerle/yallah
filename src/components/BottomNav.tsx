@@ -24,7 +24,7 @@ export function BottomNav({ active, onChange, dark = false }: BottomNavProps) {
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 z-[6] flex items-center justify-around"
+      className="absolute bottom-0 left-0 right-0 z-[20] flex items-center justify-around"
       style={{
         height: 58,
         background: dark ? 'rgba(20,25,40,0.95)' : 'rgba(255,253,247,0.95)',
@@ -35,6 +35,10 @@ export function BottomNav({ active, onChange, dark = false }: BottomNavProps) {
         // Extend the bar through the iOS home-indicator area in standalone mode.
         paddingBottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
         boxSizing: 'content-box',
+        // Pin to its own GPU layer so it stays painted stably during tab
+        // switches (no transient blank state under iOS Safari).
+        transform: 'translateZ(0)',
+        willChange: 'transform',
       }}
     >
       {TABS.map((tab, i) => {

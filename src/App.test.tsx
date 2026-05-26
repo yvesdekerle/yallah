@@ -33,8 +33,13 @@ describe('App (integration)', () => {
     act(() => {
       vi.advanceTimersByTime(800)
     })
+    // The card heading (h2) shouldn't be the first activity anymore. (The
+    // title may still appear as a plain span in the Résultats list since
+    // all tabs stay mounted, so scope to role=heading.)
     expect(
-      screen.queryByText('Snorkeling à Blue Bay Marine Park'),
+      screen.queryByRole('heading', {
+        name: 'Snorkeling à Blue Bay Marine Park',
+      }),
     ).not.toBeInTheDocument()
     // Undo is now enabled.
     expect(screen.getByLabelText('annuler le dernier swipe')).toBeEnabled()
@@ -61,9 +66,11 @@ describe('App (integration)', () => {
     })
     fireEvent.click(screen.getByLabelText('annuler le dernier swipe'))
     expect(screen.getByText('Swipe annulé')).toBeInTheDocument()
-    // Card 1 is back.
+    // Card 1 is back — check via the card heading.
     expect(
-      screen.getByText('Snorkeling à Blue Bay Marine Park'),
+      screen.getByRole('heading', {
+        name: 'Snorkeling à Blue Bay Marine Park',
+      }),
     ).toBeInTheDocument()
   })
 
@@ -95,7 +102,11 @@ describe('App (integration)', () => {
       vi.advanceTimersByTime(800)
     })
     fireEvent.click(screen.getByLabelText('résultats'))
-    expect(screen.getByText(/1 \/ 201/)).toBeInTheDocument()
+    // "1 / 201" string also appears in the GroupScreen (Yves' progress)
+    // since all tabs stay mounted — use a more specific match.
+    expect(
+      screen.getByText('1 / 201 activités swipées.'),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
   })
 

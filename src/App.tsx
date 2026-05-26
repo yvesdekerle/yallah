@@ -174,67 +174,74 @@ export default function App() {
         <StatusBar />
         <TopBar />
 
-        {onSwipeTab && (
-          <>
-            <UndoButton
-              enabled={history.length > 0 && !done}
-              onClick={handleUndo}
-            />
-            {!done ? (
-              <div
-                className="phone-card-area absolute"
-                style={{
-                  top: 94,
-                  left: 10,
-                  right: 10,
-                  bottom: 79,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <SwipeDeck
-                  ref={deckRef}
-                  activities={ACTIVITIES}
-                  history={history}
-                  superRemaining={superRemaining}
-                  reviewMode={reviewMode}
-                  onVerdict={handleVerdict}
-                  onComplete={() =>
-                    window.setTimeout(() => setDone(true), EXIT_MS)
-                  }
-                  onOpenDetail={(a) =>
-                    setDetail({ activity: a, source: 'swipe' })
-                  }
-                />
-              </div>
-            ) : (
-              <DeckDone
+        {/* Tabs stay MOUNTED — switching just toggles visibility. Avoids
+            the SwipeDeck remounting + photo reflashing every time the
+            user pops over to Résultats or Groupe and back. */}
+        <div
+          style={{ display: onSwipeTab ? 'contents' : 'none' }}
+          aria-hidden={!onSwipeTab}
+        >
+          <UndoButton
+            enabled={history.length > 0 && !done}
+            onClick={handleUndo}
+          />
+          {!done ? (
+            <div
+              className="phone-card-area absolute"
+              style={{
+                top: 94,
+                left: 10,
+                right: 10,
+                bottom: 79,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <SwipeDeck
+                ref={deckRef}
+                activities={ACTIVITIES}
                 history={history}
-                bg={YB.bgSun}
-                onReset={handleReset}
-                onReview={history.length > 0 ? handleReview : undefined}
-              />
-            )}
-            {!done && (
-              <ActionRow
-                onAct={handleAction}
                 superRemaining={superRemaining}
-                onToggleDetail={() => {
-                  if (detail) {
-                    setDetail(null)
-                  } else {
-                    const current = ACTIVITIES[history.length]
-                    if (current) setDetail({ activity: current, source: 'swipe' })
-                  }
-                }}
-                detailOpen={detail !== null}
+                reviewMode={reviewMode}
+                onVerdict={handleVerdict}
+                onComplete={() =>
+                  window.setTimeout(() => setDone(true), EXIT_MS)
+                }
+                onOpenDetail={(a) =>
+                  setDetail({ activity: a, source: 'swipe' })
+                }
               />
-            )}
-          </>
-        )}
+            </div>
+          ) : (
+            <DeckDone
+              history={history}
+              bg={YB.bgSun}
+              onReset={handleReset}
+              onReview={history.length > 0 ? handleReview : undefined}
+            />
+          )}
+          {!done && (
+            <ActionRow
+              onAct={handleAction}
+              superRemaining={superRemaining}
+              onToggleDetail={() => {
+                if (detail) {
+                  setDetail(null)
+                } else {
+                  const current = ACTIVITIES[history.length]
+                  if (current) setDetail({ activity: current, source: 'swipe' })
+                }
+              }}
+              detailOpen={detail !== null}
+            />
+          )}
+        </div>
 
-        {activeTab === 1 && (
+        <div
+          style={{ display: activeTab === 1 ? 'contents' : 'none' }}
+          aria-hidden={activeTab !== 1}
+        >
           <ResultsScreen
             history={history}
             activities={ACTIVITIES}
@@ -243,14 +250,17 @@ export default function App() {
               setDetail({ activity: a, source: 'review' })
             }
           />
-        )}
+        </div>
 
-        {activeTab === 2 && (
+        <div
+          style={{ display: activeTab === 2 ? 'contents' : 'none' }}
+          aria-hidden={activeTab !== 2}
+        >
           <GroupScreen
             currentUserProgress={history.length}
             total={ACTIVITIES.length}
           />
-        )}
+        </div>
 
         {toast && (
           <Toast
