@@ -86,7 +86,7 @@ function buildHtml(
             .map(
               (u, i) => `
         <a href="${escapeHtml(u)}" target="_blank" rel="noopener" title="photo ${i + 1}">
-          <img loading="lazy" src="${escapeHtml(withSize(u, 240, 240))}" alt="" />
+          <img data-src="${escapeHtml(withSize(u, 240, 240))}" alt="" />
         </a>`,
             )
             .join('')
@@ -239,9 +239,32 @@ function buildHtml(
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.15s;
+      transition: transform 0.15s, opacity 0.2s;
+      background: linear-gradient(135deg, #f0ecde 0%, #e8e3d2 50%, #f0ecde 100%);
+      background-size: 200% 200%;
+      opacity: 0;
+    }
+    .grid img.loaded { opacity: 1; }
+    .grid img.failed {
+      opacity: 1;
+      background: #fde0d8;
     }
     .grid a:hover img { transform: scale(1.03); }
+    #progress {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(20, 30, 50, 0.92);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 99px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(6px);
+    }
+    #progress.done { opacity: 0; transition: opacity 0.4s 1s; pointer-events: none; }
     .empty {
       padding: 24px;
       background: var(--sand);
@@ -264,6 +287,73 @@ function buildHtml(
   </header>
   <main>${sections}
   </main>
+  <div id="progress">0 / 0</div>
+  <script>
+    // Lazy-load + bounded-concurrency image queue. Avoids Pexels'
+    // concurrency_exceeded errors when the page first opens.
+    (function () {
+      const MAX_CONCURRENT = 6
+      const RETRY_DELAY = 800
+      const MAX_RETRIES = 3
+      const imgs = Array.from(document.querySelectorAll('img[data-src]'))
+      const total = imgs.length
+      let loaded = 0
+      let inFlight = 0
+      const queue = []
+      const progress = document.getElementById('progress')
+
+      function bumpProgress() {
+        loaded += 1
+        progress.textContent = loaded + ' / ' + total + ' photos chargées'
+        if (loaded >= total) progress.classList.add('done')
+      }
+
+      function pump() {
+        while (inFlight < MAX_CONCURRENT && queue.length > 0) {
+          const img = queue.shift()
+          inFlight += 1
+          let attempt = 0
+          const tryLoad = () => {
+            img.onload = () => {
+              img.classList.add('loaded')
+              inFlight -= 1
+              bumpProgress()
+              pump()
+            }
+            img.onerror = () => {
+              if (attempt < MAX_RETRIES) {
+                attempt += 1
+                setTimeout(tryLoad, RETRY_DELAY * attempt)
+              } else {
+                img.classList.add('failed')
+                img.alt = '(échec)'
+                inFlight -= 1
+                bumpProgress()
+                pump()
+              }
+            }
+            img.src = img.dataset.src
+          }
+          tryLoad()
+        }
+      }
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting && e.target.dataset.src) {
+              observer.unobserve(e.target)
+              queue.push(e.target)
+              pump()
+            }
+          }
+        },
+        { rootMargin: '400px' },
+      )
+      imgs.forEach((img) => observer.observe(img))
+      progress.textContent = '0 / ' + total + ' photos chargées'
+    })()
+  </script>
 </body>
 </html>
 `
