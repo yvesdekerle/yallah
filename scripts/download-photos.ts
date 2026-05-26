@@ -55,6 +55,11 @@ const USER_AGENT =
 // Shared "paused until" timestamp — when any worker takes a 429, every
 // other worker waits past this point before its next request.
 let pausedUntil = 0
+// Consecutive 429s (reset by any successful download). When we keep
+// taking 429s in a row, double the pause to give Pexels real breathing
+// room instead of pestering them every 60s.
+let consecutivePauses = 0
+const MAX_PAUSE_MS = 30 * 60 * 1000 // cap at 30 min
 
 const args = new Set(process.argv.slice(2))
 const force = args.has('--force')
@@ -94,9 +99,14 @@ function setPauseFromHeader(res: Response): number {
   // Pexels (and most CDNs) send `Retry-After` in seconds.
   const ra = res.headers.get('Retry-After')
   const seconds = ra ? Number.parseInt(ra, 10) : NaN
-  const pauseMs = Number.isFinite(seconds) && seconds > 0
+  const headerMs = Number.isFinite(seconds) && seconds > 0
     ? seconds * 1000
     : DEFAULT_429_PAUSE_MS
+
+  consecutivePauses += 1
+  // Exponential bump: 1st pause = headerMs, 2nd = ×2, 3rd = ×4, ... capped.
+  const multiplier = Math.min(2 ** (consecutivePauses - 1), 32)
+  const pauseMs = Math.min(headerMs * multiplier, MAX_PAUSE_MS)
   const newPausedUntil = Date.now() + pauseMs
   if (newPausedUntil > pausedUntil) pausedUntil = newPausedUntil
   return pauseMs
@@ -144,6 +154,9 @@ async function downloadAndResize(
         .resize(width, height, { fit: 'cover', position: 'attention' })
         .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
         .toFile(dest)
+      // A clean download means Pexels is happy again — reset the backoff
+      // ladder so the next 429 (if any) starts fresh at the minimum pause.
+      consecutivePauses = 0
       return
     } catch (err) {
       if (attempt >= MAX_RETRIES) throw err
