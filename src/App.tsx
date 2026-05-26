@@ -50,6 +50,13 @@ export default function App() {
   const history = useMemo(() => migrateHistory(rawHistory), [rawHistory])
   const [toast, setToast] = useState<ToastState | null>(null)
   const [done, setDone] = useState(false)
+  /**
+   * Review-mode = "re-balayer le deck": after finishing the initial swipe
+   * the user can re-walk the entire deck to either confirm previous votes
+   * (with the "=" button on the card) or change them. In this mode the
+   * verdict handler UPSERTS by activity id instead of appending.
+   */
+  const [reviewMode, setReviewMode] = useState(false)
   // `detail` carries both the activity AND how the modal was opened.
   // From the swipe screen, voting buttons trigger the deck commit (advance
   // to next card). From the results screen, voting buttons UPDATE the
@@ -68,10 +75,23 @@ export default function App() {
 
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
-      setHistory((h) => [
-        ...h,
-        { id: activity.id, verdict, ...(meta?.quotaHit ? { quotaHit: true } : {}) },
-      ])
+      const entry: VoteEntry = {
+        id: activity.id,
+        verdict,
+        ...(meta?.quotaHit ? { quotaHit: true } : {}),
+      }
+      setHistory((h) => {
+        if (reviewMode) {
+          // Upsert by activity id — in review mode we never want
+          // duplicates, the user is editing their vote.
+          const idx = h.findIndex((e) => e.id === activity.id)
+          if (idx < 0) return [...h, entry]
+          const next = [...h]
+          next[idx] = entry
+          return next
+        }
+        return [...h, entry]
+      })
       if (meta?.quotaHit) {
         setToast({
           id: Date.now(),
@@ -80,7 +100,7 @@ export default function App() {
         })
       }
     },
-    [setHistory],
+    [reviewMode, setHistory],
   )
 
   const handleUndo = useCallback(() => {
@@ -97,8 +117,15 @@ export default function App() {
   const handleReset = useCallback(() => {
     setHistory([])
     setDone(false)
+    setReviewMode(false)
     setToast({ id: Date.now(), text: 'Votes réinitialisés', emoji: '↺' })
   }, [setHistory])
+
+  const handleReview = useCallback(() => {
+    setDone(false)
+    setReviewMode(true)
+    setToast({ id: Date.now(), text: 'Mode révision — utilise [=] pour garder', emoji: '↻' })
+  }, [])
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
   // where the modal was opened from:
@@ -166,6 +193,7 @@ export default function App() {
                   activities={ACTIVITIES}
                   history={history}
                   superRemaining={superRemaining}
+                  reviewMode={reviewMode}
                   onVerdict={handleVerdict}
                   onComplete={() =>
                     window.setTimeout(() => setDone(true), EXIT_MS)
@@ -176,7 +204,12 @@ export default function App() {
                 />
               </div>
             ) : (
-              <DeckDone history={history} bg={YB.bgSun} onReset={handleReset} />
+              <DeckDone
+                history={history}
+                bg={YB.bgSun}
+                onReset={handleReset}
+                onReview={history.length > 0 ? handleReview : undefined}
+              />
             )}
             {!done && (
               <ActionRow

@@ -6,19 +6,21 @@ interface DeckDoneProps {
   history: VoteEntry[]
   bg: string
   onReset: () => void
+  onReview?: () => void
 }
 
 const SUMMARY_ENTRIES: { key: Verdict; label: string }[] = [
   { key: 'oui', label: '♥ oui' },
   { key: 'top', label: '★ super like' },
   { key: 'whynot', label: '↑ why not' },
+  { key: 'skip', label: '⊘ plus tard' },
   { key: 'non', label: '✕ non' },
 ]
 
 /**
  * End-of-deck celebration. Shows a small recap and a "restart" button.
  */
-export function DeckDone({ history, bg, onReset }: DeckDoneProps) {
+export function DeckDone({ history, bg, onReset, onReview }: DeckDoneProps) {
   const counts: Record<Verdict, number> = {
     oui: 0,
     non: 0,
@@ -114,22 +116,42 @@ export function DeckDone({ history, bg, onReset }: DeckDoneProps) {
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={onReset}
-        className="font-sans border-0 cursor-pointer"
-        style={{
-          background: YB.ink,
-          color: '#fff',
-          padding: '12px 22px',
-          borderRadius: 99,
-          fontWeight: 700,
-          fontSize: 14,
-          boxShadow: '0 6px 16px -4px rgba(20,30,50,0.3)',
-        }}
-      >
-        Recommencer
-      </button>
+      <div className="flex flex-col" style={{ gap: 10 }}>
+        {onReview && (
+          <button
+            type="button"
+            onClick={onReview}
+            className="font-sans border-0 cursor-pointer"
+            style={{
+              background: YB.coral,
+              color: '#fff',
+              padding: '12px 22px',
+              borderRadius: 99,
+              fontWeight: 700,
+              fontSize: 14,
+              boxShadow: '0 6px 16px -4px rgba(255,107,71,0.4)',
+            }}
+          >
+            Revoir mes votes
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onReset}
+          className="font-sans border-0 cursor-pointer"
+          style={{
+            background: YB.ink,
+            color: '#fff',
+            padding: '12px 22px',
+            borderRadius: 99,
+            fontWeight: 700,
+            fontSize: 14,
+            boxShadow: '0 6px 16px -4px rgba(20,30,50,0.3)',
+          }}
+        >
+          Recommencer à zéro
+        </button>
+      </div>
     </div>
   )
 }

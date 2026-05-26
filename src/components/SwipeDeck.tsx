@@ -1,8 +1,8 @@
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -20,6 +20,7 @@ import { Card } from './Card.tsx'
 import { StampOverlay } from './StampOverlay.tsx'
 import { HeartStamp } from './HeartStamp.tsx'
 import { SuperLikeFX } from './SuperLikeFX.tsx'
+import { Equal } from '../icons/index.tsx'
 
 interface SwipeDeckProps {
   activities: Activity[]
@@ -35,6 +36,13 @@ interface SwipeDeckProps {
   onComplete?: () => void
   /** Fired when the user taps (not drags) the active card. */
   onOpenDetail?: (activity: Activity) => void
+  /**
+   * When true, the deck restarts from index 0 (regardless of history),
+   * shows the previous vote as a banner on each card, and the action-row
+   * "=" path (via `commit('skip')` on the previous verdict) keeps the
+   * vote unchanged. Used by the "Revoir mes votes" flow.
+   */
+  reviewMode?: boolean
 }
 
 export interface SwipeDeckHandle {
@@ -63,15 +71,39 @@ interface ExitingState {
  */
 export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
   function SwipeDeck(
-    { activities, history, superRemaining, onVerdict, onComplete, onOpenDetail },
+    { activities, history, superRemaining, onVerdict, onComplete, onOpenDetail, reviewMode = false },
     ref,
   ) {
-    // topIdx mirrors history.length so undo (the parent shortens history)
-    // realigns the visible stack.
-    const [topIdx, setTopIdx] = useState(history.length)
-    useEffect(() => {
+    // In normal mode topIdx mirrors history.length so undo realigns the
+    // stack. In review mode the deck restarts from 0 and the user walks
+    // through every activity, including ones already voted on.
+    //
+    // We sync via the React 19 "setState during render" pattern — see
+    // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+    // — so the deck snaps to the right starting point exactly when the
+    // mode or the history length changes upstream.
+    const [topIdx, setTopIdx] = useState(reviewMode ? 0 : history.length)
+    const [snapshot, setSnapshot] = useState({
+      reviewMode,
+      historyLen: history.length,
+    })
+    if (snapshot.reviewMode !== reviewMode) {
+      setTopIdx(reviewMode ? 0 : history.length)
+      setSnapshot({ reviewMode, historyLen: history.length })
+    } else if (!reviewMode && snapshot.historyLen !== history.length) {
+      // Normal mode: undo/redo from the parent shortens or extends
+      // history; keep the visible top card in lockstep.
       setTopIdx(history.length)
-    }, [history.length])
+      setSnapshot({ reviewMode, historyLen: history.length })
+    }
+
+    // Quick lookup of "what verdict did this activity get?" (latest entry
+    // wins if the user somehow has multiple entries for the same id).
+    const previousVerdictById = useMemo(() => {
+      const m = new Map<string, Verdict>()
+      for (const e of history) m.set(e.id, e.verdict)
+      return m
+    }, [history])
 
     const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false })
     const [exiting, setExiting] = useState<ExitingState | null>(null)
@@ -188,6 +220,8 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
           const cardTransform = isActive
             ? `translate(${drag.x}px, ${drag.y}px) rotate(${rotate}deg)`
             : `scale(${1 - i * 0.05}) translateY(${i * 14}px)`
+          const prevVerdict = previousVerdictById.get(a.id) ?? null
+          const showBanner = isActive && reviewMode && prevVerdict !== null && !exiting
           return (
             <div
               key={a.id}
@@ -212,6 +246,12 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
               }}
             >
               <Card activity={a} />
+              {showBanner && prevVerdict && (
+                <PreviousVoteBanner
+                  verdict={prevVerdict}
+                  onConfirm={() => commit(prevVerdict)}
+                />
+              )}
             </div>
           )
         })}
@@ -260,3 +300,65 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
     )
   },
 )
+
+interface PreviousVoteBannerProps {
+  verdict: Verdict
+  onConfirm: () => void
+}
+
+/**
+ * Floating pill on the active card that surfaces the previous vote and
+ * offers an "=" button to keep it. Used in review-mode passes.
+ *
+ * Renders ABOVE the card photo and stops pointer events from bubbling so
+ * tapping the pill doesn't trigger a tap-to-detail or start a drag.
+ */
+function PreviousVoteBanner({ verdict, onConfirm }: PreviousVoteBannerProps) {
+  const meta = VERDICT_META[verdict]
+  return (
+    <div
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerMove={(e) => e.stopPropagation()}
+      onPointerUp={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+      className="absolute z-[6] inline-flex items-center font-sans"
+      style={{
+        top: 56,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(255,255,255,0.96)',
+        backdropFilter: 'blur(8px)',
+        borderRadius: 99,
+        padding: '4px 4px 4px 14px',
+        gap: 10,
+        boxShadow: '0 4px 12px -2px rgba(20,30,50,0.2)',
+        fontSize: 12,
+        fontWeight: 700,
+        color: meta.color,
+        whiteSpace: 'nowrap',
+      }}
+      role="region"
+      aria-label={`Tu as voté ${meta.label} sur cette activité`}
+    >
+      <span aria-hidden style={{ fontSize: 13 }}>{meta.emoji}</span>
+      <span>{meta.label}</span>
+      <button
+        type="button"
+        onClick={onConfirm}
+        aria-label="Garder la même réponse"
+        className="flex items-center justify-center border-0 cursor-pointer"
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 99,
+          background: meta.color,
+          color: '#fff',
+          padding: 0,
+        }}
+      >
+        <Equal color="#fff" size={18} />
+      </button>
+    </div>
+  )
+}
+

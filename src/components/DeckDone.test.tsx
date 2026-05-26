@@ -32,7 +32,7 @@ describe('DeckDone', () => {
     const user = userEvent.setup()
     const onReset = vi.fn()
     render(<DeckDone history={history} bg="#FFCB45" onReset={onReset} />)
-    await user.click(screen.getByText('Recommencer'))
+    await user.click(screen.getByText('Recommencer à zéro'))
     expect(onReset).toHaveBeenCalledOnce()
   })
 })
