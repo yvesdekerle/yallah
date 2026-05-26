@@ -132,7 +132,7 @@ export function DeckDone({ history, bg, onReset, onReview }: DeckDoneProps) {
               boxShadow: '0 6px 16px -4px rgba(255,107,71,0.4)',
             }}
           >
-            Repasser toute la pile
+            Revoir mes votes
           </button>
         )}
         <button
