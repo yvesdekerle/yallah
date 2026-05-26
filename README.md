@@ -105,6 +105,30 @@ Flags utiles :
 - `--only=a012,a045` — ne fetch que ces ids
 - `--force` — refetch tout, même les entrées existantes
 
+### Télécharger les photos en local (`download:photos`)
+
+Une fois que `photos.json` contient les URLs Pexels qui te plaisent, télécharge tout en local pour ne plus dépendre du CDN Pexels au runtime :
+
+```bash
+npm run download:photos
+```
+
+Le script :
+- Lit `src/data/photos.json` (URLs Pexels)
+- Télécharge chaque image **à la bonne taille** (800×1000 pour les héros, 400×500 pour les vignettes carousel)
+- Sauve les fichiers dans `public/photos/aXXX/N.jpg`
+- **Met à jour `photos.json` au passage** pour que les URLs pointent vers les paths locaux
+- Skip ce qui est déjà téléchargé (safe à interrompre / reprendre)
+- ~70 MB committed au repo, servis ensuite par Vercel edge CDN — chargement instantané
+
+Flags :
+- `--force` — re-télécharge tout, même les fichiers déjà sur disque
+- `--only=a012` — ne télécharge que cette activité
+
+**Workflow type** : `npm run fetch:photos` (URLs) → `npm run preview:photos` (vérification visuelle) → `npm run download:photos` (figer en local) → commit `public/photos/` et `src/data/photos.json`.
+
+**Mixer avec des photos perso choisies à la main** : remplace n'importe quelle entrée dans `photos.json` par le path d'une photo locale (`/photos/aXXX/custom.jpg`), dépose le fichier au bon endroit. Le `download:photos` ne réécrira pas les entrées déjà locales.
+
 ### Voir le résultat (`preview:photos`)
 
 Pour vérifier d'un coup d'œil ce que Pexels a renvoyé pour chaque activité (et repérer celles à customiser) :
