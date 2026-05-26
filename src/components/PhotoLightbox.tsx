@@ -115,20 +115,22 @@ export function PhotoLightbox({
         {index + 1} / {photos.length}
       </div>
 
-      <div
+      <img
+        src={photos[index]}
+        alt={`photo ${index + 1} sur ${photos.length}`}
+        draggable={false}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        role="img"
-        aria-label={`photo ${index + 1} sur ${photos.length}`}
         className="select-none"
         style={{
-          width: 'calc(100% - 32px)',
-          maxWidth: 600,
-          aspectRatio: '1 / 1',
-          background: `url(${photos[index]}) center/cover, #181B1F`,
+          maxWidth: 'min(600px, calc(100% - 32px))',
+          maxHeight: 'calc(100vh - 80px)',
+          width: 'auto',
+          height: 'auto',
+          objectFit: 'contain',
           borderRadius: 18,
           boxShadow: '0 20px 60px -20px rgba(0,0,0,0.6)',
           opacity: enter ? 1 : 0,
@@ -140,6 +142,9 @@ export function PhotoLightbox({
             : 'opacity 0.22s, transform 0.22s cubic-bezier(.2,.7,.3,1)',
           cursor: drag.dragging ? 'grabbing' : 'grab',
           touchAction: 'pan-y',
+          background: '#181B1F',
+          // Image keeps its natural aspect ratio — shorter side fits the
+          // constraint, no cropping, no forced square box.
         }}
       />
 
