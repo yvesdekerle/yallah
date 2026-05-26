@@ -274,9 +274,9 @@ export function ResultsScreen({
               fontSize: 14,
               boxShadow: '0 6px 16px -4px rgba(255,107,71,0.4)',
             }}
-            aria-label="repasser toute la pile"
+            aria-label="revoir mes votes"
           >
-            {reviewing ? 'Continuer la révision' : 'Repasser toute la pile'}
+            {reviewing ? 'Continuer la révision' : 'Revoir mes votes'}
           </button>
         )}
 
