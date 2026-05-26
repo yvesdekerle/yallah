@@ -73,7 +73,26 @@ yallah/
 
 ## Photos
 
-Les photos sont chargées via [LoremFlickr](https://loremflickr.com) (gratuit, pas de clé API). Chaque activité a une image hero + 11 photos détail thématiques. Le rendu est biaisé "paradise beach / palm / lagoon" avec quelques overrides par catégorie (rando, gastronomie…). Premier chargement légèrement lent — voir `src/utils/photos.ts`.
+Les photos sont servies depuis le CDN **Pexels** (gratuit, pas de bande passante limitée à notre échelle). Pour chaque activité on stocke 12 URLs dans `src/data/photos.json` ; le carousel et le hero piochent dedans. Tant que ce fichier est vide, l'app affiche `public/photos/hero.jpg` (la photo de récif bundlée) en placeholder.
+
+### Régénérer les URLs (script `fetch:photos`)
+
+1. Crée un compte sur [pexels.com/api](https://www.pexels.com/api/) (30s, gratuit), récupère ta clé
+2. Mets-la dans un `.env` à la racine : `PEXELS_API_KEY=ta_clef_ici`
+3. Lance :
+   ```bash
+   npm run fetch:photos
+   ```
+4. Le script interroge Pexels pour chaque activité (mot-clé auto depuis le titre + catégorie), sauve les URLs dans `src/data/photos.json`, et commit-tu peux interrompre/reprendre à tout moment.
+
+> ⚠️ Pexels limite à 200 req/heure → ~1h pour les 201 activités (le script throttle automatiquement). Tu peux relancer en cas d'interruption, ça reprend là où il s'est arrêté.
+
+### Personnaliser certaines activités
+
+Deux options :
+
+- **Forcer un mot-clé** : édite `scripts/photo-queries.json` puis relance `npm run fetch:photos -- --force --only=a012,a045`
+- **URLs custom** : édite directement `src/data/photos.json` et mets ce que tu veux (URLs Pexels d'autres recherches, photos perso hébergées ailleurs, paths locaux dans `/public/photos/`, etc.). Le script `fetch:photos` ne touche QUE les activités qui n'ont pas encore d'entrée, donc tes URLs custom sont préservées.
 
 ## Déploiement
 

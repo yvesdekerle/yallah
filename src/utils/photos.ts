@@ -1,32 +1,57 @@
 import type { Activity } from '../types/activity.ts'
+import photosData from '../data/photos.json'
 
 /**
- * Bundled hero photo — a vibrant coral-reef shot served from `/public`. We
- * use it for ALL cards in v1 because:
- *   - LoremFlickr was returning broken placeholders on edge keywords
- *   - We only have one curated photo in the design bundle right now
- *   - It's already optimised (~212 KB, 900x1349, JPEG)
+ * Map of activity id → array of photo URLs, populated by
+ * `npm run fetch:photos` (which queries the Pexels API). Empty by default;
+ * the bundled placeholder kicks in for any activity without entries.
+ */
+const PHOTOS = photosData as Record<string, string[]>
+
+/** Local fallback when an activity has no Pexels photos yet. */
+const PLACEHOLDER = '/photos/hero.jpg'
+
+/**
+ * Add / override Pexels CDN crop & compression params so we can request the
+ * exact size we need for each surface. Pexels images go through their image
+ * proxy — adding query params on the file URL is supported.
  *
- * Future enhancement: add per-category overrides by dropping additional
- * photos into `public/photos/` and wiring a lookup table here.
+ * No-op on non-Pexels URLs so manual overrides (local paths, custom CDNs)
+ * pass through untouched.
  */
-const HERO_PATH = '/photos/hero.jpg'
+function withSize(url: string, w: number, h: number): string {
+  if (!url.includes('images.pexels.com')) return url
+  try {
+    const u = new URL(url)
+    u.searchParams.set('auto', 'compress')
+    u.searchParams.set('cs', 'tinysrgb')
+    u.searchParams.set('fit', 'crop')
+    u.searchParams.set('w', String(w))
+    u.searchParams.set('h', String(h))
+    return u.toString()
+  } catch {
+    return url
+  }
+}
 
-/**
- * Hero photo URL — used in the card and as the first carousel photo in the
- * detail modal. Constant for now; the `activity` argument is kept so we can
- * vary by category later without changing call sites.
- */
-export function heroPhotoUrl(_activity: Activity): string {
-  return HERO_PATH
+/** Hero photo URL — used in the card and as the first detail-modal photo. */
+export function heroPhotoUrl(activity: Activity): string {
+  const urls = PHOTOS[activity.id]
+  if (!urls || urls.length === 0) return PLACEHOLDER
+  return withSize(urls[0]!, 900, 1100)
 }
 
 /**
- * Returns 12 detail photo URLs. All point to the same bundled hero for now,
- * keeping the carousel reliable. The carousel UI still works (snap, lightbox,
- * pagination) — visual variety can be added later by bundling more photos
- * under `/public/photos/` and rotating them here.
+ * Returns 12 photo URLs for the detail carousel. If the activity has fewer
+ * than 12 Pexels entries (or none at all), repeats / falls back to the
+ * placeholder so the UI always renders 12 slots.
  */
-export function detailPhotos(_activity: Activity): string[] {
-  return Array.from({ length: 12 }, () => HERO_PATH)
+export function detailPhotos(activity: Activity): string[] {
+  const urls = PHOTOS[activity.id]
+  if (!urls || urls.length === 0) {
+    return Array.from({ length: 12 }, () => PLACEHOLDER)
+  }
+  return Array.from({ length: 12 }, (_, i) =>
+    withSize(urls[i % urls.length]!, 900, 900),
+  )
 }
