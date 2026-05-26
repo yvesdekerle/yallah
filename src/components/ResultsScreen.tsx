@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict, VoteEntry } from '../types/verdict.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
 import { YB } from '../utils/theme.ts'
-import { ConfirmModal } from './ConfirmModal.tsx'
-import { StarFilled } from '../icons/index.tsx'
+import { VerdictBadge } from './VerdictBadge.tsx'
 
 interface ResultsScreenProps {
   history: VoteEntry[]
   activities: Activity[]
-  onReset: () => void
+  /** Open the confirm-reset modal (handled at App level). */
+  onRequestReset: () => void
   /** Fired when a row is clicked. Parent opens the detail modal. */
   onSelectActivity?: (activity: Activity) => void
 }
@@ -22,18 +22,33 @@ const SUMMARY: { key: Verdict; label: string }[] = [
   { key: 'non', label: '✕ non' },
 ]
 
+interface VotedActivity {
+  activity: Activity
+  verdict: Verdict
+}
+
 /**
- * "Résultats" tab — live recap of the current user's votes plus a reset
- * button gated behind a confirmation modal.
+ * "Résultats" tab — live recap of the current user's votes.
+ *
+ * Two parts:
+ *   1. Stat tiles (count per verdict)
+ *   2. A FLAT list of every activity the user has voted on, ordered by
+ *      activity number. Each row's badge takes the shape + colour of the
+ *      verdict (heart for oui, star for super-like, coloured circle
+ *      otherwise) so the verdict is recognisable at a glance.
+ *
+ * Tapping a row opens the DetailModal in review mode so the user can
+ * inspect the activity or change their vote in 1 extra tap.
+ *
+ * The reset button delegates to the parent; the confirmation modal is
+ * rendered at App level so it isn't clipped by the scroll container.
  */
 export function ResultsScreen({
   history,
   activities,
-  onReset,
+  onRequestReset,
   onSelectActivity,
 }: ResultsScreenProps) {
-  const [confirming, setConfirming] = useState(false)
-
   const counts = useMemo(() => {
     const c: Record<Verdict, number> = {
       oui: 0,
@@ -52,34 +67,21 @@ export function ResultsScreen({
     return m
   }, [activities])
 
-  // Activities the user super-liked (excluding quota-converted "oui"s, since
-  // those weren't really intended as super-likes).
-  const superLikes = useMemo(
-    () =>
-      history
-        .filter((h) => h.verdict === 'top')
-        .map((h) => byId.get(h.id))
-        .filter((a): a is Activity => a !== undefined),
-    [history, byId],
-  )
-
-  const likes = useMemo(
-    () =>
-      history
-        .filter((h) => h.verdict === 'oui')
-        .map((h) => byId.get(h.id))
-        .filter((a): a is Activity => a !== undefined),
-    [history, byId],
-  )
-
-  const skipped = useMemo(
-    () =>
-      history
-        .filter((h) => h.verdict === 'skip')
-        .map((h) => byId.get(h.id))
-        .filter((a): a is Activity => a !== undefined),
-    [history, byId],
-  )
+  /**
+   * One entry per voted activity, sorted by activity number. If somehow
+   * history has duplicates the LAST vote wins.
+   */
+  const voted = useMemo<VotedActivity[]>(() => {
+    const latest = new Map<string, Verdict>()
+    for (const h of history) latest.set(h.id, h.verdict)
+    const out: VotedActivity[] = []
+    for (const [id, verdict] of latest) {
+      const activity = byId.get(id)
+      if (activity) out.push({ activity, verdict })
+    }
+    out.sort((a, b) => a.activity.number - b.activity.number)
+    return out
+  }, [history, byId])
 
   return (
     <div
@@ -113,8 +115,8 @@ export function ResultsScreen({
         <div
           className="grid"
           style={{
-            gridTemplateColumns: '1fr 1fr',
-            gap: 8,
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: 6,
             marginBottom: 24,
           }}
         >
@@ -124,18 +126,22 @@ export function ResultsScreen({
               className="text-left"
               style={{
                 background: '#fff',
-                borderRadius: 14,
-                padding: '12px 14px',
+                borderRadius: 12,
+                padding: '10px 8px',
                 boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
+                minWidth: 0,
               }}
             >
               <div
                 className="font-mono"
                 style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   color: YB.muted,
-                  letterSpacing: 0.4,
+                  letterSpacing: 0.3,
                   textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {label}
@@ -144,7 +150,7 @@ export function ResultsScreen({
                 className="font-sans"
                 style={{
                   fontWeight: 800,
-                  fontSize: 24,
+                  fontSize: 22,
                   color: VERDICT_META[key].color,
                   marginTop: 2,
                 }}
@@ -156,37 +162,7 @@ export function ResultsScreen({
           ))}
         </div>
 
-        {superLikes.length > 0 && (
-          <ResultsSection
-            title="Tes super-likes"
-            icon={<StarFilled color={YB.top} size={14} />}
-            activities={superLikes}
-            accentColor={YB.top}
-            onSelectActivity={onSelectActivity}
-          />
-        )}
-
-        {likes.length > 0 && (
-          <ResultsSection
-            title="Tes oui"
-            icon={<span style={{ fontSize: 14, color: YB.oui }}>♥</span>}
-            activities={likes}
-            accentColor={YB.oui}
-            onSelectActivity={onSelectActivity}
-          />
-        )}
-
-        {skipped.length > 0 && (
-          <ResultsSection
-            title="À décider plus tard"
-            icon={<span style={{ fontSize: 14, color: '#9A93A6' }}>⊘</span>}
-            activities={skipped}
-            accentColor="#9A93A6"
-            onSelectActivity={onSelectActivity}
-          />
-        )}
-
-        {history.length === 0 && (
+        {voted.length === 0 ? (
           <div
             className="font-sans"
             style={{
@@ -201,11 +177,79 @@ export function ResultsScreen({
           >
             Rien encore. Va swiper quelques activités, ça apparaîtra ici.
           </div>
+        ) : (
+          <div className="flex flex-col" style={{ gap: 6 }}>
+            {voted.map(({ activity, verdict }) => {
+              const clickable = !!onSelectActivity
+              const Tag = clickable ? 'button' : ('div' as const)
+              return (
+                <Tag
+                  key={activity.id}
+                  {...(clickable
+                    ? {
+                        type: 'button' as const,
+                        onClick: () => onSelectActivity!(activity),
+                        'aria-label': `Voir le détail de ${activity.title}`,
+                      }
+                    : {})}
+                  className="flex items-center font-sans text-left w-full border-0"
+                  style={{
+                    background: '#fff',
+                    borderRadius: 12,
+                    padding: '8px 10px',
+                    gap: 12,
+                    boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
+                    cursor: clickable ? 'pointer' : 'default',
+                    transition: 'transform 0.12s, box-shadow 0.12s',
+                  }}
+                  onMouseDown={
+                    clickable
+                      ? (e) =>
+                          (e.currentTarget.style.transform = 'scale(0.98)')
+                      : undefined
+                  }
+                  onMouseUp={
+                    clickable
+                      ? (e) => (e.currentTarget.style.transform = 'scale(1)')
+                      : undefined
+                  }
+                  onMouseLeave={
+                    clickable
+                      ? (e) => (e.currentTarget.style.transform = 'scale(1)')
+                      : undefined
+                  }
+                  data-testid={`vote-row-${activity.id}`}
+                >
+                  <VerdictBadge verdict={verdict} number={activity.number} />
+                  <span
+                    style={{
+                      fontSize: 14,
+                      lineHeight: 1.3,
+                      color: YB.ink,
+                      fontWeight: 500,
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
+                    {activity.title}
+                  </span>
+                  {clickable && (
+                    <span
+                      style={{ color: YB.muted, fontSize: 18, flexShrink: 0 }}
+                      aria-hidden
+                    >
+                      ›
+                    </span>
+                  )}
+                </Tag>
+              )
+            })}
+          </div>
         )}
 
         <button
           type="button"
-          onClick={() => setConfirming(true)}
+          onClick={onRequestReset}
           disabled={history.length === 0}
           className="font-sans cursor-pointer border-0"
           style={{
@@ -223,149 +267,6 @@ export function ResultsScreen({
         >
           Réinitialiser
         </button>
-      </div>
-
-      {confirming && (
-        <ConfirmModal
-          title="Tout effacer ?"
-          message="Tes votes en cours seront supprimés. Cette action est irréversible."
-          confirmLabel="Tout effacer"
-          cancelLabel="Annuler"
-          variant="danger"
-          onConfirm={() => {
-            onReset()
-            setConfirming(false)
-          }}
-          onCancel={() => setConfirming(false)}
-        />
-      )}
-    </div>
-  )
-}
-
-interface ResultsSectionProps {
-  title: string
-  icon: React.ReactNode
-  activities: Activity[]
-  accentColor: string
-  onSelectActivity?: (activity: Activity) => void
-}
-
-function ResultsSection({
-  title,
-  icon,
-  activities,
-  accentColor,
-  onSelectActivity,
-}: ResultsSectionProps) {
-  return (
-    <div style={{ marginBottom: 26 }}>
-      <div
-        className="flex items-baseline"
-        style={{ gap: 8, marginBottom: 12 }}
-      >
-        <h2
-          className="m-0 font-sans"
-          style={{
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: -0.3,
-            color: YB.ink,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-        >
-          {icon}
-          {title}
-        </h2>
-        <span
-          className="font-sans"
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: '#9A93A6',
-          }}
-        >
-          {activities.length}
-        </span>
-      </div>
-      <div className="flex flex-col" style={{ gap: 6 }}>
-        {activities.map((a) => {
-          const clickable = !!onSelectActivity
-          const Tag = clickable ? 'button' : ('div' as const)
-          return (
-            <Tag
-              key={a.id}
-              {...(clickable
-                ? {
-                    type: 'button' as const,
-                    onClick: () => onSelectActivity!(a),
-                    'aria-label': `Voir le détail de ${a.title}`,
-                  }
-                : {})}
-              className="flex items-center font-sans text-left w-full border-0"
-              style={{
-                background: '#fff',
-                borderRadius: 12,
-                padding: '10px 12px',
-                gap: 10,
-                boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
-                cursor: clickable ? 'pointer' : 'default',
-                transition: 'transform 0.12s, box-shadow 0.12s',
-              }}
-              onMouseDown={
-                clickable
-                  ? (e) =>
-                      (e.currentTarget.style.transform = 'scale(0.98)')
-                  : undefined
-              }
-              onMouseUp={
-                clickable
-                  ? (e) => (e.currentTarget.style.transform = 'scale(1)')
-                  : undefined
-              }
-              onMouseLeave={
-                clickable
-                  ? (e) => (e.currentTarget.style.transform = 'scale(1)')
-                  : undefined
-              }
-            >
-              <span
-                className="inline-flex items-center justify-center font-mono"
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 99,
-                  background: accentColor,
-                  color: '#fff',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}
-                aria-hidden
-              >
-                {a.number.toString().padStart(2, '0')}
-              </span>
-              <span
-                style={{
-                  fontSize: 13.5,
-                  lineHeight: 1.3,
-                  color: YB.ink,
-                  fontWeight: 500,
-                  flex: 1,
-                }}
-              >
-                {a.title}
-              </span>
-              {clickable && (
-                <span style={{ color: YB.muted, fontSize: 16 }} aria-hidden>
-                  ›
-                </span>
-              )}
-            </Tag>
-          )
-        })}
       </div>
     </div>
   )

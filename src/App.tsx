@@ -21,6 +21,7 @@ import { DeckDone } from './components/DeckDone.tsx'
 import { SwipeDeck, type SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
+import { ConfirmModal } from './components/ConfirmModal.tsx'
 
 interface ToastState {
   id: number
@@ -57,6 +58,10 @@ export default function App() {
    * verdict handler UPSERTS by activity id instead of appending.
    */
   const [reviewMode, setReviewMode] = useState(false)
+  // Lifted up from ResultsScreen so the modal renders at App level
+  // (positioned relative to the Phone frame, not the scrollable list).
+  // Avoids the "modal stuck at the top of the scroll content" bug.
+  const [confirmingReset, setConfirmingReset] = useState(false)
   // `detail` carries both the activity AND how the modal was opened.
   // From the swipe screen, voting buttons trigger the deck commit (advance
   // to next card). From the results screen, voting buttons UPDATE the
@@ -233,7 +238,7 @@ export default function App() {
           <ResultsScreen
             history={history}
             activities={ACTIVITIES}
-            onReset={handleReset}
+            onRequestReset={() => setConfirmingReset(true)}
             onSelectActivity={(a) =>
               setDetail({ activity: a, source: 'review' })
             }
@@ -264,6 +269,21 @@ export default function App() {
             onClose={() => setDetail(null)}
             superRemaining={superRemaining}
             onVerdict={handleDetailVerdict}
+          />
+        )}
+
+        {confirmingReset && (
+          <ConfirmModal
+            title="Tout effacer ?"
+            message="Tes votes en cours seront supprimés. Cette action est irréversible."
+            confirmLabel="Tout effacer"
+            cancelLabel="Annuler"
+            variant="danger"
+            onConfirm={() => {
+              handleReset()
+              setConfirmingReset(false)
+            }}
+            onCancel={() => setConfirmingReset(false)}
           />
         )}
       </div>

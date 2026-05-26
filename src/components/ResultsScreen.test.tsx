@@ -28,7 +28,7 @@ describe('ResultsScreen', () => {
       <ResultsScreen
         history={[]}
         activities={ACTIVITIES}
-        onReset={() => {}}
+        onRequestReset={() => {}}
       />,
     )
     expect(screen.getByText('0 / 5 activités swipées.')).toBeInTheDocument()
@@ -37,7 +37,7 @@ describe('ResultsScreen', () => {
     ).toBeInTheDocument()
   })
 
-  it('reports counts per verdict', () => {
+  it('reports counts per verdict (now including skip)', () => {
     const history: VoteEntry[] = [
       { id: 'a001', verdict: 'oui' },
       { id: 'a002', verdict: 'top' },
@@ -49,31 +49,56 @@ describe('ResultsScreen', () => {
       <ResultsScreen
         history={history}
         activities={ACTIVITIES}
-        onReset={() => {}}
+        onRequestReset={() => {}}
       />,
     )
     expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
     expect(screen.getByTestId('results-top')).toHaveTextContent('1')
     expect(screen.getByTestId('results-whynot')).toHaveTextContent('1')
     expect(screen.getByTestId('results-non')).toHaveTextContent('2')
+    expect(screen.getByTestId('results-skip')).toHaveTextContent('0')
   })
 
-  it('lists super-likes and likes', () => {
+  it('lists every voted activity in a single flat list sorted by number', () => {
     const history: VoteEntry[] = [
-      { id: 'a001', verdict: 'top' },
-      { id: 'a002', verdict: 'oui' },
+      { id: 'a003', verdict: 'top' },
+      { id: 'a001', verdict: 'oui' },
+      { id: 'a002', verdict: 'non' },
     ]
     render(
       <ResultsScreen
         history={history}
         activities={ACTIVITIES}
-        onReset={() => {}}
+        onRequestReset={() => {}}
       />,
     )
-    expect(screen.getByText('Tes super-likes')).toBeInTheDocument()
+    // All voted activities visible, in number order.
     expect(screen.getByText('Activity 1')).toBeInTheDocument()
-    expect(screen.getByText('Tes oui')).toBeInTheDocument()
     expect(screen.getByText('Activity 2')).toBeInTheDocument()
+    expect(screen.getByText('Activity 3')).toBeInTheDocument()
+    // The DOM order matters — rows should appear by activity number.
+    const rows = screen.getAllByTestId(/^vote-row-/)
+    expect(rows[0]).toHaveAttribute('data-testid', 'vote-row-a001')
+    expect(rows[1]).toHaveAttribute('data-testid', 'vote-row-a002')
+    expect(rows[2]).toHaveAttribute('data-testid', 'vote-row-a003')
+  })
+
+  it('rows are clickable when onSelectActivity is provided', async () => {
+    const user = userEvent.setup()
+    const onSelectActivity = vi.fn()
+    const history: VoteEntry[] = [{ id: 'a001', verdict: 'oui' }]
+    render(
+      <ResultsScreen
+        history={history}
+        activities={ACTIVITIES}
+        onRequestReset={() => {}}
+        onSelectActivity={onSelectActivity}
+      />,
+    )
+    await user.click(screen.getByTestId('vote-row-a001'))
+    expect(onSelectActivity).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'a001' }),
+    )
   })
 
   it('reset button is disabled when no votes', () => {
@@ -81,46 +106,24 @@ describe('ResultsScreen', () => {
       <ResultsScreen
         history={[]}
         activities={ACTIVITIES}
-        onReset={() => {}}
+        onRequestReset={() => {}}
       />,
     )
     expect(screen.getByLabelText('réinitialiser les votes')).toBeDisabled()
   })
 
-  it('reset asks for confirmation before firing onReset', async () => {
+  it('reset button forwards to onRequestReset (modal is rendered at App level)', async () => {
     const user = userEvent.setup()
-    const onReset = vi.fn()
+    const onRequestReset = vi.fn()
     const history: VoteEntry[] = [{ id: 'a001', verdict: 'oui' }]
     render(
       <ResultsScreen
         history={history}
         activities={ACTIVITIES}
-        onReset={onReset}
+        onRequestReset={onRequestReset}
       />,
     )
     await user.click(screen.getByLabelText('réinitialiser les votes'))
-    // Modal is open — onReset not called yet.
-    expect(screen.getByText('Tout effacer ?')).toBeInTheDocument()
-    expect(onReset).not.toHaveBeenCalled()
-    // Confirm.
-    await user.click(screen.getByText('Tout effacer'))
-    expect(onReset).toHaveBeenCalledOnce()
-  })
-
-  it('cancel in the confirm modal closes it without resetting', async () => {
-    const user = userEvent.setup()
-    const onReset = vi.fn()
-    const history: VoteEntry[] = [{ id: 'a001', verdict: 'oui' }]
-    render(
-      <ResultsScreen
-        history={history}
-        activities={ACTIVITIES}
-        onReset={onReset}
-      />,
-    )
-    await user.click(screen.getByLabelText('réinitialiser les votes'))
-    await user.click(screen.getByText('Annuler'))
-    expect(onReset).not.toHaveBeenCalled()
-    expect(screen.queryByText('Tout effacer ?')).not.toBeInTheDocument()
+    expect(onRequestReset).toHaveBeenCalledOnce()
   })
 })
