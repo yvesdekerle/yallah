@@ -10,9 +10,11 @@
  *   - Total budget for 201 × 12 = ~70 MB on disk
  *
  * Usage:
- *   npm run download:photos                 # resume, skip existing files
- *   npm run download:photos -- --force      # redownload everything
- *   npm run download:photos -- --only=a012  # only this activity
+ *   npm run download:photos                  # resume, skip existing files
+ *   npm run download:photos -- --force       # redownload everything
+ *   npm run download:photos -- --only=a012   # only this activity
+ *   npm run download:photos -- --delay=10m   # wait 10 min before starting
+ *                                            # (also: 600s, 1h, or plain int = minutes)
  *
  * Safe to interrupt and resume — each successful download is committed
  * to disk + photos.json immediately.
@@ -60,6 +62,21 @@ const onlyArg = process.argv.find((a) => a.startsWith('--only='))
 const onlyIds = onlyArg
   ? new Set(onlyArg.slice('--only='.length).split(','))
   : null
+const delayArg = process.argv.find((a) => a.startsWith('--delay='))
+// Accepts `--delay=10` (minutes) or `--delay=10m` / `--delay=600s` / `--delay=1h`
+function parseDelayMs(raw: string | undefined): number {
+  if (!raw) return 0
+  const m = raw.match(/^(\d+)([smh]?)$/)
+  if (!m) return 0
+  const n = Number.parseInt(m[1]!, 10)
+  switch (m[2]) {
+    case 's': return n * 1000
+    case 'h': return n * 60 * 60 * 1000
+    case 'm':
+    default: return n * 60 * 1000
+  }
+}
+const delayMs = parseDelayMs(delayArg?.slice('--delay='.length))
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
@@ -183,6 +200,15 @@ async function main(): Promise<void> {
   if (!existsSync(PHOTOS_JSON)) {
     console.error(`No photos.json at ${PHOTOS_JSON}. Run \`npm run fetch:photos\` first.`)
     process.exit(1)
+  }
+
+  if (delayMs > 0) {
+    const mins = Math.round(delayMs / 60_000)
+    const startTime = new Date(Date.now() + delayMs)
+    console.log(
+      `⏳ Waiting ${mins}min before starting (will resume around ${startTime.toLocaleTimeString()})...`,
+    )
+    await sleep(delayMs)
   }
 
   const photos: Record<string, string[]> = JSON.parse(
