@@ -26,6 +26,7 @@ import {
 } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import sharp from 'sharp'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -36,7 +37,8 @@ const HERO_W = 800
 const HERO_H = 1000
 const THUMB_W = 400
 const THUMB_H = 500
-const MAX_CONCURRENT = 4
+const JPEG_QUALITY = 78
+const MAX_CONCURRENT = 3
 const RETRY_DELAY_MS = 2000
 const MAX_RETRIES = 5
 
@@ -51,30 +53,29 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-/** Rewrite a Pexels CDN URL to request a specific cropped size. */
-function withSize(url: string, w: number, h: number): string {
-  try {
-    const u = new URL(url)
-    u.searchParams.set('auto', 'compress')
-    u.searchParams.set('cs', 'tinysrgb')
-    u.searchParams.set('fit', 'crop')
-    u.searchParams.set('w', String(w))
-    u.searchParams.set('h', String(h))
-    return u.toString()
-  } catch {
-    return url
-  }
-}
-
-async function downloadTo(url: string, dest: string): Promise<void> {
+/**
+ * Download a Pexels image AT ITS PRE-CACHED SIZE (no custom w/h params
+ * that trigger their on-demand processor → that's what hits 429s) and
+ * resize locally with sharp. Saves a JPEG at the target size + quality.
+ */
+async function downloadAndResize(
+  url: string,
+  dest: string,
+  width: number,
+  height: number,
+): Promise<void> {
   let attempt = 0
   while (true) {
     try {
+      // Use the URL as stored — Pexels' src.large variant is CDN-cached.
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const buf = Buffer.from(await res.arrayBuffer())
       mkdirSync(dirname(dest), { recursive: true })
-      writeFileSync(dest, buf)
+      await sharp(buf)
+        .resize(width, height, { fit: 'cover', position: 'attention' })
+        .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
+        .toFile(dest)
       return
     } catch (err) {
       if (attempt >= MAX_RETRIES) throw err
@@ -94,6 +95,8 @@ interface Task {
   remoteUrl: string
   localPath: string
   localUrl: string
+  width: number
+  height: number
 }
 
 async function runWithConcurrency(
@@ -148,17 +151,14 @@ async function main(): Promise<void> {
         continue
       }
       const isHero = i === 0
-      const sized = withSize(
-        remoteUrl,
-        isHero ? HERO_W : THUMB_W,
-        isHero ? HERO_H : THUMB_H,
-      )
       tasks.push({
         activityId,
         index: i + 1,
-        remoteUrl: sized,
+        remoteUrl, // download Pexels' pre-cached src.large as-is
         localPath,
         localUrl,
+        width: isHero ? HERO_W : THUMB_W,
+        height: isHero ? HERO_H : THUMB_H,
       })
     }
   }
@@ -181,7 +181,7 @@ async function main(): Promise<void> {
     tasks,
     async (t) => {
       try {
-        await downloadTo(t.remoteUrl, t.localPath)
+        await downloadAndResize(t.remoteUrl, t.localPath, t.width, t.height)
         photos[t.activityId]![t.index - 1] = t.localUrl
         done += 1
         saveCounter += 1
