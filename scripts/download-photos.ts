@@ -54,7 +54,11 @@ const FAST_CONCURRENT = 2
 const FAST_INTER_REQUEST_MS = 500
 const RETRY_DELAY_MS = 3000
 const MAX_RETRIES = 8
-const DEFAULT_429_PAUSE_MS = 60_000
+// When Pexels' 429 response doesn't carry a Retry-After header, we used
+// to wait a flat 60s. That was nearly always wasted time — the throttle
+// usually clears in seconds. Start at 10s and let the exponential
+// backoff escalate if we keep getting throttled.
+const DEFAULT_429_PAUSE_MS = 10_000
 
 // Browser-ish UA so the request doesn't look like a bot scraper.
 const USER_AGENT =
@@ -107,21 +111,25 @@ async function waitForPauseClear(): Promise<void> {
   }
 }
 
-function setPauseFromHeader(res: Response): number {
+interface PauseInfo {
+  pauseMs: number
+  source: 'header' | 'default'
+}
+
+function setPauseFromHeader(res: Response): PauseInfo {
   // Pexels (and most CDNs) send `Retry-After` in seconds.
   const ra = res.headers.get('Retry-After')
   const seconds = ra ? Number.parseInt(ra, 10) : NaN
-  const headerMs = Number.isFinite(seconds) && seconds > 0
-    ? seconds * 1000
-    : DEFAULT_429_PAUSE_MS
+  const hasHeader = Number.isFinite(seconds) && seconds > 0
+  const baseMs = hasHeader ? seconds * 1000 : DEFAULT_429_PAUSE_MS
 
   consecutivePauses += 1
-  // Exponential bump: 1st pause = headerMs, 2nd = ×2, 3rd = ×4, ... capped.
+  // Exponential bump: 1st pause = baseMs, 2nd = ×2, 3rd = ×4, ... capped.
   const multiplier = Math.min(2 ** (consecutivePauses - 1), 32)
-  const pauseMs = Math.min(headerMs * multiplier, MAX_PAUSE_MS)
+  const pauseMs = Math.min(baseMs * multiplier, MAX_PAUSE_MS)
   const newPausedUntil = Date.now() + pauseMs
   if (newPausedUntil > pausedUntil) pausedUntil = newPausedUntil
-  return pauseMs
+  return { pauseMs, source: hasHeader ? 'header' : 'default' }
 }
 
 /**
@@ -150,9 +158,14 @@ async function downloadAndResize(
         },
       })
       if (res.status === 429) {
-        const pauseMs = setPauseFromHeader(res)
+        const { pauseMs, source } = setPauseFromHeader(res)
+        const tag = source === 'header'
+          ? 'Pexels Retry-After'
+          : 'default backoff (no Retry-After header)'
+        const streak =
+          consecutivePauses > 1 ? ` — ${consecutivePauses}× in a row` : ''
         console.warn(
-          `\n  ⏳ Pexels CDN throttled — pausing all workers for ${Math.round(pauseMs / 1000)}s`,
+          `\n  ⏳ 429 — pausing ${Math.round(pauseMs / 1000)}s [${tag}${streak}]`,
         )
         // Retry this file once the pause clears (counts as 1 attempt).
         attempt += 1
