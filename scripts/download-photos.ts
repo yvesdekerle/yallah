@@ -123,10 +123,16 @@ async function downloadAndResize(
   dest: string,
   width: number,
   height: number,
+  label: string, // e.g. "[12/2360] a012/3.jpg"
 ): Promise<void> {
   let attempt = 0
   while (true) {
     await waitForPauseClear()
+    const tag = attempt > 0 ? ' (retry)' : ''
+    // One line per attempt — write the prefix without a newline, then
+    // append the status code (or "ERR") + newline so the reader sees
+    // exactly which file got which response.
+    process.stdout.write(`${label}${tag} ... `)
     try {
       const res = await fetch(url, {
         headers: {
@@ -136,27 +142,35 @@ async function downloadAndResize(
         },
       })
       if (res.status === 429) {
+        process.stdout.write('429\n')
         set429Pause()
-        console.warn(`\n  ⏳ 429 — pausing ${PAUSE_429_MS / 1000}s, retrying`)
-        // Retry this file once the pause clears (counts as 1 attempt).
+        console.warn(`  ⏳ pausing ${PAUSE_429_MS / 1000}s, retrying`)
         attempt += 1
         if (attempt >= MAX_RETRIES) throw new Error(`HTTP 429 after ${MAX_RETRIES} retries`)
         continue
       }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) {
+        process.stdout.write(`${res.status}\n`)
+        throw new Error(`HTTP ${res.status}`)
+      }
       const buf = Buffer.from(await res.arrayBuffer())
       mkdirSync(dirname(dest), { recursive: true })
       await sharp(buf)
         .resize(width, height, { fit: 'cover', position: 'attention' })
         .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
         .toFile(dest)
+      process.stdout.write(`${res.status}\n`)
       return
     } catch (err) {
+      // 429 already printed its status above and continued; for other
+      // errors we need to terminate the in-progress line ourselves.
+      const msg = (err as Error).message
+      if (!msg.startsWith('HTTP ')) process.stdout.write('ERR\n')
       if (attempt >= MAX_RETRIES) throw err
       attempt += 1
       const wait = RETRY_DELAY_MS * attempt
       console.warn(
-        `\n  retry ${attempt}/${MAX_RETRIES} for ${dest.split('/').slice(-2).join('/')} in ${wait}ms (${(err as Error).message})`,
+        `  retry ${attempt}/${MAX_RETRIES} in ${wait}ms (${msg})`,
       )
       await sleep(wait)
     }
@@ -175,7 +189,7 @@ interface Task {
 
 async function runWithConcurrency(
   tasks: Task[],
-  worker: (t: Task) => Promise<void>,
+  worker: (t: Task, idx: number) => Promise<void>,
   concurrency: number,
 ): Promise<void> {
   let i = 0
@@ -188,7 +202,7 @@ async function runWithConcurrency(
         while (true) {
           const idx = i++
           if (idx >= tasks.length) return
-          await worker(tasks[idx]!)
+          await worker(tasks[idx]!, idx)
           // Inter-request breath inside each worker.
           await sleep(INTER_REQUEST_MS)
         }
@@ -329,9 +343,10 @@ async function main(): Promise<void> {
   let saveCounter = 0
   await runWithConcurrency(
     tasks,
-    async (t) => {
+    async (t, idx) => {
+      const label = `[${idx + 1}/${tasks.length}] ${t.activityId}/${t.index}.jpg`
       try {
-        await downloadAndResize(t.remoteUrl, t.localPath, t.width, t.height)
+        await downloadAndResize(t.remoteUrl, t.localPath, t.width, t.height, label)
         photos[t.activityId]![t.index - 1] = t.localUrl
         done += 1
         saveCounter += 1
@@ -344,13 +359,8 @@ async function main(): Promise<void> {
             'utf8',
           )
         }
-        process.stdout.write(
-          `\r[${done}/${tasks.length}] ${t.activityId}/${t.index}.jpg`,
-        )
       } catch (err) {
-        console.log(
-          `\n  ✗ ${t.activityId}/${t.index}.jpg — ${(err as Error).message}`,
-        )
+        console.log(`  ✗ gave up — ${(err as Error).message}`)
       }
     },
     MAX_CONCURRENT,
@@ -358,7 +368,7 @@ async function main(): Promise<void> {
 
   // Final save.
   writeFileSync(PHOTOS_JSON, JSON.stringify(photos, null, 2) + '\n', 'utf8')
-  console.log(`\nDone. ${done}/${tasks.length} downloaded.`)
+  console.log(`Done. ${done}/${tasks.length} downloaded.`)
 }
 
 main().catch((err) => {
