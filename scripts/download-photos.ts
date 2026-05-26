@@ -38,9 +38,21 @@ const HERO_H = 1000
 const THUMB_W = 400
 const THUMB_H = 500
 const JPEG_QUALITY = 78
-const MAX_CONCURRENT = 3
-const RETRY_DELAY_MS = 2000
-const MAX_RETRIES = 5
+// Pexels' CDN rate-limits bulk downloads aggressively. Serial + 500ms
+// inter-request delay keeps us out of trouble most of the time.
+const MAX_CONCURRENT = 2
+const INTER_REQUEST_MS = 500
+const RETRY_DELAY_MS = 3000
+const MAX_RETRIES = 8
+const DEFAULT_429_PAUSE_MS = 60_000
+
+// Browser-ish UA so the request doesn't look like a bot scraper.
+const USER_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
+
+// Shared "paused until" timestamp — when any worker takes a 429, every
+// other worker waits past this point before its next request.
+let pausedUntil = 0
 
 const args = new Set(process.argv.slice(2))
 const force = args.has('--force')
@@ -53,10 +65,33 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
 
+async function waitForPauseClear(): Promise<void> {
+  while (true) {
+    const now = Date.now()
+    if (now >= pausedUntil) return
+    await sleep(pausedUntil - now)
+  }
+}
+
+function setPauseFromHeader(res: Response): number {
+  // Pexels (and most CDNs) send `Retry-After` in seconds.
+  const ra = res.headers.get('Retry-After')
+  const seconds = ra ? Number.parseInt(ra, 10) : NaN
+  const pauseMs = Number.isFinite(seconds) && seconds > 0
+    ? seconds * 1000
+    : DEFAULT_429_PAUSE_MS
+  const newPausedUntil = Date.now() + pauseMs
+  if (newPausedUntil > pausedUntil) pausedUntil = newPausedUntil
+  return pauseMs
+}
+
 /**
  * Download a Pexels image AT ITS PRE-CACHED SIZE (no custom w/h params
- * that trigger their on-demand processor → that's what hits 429s) and
- * resize locally with sharp. Saves a JPEG at the target size + quality.
+ * that trigger their on-demand processor) and resize locally with sharp.
+ * Saves a JPEG at the target size + quality.
+ *
+ * Honors a shared `pausedUntil` so when any worker hits 429, every other
+ * worker stops hammering the CDN until Pexels says we can resume.
  */
 async function downloadAndResize(
   url: string,
@@ -66,9 +101,25 @@ async function downloadAndResize(
 ): Promise<void> {
   let attempt = 0
   while (true) {
+    await waitForPauseClear()
     try {
-      // Use the URL as stored — Pexels' src.large variant is CDN-cached.
-      const res = await fetch(url)
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': USER_AGENT,
+          Accept: 'image/avif,image/webp,image/jpeg,*/*',
+          Referer: 'https://www.pexels.com/',
+        },
+      })
+      if (res.status === 429) {
+        const pauseMs = setPauseFromHeader(res)
+        console.warn(
+          `\n  ⏳ Pexels CDN throttled — pausing all workers for ${Math.round(pauseMs / 1000)}s`,
+        )
+        // Retry this file once the pause clears (counts as 1 attempt).
+        attempt += 1
+        if (attempt >= MAX_RETRIES) throw new Error(`HTTP 429 after ${MAX_RETRIES} retries`)
+        continue
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const buf = Buffer.from(await res.arrayBuffer())
       mkdirSync(dirname(dest), { recursive: true })
@@ -82,7 +133,7 @@ async function downloadAndResize(
       attempt += 1
       const wait = RETRY_DELAY_MS * attempt
       console.warn(
-        `  retry ${attempt}/${MAX_RETRIES} for ${dest.split('/').slice(-2).join('/')} in ${wait}ms (${(err as Error).message})`,
+        `\n  retry ${attempt}/${MAX_RETRIES} for ${dest.split('/').slice(-2).join('/')} in ${wait}ms (${(err as Error).message})`,
       )
       await sleep(wait)
     }
@@ -109,10 +160,14 @@ async function runWithConcurrency(
   for (let c = 0; c < concurrency; c++) {
     workers.push(
       (async () => {
+        // Light per-worker offset so they don't fire in lockstep.
+        await sleep(c * 200)
         while (true) {
           const idx = i++
           if (idx >= tasks.length) return
           await worker(tasks[idx]!)
+          // Inter-request breath inside each worker.
+          await sleep(INTER_REQUEST_MS)
         }
       })(),
     )
