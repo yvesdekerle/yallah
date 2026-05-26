@@ -31,6 +31,7 @@ import {
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Activity } from '../src/types/activity.ts'
+import { autoQuery } from './photo-query.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -64,53 +65,6 @@ const maxArg = process.argv.find((a) => a.startsWith('--max='))
 const maxFetches = maxArg
   ? Number.parseInt(maxArg.slice('--max='.length), 10)
   : Infinity
-
-// Category → secondary keyword. Helps Pexels narrow down a generic activity
-// title to the right vibe.
-const CATEGORY_HINTS: Record<string, string> = {
-  '🌊 Mer & Sports nautiques': 'ocean tropical',
-  '🏝️ Îles, Lagons & Excursions bateau': 'tropical island lagoon',
-  '🐅 Faune & Rencontres animales': 'wildlife tropical',
-  '🏔️ Randonnée & Sommets': 'mountain hiking',
-  '🌳 Terre & Nature': 'jungle nature',
-  '✈️ Activités aériennes': 'aerial helicopter sky',
-  '🍽️ Gastronomie & Spiritueux': 'food restaurant',
-  '🏛️ Culture, Histoire & Mémoire': 'heritage colonial',
-  '🛍️ Marchés & Artisanat': 'market crafts',
-  '🧘 Bien-être & Détente': 'spa wellness beach',
-  '🎢 Sensations fortes': 'adventure adrenaline',
-}
-
-const STOPWORDS = new Set([
-  'à', 'a', 'au', 'aux', 'avec', 'dans', 'de', 'des', 'du', 'en', 'et',
-  'la', 'le', 'les', 'ou', 'par', 'pour', 'sans', 'sous', 'sur', 'un',
-  'une', 'à la', 'd', 'l', 'aux',
-])
-
-function stripAccents(s: string): string {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
-}
-
-function autoQuery(a: Activity): string {
-  // Strip the place name in parens, sentinel emojis, numbers.
-  const cleanTitle = a.title
-    .replace(/\([^)]*\)/g, '')
-    .replace(/\u{1F48E}/gu, '') // 💎
-    .replace(/\u{1F5DD}/gu, '') // 🗝️ base
-    .replace(/️/g, '') // emoji variation selector
-    .replace(/·/g, '')
-    .replace(/\d+/g, '')
-    .trim()
-
-  const words = stripAccents(cleanTitle)
-    .toLowerCase()
-    .split(/[\s,'/-]+/)
-    .filter((w) => w.length > 2 && !STOPWORDS.has(w))
-    .slice(0, 3)
-
-  const hint = CATEGORY_HINTS[a.category] ?? 'tropical'
-  return `${words.join(' ')} ${hint}`.trim()
-}
 
 interface PexelsPhoto {
   id: number
