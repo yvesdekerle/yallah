@@ -1,0 +1,289 @@
+/**
+ * Generate a single self-contained HTML page that previews every activity's
+ * photos in a grid. Open the file in any browser, no server needed.
+ *
+ *   npm run preview:photos
+ *
+ * Useful to spot activities where Pexels returned irrelevant photos so you
+ * can override their query in `scripts/photo-queries.json` and re-fetch.
+ */
+
+import { readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
+import type { Activity } from '../src/types/activity.ts'
+import { autoQuery } from './photo-query.ts'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const ROOT = resolve(__dirname, '..')
+const ACTIVITIES_PATH = resolve(ROOT, 'src/data/activities.json')
+const PHOTOS_PATH = resolve(ROOT, 'src/data/photos.json')
+const QUERIES_PATH = resolve(ROOT, 'scripts/photo-queries.json')
+const OUTPUT_PATH = resolve(ROOT, 'preview-photos.html')
+
+const args = process.argv.slice(2)
+const autoOpen = !args.includes('--no-open')
+
+function loadJson<T>(path: string, fallback: T): T {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')) as T
+  } catch {
+    return fallback
+  }
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function withSize(url: string, w: number, h: number): string {
+  if (!url.includes('images.pexels.com')) return url
+  try {
+    const u = new URL(url)
+    u.searchParams.set('auto', 'compress')
+    u.searchParams.set('cs', 'tinysrgb')
+    u.searchParams.set('fit', 'crop')
+    u.searchParams.set('w', String(w))
+    u.searchParams.set('h', String(h))
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
+function buildHtml(
+  activities: Activity[],
+  photos: Record<string, string[]>,
+  queries: Record<string, string>,
+): string {
+  const totalPhotos = Object.values(photos).reduce(
+    (sum, urls) => sum + urls.length,
+    0,
+  )
+  const populated = activities.filter((a) => photos[a.id]?.length).length
+  const empty = activities.length - populated
+
+  const sections = activities
+    .map((a) => {
+      const urls = photos[a.id] ?? []
+      const customQuery = queries[a.id]
+      const usedQuery = customQuery ?? autoQuery(a)
+      const queryTag = customQuery ? '🔧 custom' : '🤖 auto'
+      const status =
+        urls.length === 0
+          ? '<span class="no-photos">aucune photo</span>'
+          : urls.length < 12
+            ? `<span class="warn">${urls.length} / 12</span>`
+            : `<span class="ok">12 / 12</span>`
+
+      const grid = urls.length
+        ? urls
+            .map(
+              (u, i) => `
+        <a href="${escapeHtml(u)}" target="_blank" rel="noopener" title="photo ${i + 1}">
+          <img loading="lazy" src="${escapeHtml(withSize(u, 240, 240))}" alt="" />
+        </a>`,
+            )
+            .join('')
+        : '<div class="empty">Aucune photo récupérée pour cette activité.</div>'
+
+      return `
+  <section id="${a.id}" class="activity${a.pepite ? ' pepite' : ''}">
+    <div class="header">
+      <h2>
+        <span class="num">N°${a.number.toString().padStart(3, '0')}</span>
+        ${escapeHtml(a.title)}
+        ${a.pepite ? '<span class="badge gem">💎 pépite</span>' : ''}
+        ${a.secret ? '<span class="badge secret">🗝️ secret</span>' : ''}
+      </h2>
+      <div class="meta">
+        <span class="cat">${escapeHtml(a.category)}</span>
+        <span class="dot">·</span>
+        <span class="loc">${escapeHtml(a.location)}</span>
+      </div>
+      <div class="query-row">
+        <code>${escapeHtml(usedQuery)}</code>
+        <span class="query-tag">${queryTag}</span>
+        <span class="status">${status}</span>
+      </div>
+    </div>
+    <div class="grid">${grid}</div>
+  </section>`
+    })
+    .join('\n')
+
+  return `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yallah — Aperçu photos</title>
+  <style>
+    :root {
+      --sun: #FFCB45;
+      --coral: #FF6B47;
+      --ink: #181B1F;
+      --ink2: #3A3D44;
+      --muted: #7A7B85;
+      --paper: #FFFCF5;
+      --sand: #F4EFE5;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header.top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--sun);
+      padding: 18px 22px;
+      box-shadow: 0 2px 12px rgba(20, 30, 50, 0.12);
+    }
+    header.top h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+    header.top h1 .dot { color: var(--coral); }
+    header.top .stats {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--ink2);
+    }
+    header.top .stats strong { color: var(--ink); }
+    main { padding: 0; max-width: 1280px; margin: 0 auto; }
+    .activity {
+      background: #fff;
+      margin: 12px 16px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px -3px rgba(20, 30, 50, 0.1);
+    }
+    .activity.pepite { border-left: 4px solid var(--sun); }
+    .activity h2 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .num {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      background: var(--sand);
+      color: var(--ink);
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.4px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+    .badge.gem { background: linear-gradient(135deg, var(--sun), var(--coral)); color: #fff; }
+    .badge.secret { background: var(--ink); color: #fff; }
+    .meta { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+    .meta .dot { margin: 0 4px; opacity: 0.5; }
+    .query-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .query-row code {
+      font-family: ui-monospace, "JetBrains Mono", monospace;
+      background: var(--sand);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: var(--ink);
+      font-size: 12px;
+    }
+    .query-tag { color: var(--muted); }
+    .status { margin-left: auto; font-weight: 600; }
+    .status .ok { color: #22C268; }
+    .status .warn { color: #FF8A00; }
+    .status .no-photos { color: var(--coral); font-style: italic; font-weight: 500; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 540px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .grid a {
+      display: block;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--sand);
+    }
+    .grid img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.15s;
+    }
+    .grid a:hover img { transform: scale(1.03); }
+    .empty {
+      padding: 24px;
+      background: var(--sand);
+      border-radius: 8px;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>yallah<span class="dot">.</span> aperçu photos</h1>
+    <div class="stats">
+      <strong>${activities.length}</strong> activités ·
+      <strong>${populated}</strong> avec photos ·
+      <strong>${empty}</strong> vides ·
+      <strong>${totalPhotos}</strong> photos au total
+    </div>
+  </header>
+  <main>${sections}
+  </main>
+</body>
+</html>
+`
+}
+
+function main(): void {
+  const activities = loadJson<Activity[]>(ACTIVITIES_PATH, [])
+  const photos = loadJson<Record<string, string[]>>(PHOTOS_PATH, {})
+  const queries = loadJson<Record<string, string>>(QUERIES_PATH, {})
+  const html = buildHtml(activities, photos, queries)
+  writeFileSync(OUTPUT_PATH, html, 'utf8')
+  console.log(`Wrote ${OUTPUT_PATH}`)
+  console.log(`  ${activities.length} activities, ${Object.keys(photos).length} populated.`)
+  if (autoOpen && process.platform === 'darwin') {
+    try {
+      execSync(`open ${OUTPUT_PATH}`)
+    } catch {
+      // ignore — user can open manually
+    }
+  }
+}
+
+main()

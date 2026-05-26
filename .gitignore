@@ -23,6 +23,9 @@ tmp/
 test-results/
 playwright-report/
 
+# Generated preview pages
+preview-photos.html
+
 # Editor / OS
 .vscode/*
 !.vscode/extensions.json

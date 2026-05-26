@@ -105,6 +105,24 @@ Flags utiles :
 - `--only=a012,a045` — ne fetch que ces ids
 - `--force` — refetch tout, même les entrées existantes
 
+### Voir le résultat (`preview:photos`)
+
+Pour vérifier d'un coup d'œil ce que Pexels a renvoyé pour chaque activité (et repérer celles à customiser) :
+
+```bash
+npm run preview:photos
+```
+
+Génère `preview-photos.html` à la racine et l'ouvre dans ton navigateur. Page autonome (offline OK une fois chargée), une section par activité avec :
+- N°, titre, badges 💎 / 🗝️
+- Query Pexels utilisée (en mono, badge `auto` ou `custom`)
+- Status `12 / 12` vert, `8 / 12` orange, ou `aucune photo` corail
+- Grille de 12 vignettes 240×240 cliquables (ouvre la photo en taille réelle)
+
+Workflow pour personnaliser : tu repères une activité où les photos sont moches, tu ajoutes une override dans `scripts/photo-queries.json` (`"a017": "submarine mauritius diving"`), tu fais `npm run fetch:photos -- --force --only=a017`, puis `npm run preview:photos` pour revoir.
+
+> `preview-photos.html` est gitignoré (regénéré à la demande).
+
 ### Personnaliser certaines activités
 
 Deux options :
