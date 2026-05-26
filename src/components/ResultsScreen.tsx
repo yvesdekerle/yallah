@@ -12,6 +12,15 @@ interface ResultsScreenProps {
   onRequestReset: () => void
   /** Fired when a row is clicked. Parent opens the detail modal. */
   onSelectActivity?: (activity: Activity) => void
+  /**
+   * Re-balayage entry point: hand control to the parent so it can switch
+   * back to the Swipe tab in review mode (cards with previous votes show
+   * a banner + "=" button to confirm). Optional — when undefined the
+   * action button is hidden.
+   */
+  onReview?: () => void
+  /** True when the deck is currently in review mode (changes button copy). */
+  reviewing?: boolean
 }
 
 const SUMMARY: { key: Verdict; label: string }[] = [
@@ -48,6 +57,8 @@ export function ResultsScreen({
   activities,
   onRequestReset,
   onSelectActivity,
+  onReview,
+  reviewing = false,
 }: ResultsScreenProps) {
   const counts = useMemo(() => {
     const c: Record<Verdict, number> = {
@@ -247,13 +258,35 @@ export function ResultsScreen({
           </div>
         )}
 
+        {onReview && history.length > 0 && (
+          <button
+            type="button"
+            onClick={onReview}
+            className="font-sans cursor-pointer border-0"
+            style={{
+              marginTop: 32,
+              width: '100%',
+              padding: '12px 0',
+              borderRadius: 99,
+              background: YB.coral,
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: 14,
+              boxShadow: '0 6px 16px -4px rgba(255,107,71,0.4)',
+            }}
+            aria-label="repasser toute la pile"
+          >
+            {reviewing ? 'Continuer la révision' : 'Repasser toute la pile'}
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onRequestReset}
           disabled={history.length === 0}
           className="font-sans cursor-pointer border-0"
           style={{
-            marginTop: 32,
+            marginTop: onReview && history.length > 0 ? 10 : 32,
             width: '100%',
             padding: '12px 0',
             borderRadius: 99,

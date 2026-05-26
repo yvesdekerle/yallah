@@ -129,7 +129,13 @@ export default function App() {
   const handleReview = useCallback(() => {
     setDone(false)
     setReviewMode(true)
+    setActiveTab(0) // bring the user to the swipe screen
     setToast({ id: Date.now(), text: 'Mode révision — utilise [=] pour garder', emoji: '↻' })
+  }, [])
+
+  const handleExitReview = useCallback(() => {
+    setReviewMode(false)
+    setToast({ id: Date.now(), text: 'Mode révision terminé', emoji: '✓' })
   }, [])
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
@@ -185,6 +191,36 @@ export default function App() {
             enabled={history.length > 0 && !done}
             onClick={handleUndo}
           />
+          {reviewMode && (
+            <button
+              type="button"
+              onClick={handleExitReview}
+              aria-label="quitter le mode révision"
+              className="absolute z-[9] inline-flex items-center font-sans cursor-pointer border-0"
+              style={{
+                top: 46,
+                right: 18,
+                height: 36,
+                padding: '0 12px 0 14px',
+                borderRadius: 99,
+                background: YB.coral,
+                color: '#fff',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 0.2,
+                gap: 8,
+                boxShadow: '0 4px 12px -2px rgba(255,107,71,0.35)',
+              }}
+            >
+              <span>Mode révision</span>
+              <span
+                aria-hidden
+                style={{ fontSize: 16, lineHeight: 1, opacity: 0.9 }}
+              >
+                ✕
+              </span>
+            </button>
+          )}
           {!done ? (
             <div
               className="phone-card-area absolute"
@@ -249,6 +285,8 @@ export default function App() {
             onSelectActivity={(a) =>
               setDetail({ activity: a, source: 'review' })
             }
+            onReview={handleReview}
+            reviewing={reviewMode}
           />
         </div>
 
