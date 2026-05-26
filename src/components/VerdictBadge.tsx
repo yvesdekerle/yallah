@@ -32,10 +32,13 @@ export function VerdictBadge({ verdict, number, size = 40 }: VerdictBadgeProps) 
       <ShapeFor verdict={verdict} fill={fill} />
       <text
         x="24"
-        y={
-          verdict === 'oui' ? 32 : verdict === 'top' ? 31 : 30
-        }
+        // y is the visual centre of the glyph thanks to dominantBaseline.
+        // Tuned per shape: hearts taper at the bottom so we lift the
+        // number a touch; star centres on its inner pentagon; circles
+        // sit at the geometric middle.
+        y={verdict === 'oui' ? 22 : verdict === 'top' ? 26 : 24}
         textAnchor="middle"
+        dominantBaseline="central"
         fontSize={verdict === 'oui' || verdict === 'top' ? 13 : 14}
         fontWeight={800}
         fontFamily="ui-monospace, monospace"
