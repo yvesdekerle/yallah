@@ -20,7 +20,7 @@ export function GroupScreen({ currentUserProgress, total }: GroupScreenProps) {
       style={{
         background: YB.bgSun,
         color: YB.ink,
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 96px)',
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 76px)',
         paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
       }}
     >

@@ -62,6 +62,7 @@ export default function App() {
   // (positioned relative to the Phone frame, not the scrollable list).
   // Avoids the "modal stuck at the top of the scroll content" bug.
   const [confirmingReset, setConfirmingReset] = useState(false)
+  const [confirmingRandomFill, setConfirmingRandomFill] = useState(false)
   // `detail` carries both the activity AND how the modal was opened.
   // From the swipe screen, voting buttons trigger the deck commit (advance
   // to next card). From the results screen, voting buttons UPDATE the
@@ -137,6 +138,30 @@ export default function App() {
     setReviewMode(false)
     setToast({ id: Date.now(), text: 'Mode révision terminé', emoji: '✓' })
   }, [])
+
+  /**
+   * Fill all activities that haven't been voted on yet with a random
+   * verdict picked from the four "passive" verdicts (no super-likes —
+   * keeps the 5-quota intact). Useful to seed a deck quickly for demo
+   * purposes or when you want to focus on a smaller subset.
+   */
+  const handleRandomFill = useCallback(() => {
+    const votedIds = new Set(history.map((h) => h.id))
+    const missing = ACTIVITIES.filter((a) => !votedIds.has(a.id))
+    if (missing.length === 0) return
+    const verdicts: Verdict[] = ['oui', 'non', 'whynot', 'skip']
+    const additions: VoteEntry[] = missing.map((a) => ({
+      id: a.id,
+      verdict: verdicts[Math.floor(Math.random() * verdicts.length)]!,
+    }))
+    setHistory((h) => [...h, ...additions])
+    setDone(false)
+    setToast({
+      id: Date.now(),
+      text: `${additions.length} votes générés aléatoirement`,
+      emoji: '🎲',
+    })
+  }, [history, setHistory])
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
   // where the modal was opened from:
@@ -225,7 +250,7 @@ export default function App() {
             <div
               className="phone-card-area absolute"
               style={{
-                top: 94,
+                top: 76,
                 left: 10,
                 right: 10,
                 bottom: 79,
@@ -287,6 +312,7 @@ export default function App() {
             }
             onReview={handleReview}
             reviewing={reviewMode}
+            onRequestRandomFill={() => setConfirmingRandomFill(true)}
           />
         </div>
 
@@ -332,6 +358,21 @@ export default function App() {
               setConfirmingReset(false)
             }}
             onCancel={() => setConfirmingReset(false)}
+          />
+        )}
+
+        {confirmingRandomFill && (
+          <ConfirmModal
+            title="Remplir aléatoirement ?"
+            message={`${ACTIVITIES.length - history.length} activités non votées vont recevoir un verdict tiré au sort parmi : oui, non, why not, plus tard. Tu pourras toujours changer chaque vote ensuite.`}
+            confirmLabel="Remplir"
+            cancelLabel="Annuler"
+            variant="primary"
+            onConfirm={() => {
+              handleRandomFill()
+              setConfirmingRandomFill(false)
+            }}
+            onCancel={() => setConfirmingRandomFill(false)}
           />
         )}
       </div>

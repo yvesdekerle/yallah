@@ -51,16 +51,13 @@ body {
   .phone-statusbar {
     display: none !important;
   }
-  /* Reclaim the ~30 px the fake status bar used to occupy by shifting the
-     top-of-screen elements up. iOS safe-area insets are respected via
-     `env(safe-area-inset-top, 0px)` so we don't slide under the notch. */
-  .phone-topbar {
-    top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-  }
+  /* TopBar already covers from y=0 down (with safe-area padding built in),
+     so no override needed on mobile. Just adjust the floating undo button
+     + the card area to start right below the banner. */
   .phone-undo {
     top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
   }
   .phone-card-area {
-    top: calc(env(safe-area-inset-top, 0px) + 64px) !important;
+    top: calc(env(safe-area-inset-top, 0px) + 76px) !important;
   }
 }

@@ -21,6 +21,8 @@ interface ResultsScreenProps {
   onReview?: () => void
   /** True when the deck is currently in review mode (changes button copy). */
   reviewing?: boolean
+  /** Fire a confirmation prompt to randomly fill un-voted activities. */
+  onRequestRandomFill?: () => void
 }
 
 const SUMMARY: { key: Verdict; label: string }[] = [
@@ -59,7 +61,9 @@ export function ResultsScreen({
   onSelectActivity,
   onReview,
   reviewing = false,
+  onRequestRandomFill,
 }: ResultsScreenProps) {
+  const remaining = activities.length - history.length
   const counts = useMemo(() => {
     const c: Record<Verdict, number> = {
       oui: 0,
@@ -100,7 +104,8 @@ export function ResultsScreen({
       style={{
         background: YB.bgSun,
         color: YB.ink,
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 96px)',
+        // Banner is safe-area-inset-top + 60. Add 16px breathing room.
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 76px)',
         paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
       }}
     >
@@ -280,13 +285,41 @@ export function ResultsScreen({
           </button>
         )}
 
+        {onRequestRandomFill && remaining > 0 && (
+          <button
+            type="button"
+            onClick={onRequestRandomFill}
+            className="font-sans cursor-pointer border-0"
+            style={{
+              marginTop:
+                onReview && history.length > 0 ? 10 : 32,
+              width: '100%',
+              padding: '12px 0',
+              borderRadius: 99,
+              background: '#fff',
+              color: YB.ink,
+              fontWeight: 700,
+              fontSize: 14,
+              border: `1px solid ${YB.ink}`,
+              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
+            }}
+            aria-label="remplir aléatoirement les activités restantes"
+          >
+            🎲 Remplir aléatoirement ({remaining})
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onRequestReset}
           disabled={history.length === 0}
           className="font-sans cursor-pointer border-0"
           style={{
-            marginTop: onReview && history.length > 0 ? 10 : 32,
+            marginTop:
+              (onReview && history.length > 0) ||
+              (onRequestRandomFill && remaining > 0)
+                ? 10
+                : 32,
             width: '100%',
             padding: '12px 0',
             borderRadius: 99,
