@@ -52,7 +52,7 @@ describe('GroupScreen', () => {
     expect(chloeRow).toHaveTextContent('toi')
 
     const yvesRow = screen.getByTestId('participant-yves')
-    expect(yvesRow).toHaveTextContent('0 / 201')
+    expect(yvesRow).toHaveTextContent('64 / 201')
     expect(yvesRow).not.toHaveTextContent('toi')
 
     const alexRow = screen.getByTestId('participant-alex')
