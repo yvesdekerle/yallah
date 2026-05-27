@@ -1,0 +1,86 @@
+import { MapContainer, Marker, TileLayer } from 'react-leaflet'
+import L from 'leaflet'
+import type { Coords } from '../utils/coords.ts'
+import { YB } from '../utils/theme.ts'
+
+interface ActivityMiniMapProps {
+  coords: Coords | null
+  pinColor: string
+  onExpand?: () => void
+}
+
+function makePinIcon(color: string): L.DivIcon {
+  const html = `
+    <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" fill="${color}" stroke="#fff" stroke-width="2.5" />
+    </svg>
+  `
+  return L.divIcon({
+    html,
+    className: '',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  })
+}
+
+export function ActivityMiniMap({
+  coords,
+  pinColor,
+  onExpand,
+}: ActivityMiniMapProps) {
+  if (coords === null) {
+    return (
+      <div
+        className="font-sans"
+        style={{
+          height: 180,
+          background: YB.bgSoft,
+          borderRadius: 12,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: YB.muted,
+          fontSize: 14,
+          fontWeight: 500,
+        }}
+      >
+        📍 Pas de localisation précise
+      </div>
+    )
+  }
+
+  return (
+    <div
+      data-testid="mini-map-tap-target"
+      onClick={onExpand}
+      style={{
+        height: 180,
+        borderRadius: 12,
+        overflow: 'hidden',
+        cursor: onExpand ? 'pointer' : 'default',
+        position: 'relative',
+      }}
+    >
+      <MapContainer
+        center={[coords.lat, coords.lng]}
+        zoom={14}
+        dragging={false}
+        scrollWheelZoom={false}
+        doubleClickZoom={false}
+        zoomControl={false}
+        touchZoom={false}
+        keyboard={false}
+        style={{ height: '100%', width: '100%' }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <Marker
+          position={[coords.lat, coords.lng]}
+          icon={makePinIcon(pinColor)}
+        />
+      </MapContainer>
+    </div>
+  )
+}
