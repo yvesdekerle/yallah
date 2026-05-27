@@ -129,6 +129,7 @@ All three render simultaneously inside the Phone wrapper. App switches by toggli
 - **DetailModal** — opened either by tapping the active card / eye button (`source: 'swipe'`, vote buttons forward to `deck.commit`) or by tapping a Résultats row (`source: 'review'`, vote buttons UPSERT the existing history entry).
 - **PhotoLightbox** — nested inside DetailModal. `<img object-fit: contain>` preserves the photo's natural aspect ratio; horizontal pointer drag swipes between photos (60 px threshold). Keyboard: Esc to close, ← / → to nav.
 - **ConfirmModal** — rendered at the **App level** (sibling of all screens), driven by `confirmingReset` / `confirmingRandomFill` state. **Do not** render it inside a screen with `overflow-y: auto` — its `position: absolute; inset: 0` would anchor to the scrollable container's top, leaving the modal stuck above the visible viewport when the user has scrolled.
+- **IdentityPicker** — bottom-sheet rendered at the **App level**. Two modes: blocking (no `onClose` prop, opaque backdrop, no close button, used during onboarding when `yallah.userId.v1` is `null`) and dismissable (used by the "Changer d'identité" button on Groupe). Tapping a participant row triggers `onPick(id)`.
 
 ## Review mode ("re-balayer le deck")
 
@@ -154,9 +155,10 @@ Per-activity query overrides go in `scripts/photo-queries.json`. The fetch scrip
 
 ## Storage
 
-Single key in `localStorage`:
+Two keys in `localStorage`:
 
 - `yallah.history.v1` — `VoteEntry[]` = `{ id, verdict, quotaHit? }`. Last-write wins per `id` once review mode has touched it; otherwise raw chronological appends.
+- `yallah.userId.v1` — `string | null` — id of the participant the user picked at onboarding (`"chloe"`, `"yves"`, …). When `null`, the app shows the blocking `IdentityPicker` bottom-sheet at launch and wipes any pre-existing history on first pick (migration path for users upgraded from the pre-picker app). `useLocalStorage` calls `removeItem(key)` when set to `null`, so `getItem` returns `null` (not the string `"null"`) after a reset.
 
 **Legacy migration**: when `App.tsx` loads history, any entry with `verdict: 'neutre'` is rewritten to `'whynot'` (the id was renamed in the source tree). Existing users keep their votes.
 
