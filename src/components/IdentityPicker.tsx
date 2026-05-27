@@ -32,7 +32,7 @@ export function IdentityPicker({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Choisis ton prénom"
+      aria-label="Tu es qui ?"
       data-testid="picker-backdrop"
       onClick={dismissable ? () => onClose!() : undefined}
       className="absolute inset-0 z-[40] flex items-end justify-center font-sans"
