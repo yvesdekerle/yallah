@@ -14,6 +14,7 @@
     "parse:activities": "tsx scripts/parse-activities.ts",
     "fetch:photos": "tsx --env-file-if-exists=.env scripts/fetch-photos.ts",
     "download:photos": "tsx scripts/download-photos.ts",
+    "geocode:activities": "tsx scripts/geocode-activities.ts",
     "preview:photos": "tsx scripts/preview-photos.ts"
   },
   "dependencies": {
