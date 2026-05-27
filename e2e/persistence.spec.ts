@@ -5,7 +5,10 @@ test('votes survive a page reload', async ({ page }) => {
   // addInitScript because it would fire again on `page.reload()` and wipe
   // out the state we want to verify.
   await page.goto('/')
-  await page.evaluate(() => window.localStorage.clear())
+  await page.evaluate(() => {
+    window.localStorage.clear()
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+  })
   await page.reload({ waitUntil: 'domcontentloaded' })
 
   await page.getByLabel('like').click()
