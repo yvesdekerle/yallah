@@ -130,6 +130,7 @@ All three render simultaneously inside the Phone wrapper. App switches by toggli
 - **PhotoLightbox** — nested inside DetailModal. `<img object-fit: contain>` preserves the photo's natural aspect ratio; horizontal pointer drag swipes between photos (60 px threshold). Keyboard: Esc to close, ← / → to nav.
 - **ConfirmModal** — rendered at the **App level** (sibling of all screens), driven by `confirmingReset` / `confirmingRandomFill` state. **Do not** render it inside a screen with `overflow-y: auto` — its `position: absolute; inset: 0` would anchor to the scrollable container's top, leaving the modal stuck above the visible viewport when the user has scrolled.
 - **IdentityPicker** — bottom-sheet rendered at the **App level**. Two modes: blocking (no `onClose` prop, opaque backdrop, no close button, used during onboarding when `yallah.userId.v1` is `null`) and dismissable (used by the "Changer d'identité" button on Groupe). Tapping a participant row triggers `onPick(id)`.
+- **FullscreenMap** — rendered at the **App level**, driven by `mapView` state (`{ mode: 'all' } | { mode: 'single'; activityId }`). Two entry points: a "Voir sur la carte" button on Résultats (mode `'all'`, pins for every LIKE/SUPER_LIKE) and the mini-map in DetailModal (mode `'single'`, centered on the activity). Tapping a pin opens a Leaflet popup with a "Voir le détail" button that switches back to DetailModal (`source: 'review'`). Lazy-loaded.
 
 ## Review mode ("re-balayer le deck")
 
@@ -152,6 +153,16 @@ Three scripts, run in order:
 3. **`npm run download:photos`** — Downloads each Pexels URL, resizes with `sharp` (`fit: cover`, `position: attention`, JPEG q78 mozjpeg) to **800×1000 for the hero** photo (index 1) and **400×500 for carousel** thumbs (2..12), saves to `public/photos/aXXX/N.jpg`. Then rewrites `photos.json` to point at local paths. Throttles 1 worker × 1.2 s default (use `--fast` for 2 × 500 ms when Pexels is generous). Flags: `--probe` (test if quota is OK), `--delay=10m` (deferred start), `--only=a012`, `--force`. Resumable.
 
 Per-activity query overrides go in `scripts/photo-queries.json`. The fetch script picks them up automatically.
+
+## Coordinates pipeline
+
+Each activity gets optional lat/lng for the map feature.
+
+- `npm run geocode:activities` runs `scripts/geocode-activities.ts`, which queries the Nominatim public API (free, no key — but 1 req/s) and writes `src/data/coords.json` as `{ activityId: { lat, lng, source: 'nominatim' } | null }`. Resumable: re-running fetches only entries currently `null`. `--force` re-fetches all. `--only=a012,a045` to target specific ids. Results outside the Mauritius bounding box (rough: lat -20.6…-19.9, lng 57.2…57.9) are rejected as `null`.
+- `src/data/coords-overrides.json` is hand-curated (`{ activityId: { lat, lng } }`) for messy locations the script couldn't resolve. Override always wins.
+- `src/utils/coords.ts` exposes `getCoords(activityId): Coords | null`, merging the two sources.
+
+The maps themselves use **Leaflet 1.9 + react-leaflet 5** with **OSM Mapnik tiles** (free, attribution required, baked into TileLayer). The CSS is imported globally in `src/index.css`. Components `ActivityMiniMap` (passive 180 px in DetailModal) and `FullscreenMap` (overlay opened from Résultats) are **lazy-loaded** via `React.lazy` so the Swipe tab stays under ~115 KB gzipped.
 
 ## Storage
 
@@ -183,6 +194,7 @@ Two keys in `localStorage`:
 | `npm run fetch:photos` | Populate `photos.json` URLs from Pexels (needs `PEXELS_API_KEY`) |
 | `npm run download:photos` | Download + resize + rewrite `photos.json` to local paths |
 | `npm run preview:photos` | Generate + open `preview-photos.html` |
+| `npm run geocode:activities` | Nominatim → `src/data/coords.json` (lat/lng for each activity) |
 
 ## Workflow
 
