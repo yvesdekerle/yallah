@@ -22,8 +22,10 @@ visualiser les zones non couvertes. On ajoute donc des cartes Leaflet
 
 - Géolocaliser les 201 activités via un pipeline reproductible
   (Nominatim + overrides manuels).
-- Afficher une mini-carte 180 px dans le DetailModal, juste après le
-  titre, avant les MetaChips.
+- Afficher une mini-carte 180 px dans le DetailModal, sous le
+  carousel « Photos », avant la section « Le groupe ». Cohérent
+  narrativement : ce que c'est → à quoi ça ressemble → où c'est →
+  ce qu'en pense le groupe.
 - Permettre depuis la page Résultats d'ouvrir une carte plein écran
   avec un pin par activité LIKE / SUPER LIKE.
 - Lazy-loader Leaflet pour que la tab Swipe reste à ~112 KB gzipped.
@@ -221,10 +223,12 @@ Dans `src/components/DetailModal.tsx` :
 
 - Imports : `lazy(() => import('./ActivityMiniMap'))`, `Suspense`,
   `getCoords` depuis `utils/coords`.
-- Juste après le `<h1>` du titre, avant le bloc des MetaChips, on
-  insère :
+- Juste après la section « Photos » (le carousel des `detailPhotos`)
+  et avant la `<SectionHeading>Le groupe</SectionHeading>`, on insère
+  un nouveau bloc avec son propre titre de section :
 
 ```tsx
+<SectionHeading>Sur la carte</SectionHeading>
 <Suspense fallback={<div style={{ height: 180, background: YB.bgSoft, borderRadius: 12 }} />}>
   <ActivityMiniMap
     coords={getCoords(activity.id)}
