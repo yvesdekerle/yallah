@@ -1,19 +1,30 @@
-import { CURRENT_USER_ID, PARTICIPANTS } from '../data/participants.ts'
+import { PARTICIPANTS } from '../data/participants.ts'
 import { YB } from '../utils/theme.ts'
 
 interface GroupScreenProps {
+  /** Id of the participant the local user identifies as. Null while
+      onboarding is still pending (picker visible, GroupScreen invisible
+      but still mounted). */
+  currentUserId: string | null
   /** Number of activities the local user has swiped. */
   currentUserProgress: number
   /** Total number of activities in the deck. */
   total: number
+  /** Open the IdentityPicker (handled at App level). */
+  onChangeIdentity: () => void
 }
 
 /**
  * "Groupe" tab — hard-coded list of the 9 participants. Each row shows a
- * per-person progress bar: real for the local user, faked-but-stable for
- * the others (until we wire a backend).
+ * per-person progress bar: real for the local user (`currentUserId`),
+ * faked-but-stable for the others (until we wire a backend).
  */
-export function GroupScreen({ currentUserProgress, total }: GroupScreenProps) {
+export function GroupScreen({
+  currentUserId,
+  currentUserProgress,
+  total,
+  onChangeIdentity,
+}: GroupScreenProps) {
   return (
     <div
       className="absolute inset-0 z-[1] overflow-y-auto font-sans"
@@ -45,7 +56,7 @@ export function GroupScreen({ currentUserProgress, total }: GroupScreenProps) {
 
         <div className="flex flex-col" style={{ gap: 8 }}>
           {PARTICIPANTS.map((p) => {
-            const isMe = p.id === CURRENT_USER_ID
+            const isMe = currentUserId !== null && p.id === currentUserId
             const progress = isMe
               ? currentUserProgress
               : (p.fakeProgress ?? 0)
@@ -154,6 +165,27 @@ export function GroupScreen({ currentUserProgress, total }: GroupScreenProps) {
             )
           })}
         </div>
+
+        <button
+          type="button"
+          onClick={onChangeIdentity}
+          className="font-sans cursor-pointer"
+          style={{
+            marginTop: 24,
+            width: '100%',
+            padding: '12px 0',
+            borderRadius: 99,
+            background: '#fff',
+            color: YB.ink,
+            fontWeight: 700,
+            fontSize: 14,
+            border: `1px solid ${YB.ink}`,
+            boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
+          }}
+          aria-label="changer d'identité"
+        >
+          Changer d'identité
+        </button>
       </div>
     </div>
   )

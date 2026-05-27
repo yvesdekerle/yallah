@@ -114,8 +114,10 @@ describe('App (integration)', () => {
     render(<App />)
     fireEvent.click(screen.getByLabelText('groupe'))
     expect(screen.getByText('Le groupe')).toBeInTheDocument()
-    expect(screen.getByText('Yves')).toBeInTheDocument()
-    expect(screen.getByText('Adé')).toBeInTheDocument()
+    // IdentityPicker is also visible (userId=null → onboarding), so participant
+    // names appear twice. Use testid to target the GroupScreen rows specifically.
+    expect(screen.getByTestId('participant-yves')).toBeInTheDocument()
+    expect(screen.getByTestId('participant-ade')).toBeInTheDocument()
   })
 
   it('reset from résultats clears history after confirmation', () => {

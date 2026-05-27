@@ -29,6 +29,3 @@ export const PARTICIPANTS: Participant[] = [
   { id: 'quentin', name: 'Quentin', initial: 'Q', color: '#EFBF04', fakeProgress: 134 },
   { id: 'yves', name: 'Yves', initial: 'Y', color: '#FF8A00' },
 ]
-
-/** Id used to identify the local user — their progress is dynamic. */
-export const CURRENT_USER_ID = 'yves'

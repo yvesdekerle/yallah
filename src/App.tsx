@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
 import type { Verdict, VoteEntry } from './types/verdict.ts'
 import { ACTIVITIES } from './data/activities.ts'
+import { PARTICIPANTS } from './data/participants.ts'
 import { useLocalStorage } from './hooks/useLocalStorage.ts'
 import {
   EXIT_MS,
@@ -22,6 +23,7 @@ import { SwipeDeck, type SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
 import { ConfirmModal } from './components/ConfirmModal.tsx'
+import { IdentityPicker } from './components/IdentityPicker.tsx'
 
 interface ToastState {
   id: number
@@ -46,6 +48,11 @@ export default function App() {
     STORAGE_KEYS.history,
     [],
   )
+  const [userId, setUserId] = useLocalStorage<string | null>(
+    STORAGE_KEYS.userId,
+    null,
+  )
+  const [changingIdentity, setChangingIdentity] = useState(false)
   // useMemo so callers don't see a fresh array on every render unless the
   // underlying storage changed.
   const history = useMemo(() => migrateHistory(rawHistory), [rawHistory])
@@ -78,6 +85,9 @@ export default function App() {
     const used = history.filter((h) => h.verdict === 'top' && !h.quotaHit).length
     return Math.max(0, SUPER_MAX - used)
   }, [history])
+
+  const needsOnboarding = userId === null
+  const showPicker = needsOnboarding || changingIdentity
 
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
@@ -122,10 +132,12 @@ export default function App() {
 
   const handleReset = useCallback(() => {
     setHistory([])
+    setUserId(null)
     setDone(false)
     setReviewMode(false)
+    setChangingIdentity(false)
     setToast({ id: Date.now(), text: 'Votes réinitialisés', emoji: '↺' })
-  }, [setHistory])
+  }, [setHistory, setUserId])
 
   const handleReview = useCallback(() => {
     setDone(false)
@@ -162,6 +174,32 @@ export default function App() {
       emoji: '🎲',
     })
   }, [history, setHistory])
+
+  const handlePickIdentity = useCallback(
+    (id: string) => {
+      const wasOnboarding = userId === null
+      if (wasOnboarding) {
+        // Existing users carry over a history attributed to an implicit
+        // "yves". Wipe it on the first identity choice so the user starts
+        // fresh under their chosen name.
+        setHistory([])
+        setDone(false)
+        setReviewMode(false)
+      }
+      setUserId(id)
+      setChangingIdentity(false)
+      const p = PARTICIPANTS.find((x) => x.id === id)
+      const name = p?.name ?? id
+      setToast({
+        id: Date.now(),
+        text: wasOnboarding
+          ? `Salut ${name}`
+          : `Tu es maintenant ${name}`,
+        emoji: wasOnboarding ? '👋' : '✨',
+      })
+    },
+    [userId, setHistory, setUserId],
+  )
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
   // where the modal was opened from:
@@ -321,8 +359,10 @@ export default function App() {
           aria-hidden={activeTab !== 2}
         >
           <GroupScreen
+            currentUserId={userId}
             currentUserProgress={history.length}
             total={ACTIVITIES.length}
+            onChangeIdentity={() => setChangingIdentity(true)}
           />
         </div>
 
@@ -349,7 +389,7 @@ export default function App() {
         {confirmingReset && (
           <ConfirmModal
             title="Tout effacer ?"
-            message="Tes votes en cours seront supprimés. Cette action est irréversible."
+            message="Tes votes en cours et ton prénom seront supprimés. Cette action est irréversible."
             confirmLabel="Tout effacer"
             cancelLabel="Annuler"
             variant="danger"
@@ -373,6 +413,16 @@ export default function App() {
               setConfirmingRandomFill(false)
             }}
             onCancel={() => setConfirmingRandomFill(false)}
+          />
+        )}
+
+        {showPicker && (
+          <IdentityPicker
+            currentUserId={userId}
+            onPick={handlePickIdentity}
+            onClose={
+              changingIdentity ? () => setChangingIdentity(false) : undefined
+            }
           />
         )}
       </div>
