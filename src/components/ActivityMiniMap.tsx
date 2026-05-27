@@ -70,7 +70,7 @@ export function ActivityMiniMap({
         zoomControl={false}
         touchZoom={false}
         keyboard={false}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', pointerEvents: 'none' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

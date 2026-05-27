@@ -26,6 +26,7 @@ import { ConfirmModal } from './components/ConfirmModal.tsx'
 import { IdentityPicker } from './components/IdentityPicker.tsx'
 import { getCoords } from './utils/coords.ts'
 import type { MapPin } from './components/FullscreenMap.tsx'
+import type { MapView } from './types/map.ts'
 
 const FullscreenMap = lazy(() =>
   import('./components/FullscreenMap.tsx').then((m) => ({
@@ -38,10 +39,6 @@ interface ToastState {
   text: string
   emoji?: string
 }
-
-type MapView =
-  | { mode: 'all' }
-  | { mode: 'single'; activityId: string }
 
 // Legacy verdict-id migration: the "neutre" id was renamed to "whynot".
 // Anyone with an existing local history needs their entries rewritten so
@@ -474,7 +471,14 @@ export default function App() {
         )}
 
         {mapView && (
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <div
+                className="absolute inset-0 z-[40]"
+                style={{ background: YB.bgSoft }}
+              />
+            }
+          >
             <FullscreenMap
               pins={
                 mapView.mode === 'single' ? singleMapPin(mapView.activityId) : likedPins

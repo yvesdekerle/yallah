@@ -1,5 +1,17 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { ReactNode } from 'react'
+
+vi.mock('react-leaflet', () => ({
+  MapContainer: ({ children }: { children: ReactNode }) => (
+    <div data-testid="leaflet-map">{children}</div>
+  ),
+  TileLayer: () => <div data-testid="tile-layer" />,
+  Marker: ({ children }: { children?: ReactNode }) => (
+    <div data-testid="leaflet-marker">{children}</div>
+  ),
+}))
+
 import { DetailModal } from './DetailModal.tsx'
 import type { Activity } from '../types/activity.ts'
 
@@ -142,15 +154,15 @@ describe('DetailModal', () => {
         onOpenMap={onOpenMap}
       />,
     )
-    const target = await screen
-      .findByTestId('mini-map-tap-target', {}, { timeout: 2000 })
-      .catch(() => null)
-    if (target) {
-      fireEvent.click(target)
-      expect(onOpenMap).toHaveBeenCalledWith({
-        mode: 'single',
-        activityId: fixture.id,
-      })
-    }
+    const target = await screen.findByTestId(
+      'mini-map-tap-target',
+      {},
+      { timeout: 3000 },
+    )
+    fireEvent.click(target)
+    expect(onOpenMap).toHaveBeenCalledWith({
+      mode: 'single',
+      activityId: fixture.id,
+    })
   })
 })

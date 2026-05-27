@@ -15,14 +15,11 @@ import { SectionHeading } from './SectionHeading.tsx'
 import { ActionRow } from './ActionRow.tsx'
 import { PhotoLightbox } from './PhotoLightbox.tsx'
 import { getCoords } from '../utils/coords.ts'
+import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
   import('./ActivityMiniMap.tsx').then((m) => ({ default: m.ActivityMiniMap })),
 )
-
-type MapView =
-  | { mode: 'all' }
-  | { mode: 'single'; activityId: string }
 
 interface DetailModalProps {
   activity: Activity
