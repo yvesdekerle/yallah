@@ -2,111 +2,223 @@
 
 ## Project Overview
 
-Yallah — mobile-first swipe app for picking activities in a group (Tinder-style: oui / non / why-not / super-like). First use case is a trip to Mauritius in November 2026 with 201 hand-curated activities. Local-only in v1 (no backend, no auth).
+Yallah — mobile-first swipe app for picking activities in a group, Tinder-style. First use case is a 9-person trip to Mauritius in November 2026 against 201 hand-curated activities. **Local-only in v1**: no backend, no auth, no multi-user sync. Each user swipes on their own device, votes live in `localStorage`, results are compared visually.
 
 ## Tech Stack
 
-- **Frontend**: React 19, TypeScript 5.9, Vite 8
-- **Styling**: Tailwind CSS 3.4 with a custom `yallah-*` palette and named keyframes (`yallahDeckExit`, `yallahSparkleFly`, …)
-- **State**: React hooks; `useLocalStorage` for persistent vote history
-- **Testing**: Vitest + @testing-library/react (101 unit tests), Playwright (10 e2e)
-- **Deploy**: Vercel SPA
+- **Frontend**: React 19, TypeScript 5.9 (strict), Vite 8
+- **Styling**: Tailwind CSS 3.4 with a custom `yallah-*` palette and named keyframes (`yallahDeckExit`, `yallahSparkleFly`, `yallahHaloPulse`, `yallahBadgePop`, `yallahFlash`, `yallahToast`)
+- **State**: React hooks; `useLocalStorage` for persistent vote history. No global store.
+- **Image processing** (dev only): `sharp` — runs locally in `npm run download:photos` to resize Pexels originals before commit.
+- **Testing**: Vitest + @testing-library/react (134 unit tests across 19 files), Playwright (4 specs, 11 e2e tests)
+- **Deploy**: Vercel static SPA. Photos served from `public/photos/` via Vercel's edge CDN.
 
 ## Architecture
 
+The app is a single React tree composed in `App.tsx` and rendered inside a `<Phone>` wrapper. Three "tabs" (Swipe / Résultats / Groupe) are **all mounted at once**; switching just toggles `display: none/contents` so there's no remount flicker and the card photo doesn't reload on every tap.
+
 ```
 src/
-├── App.tsx                # Orchestrator: composes the screen, owns history/toast/done/detail state
-├── components/            # 16 components + colocated tests (Foo.tsx + Foo.test.tsx)
-│   ├── Phone, StatusBar, TopBar, BottomNav   # Chrome
-│   ├── Card                                  # Photo-XL swipe card
-│   ├── SwipeDeck                             # Pointer gesture handling + exit animations
-│   ├── ActionRow                             # 5 buttons reused on swipe screen + detail modal
-│   ├── UndoButton, Toast                     # Floating UI
-│   ├── HeartStamp, StampOverlay, SuperLikeFX # Drag/exit verdict feedback
-│   ├── DetailModal, PhotoLightbox            # Detail view + photo carousel + lightbox
-│   ├── MetaChip, SectionHeading              # Detail-modal atoms
-│   └── DeckDone                              # End-of-deck recap
-├── hooks/useLocalStorage.ts
-├── icons/index.tsx        # Typed SVG components (IconProps: size, color, fill)
-├── constants/swipe.ts     # Thresholds, durations, SUPER_MAX, VERDICT_META, STORAGE_KEYS
+├── App.tsx                # Orchestrator: composes screens, owns history/toast/done/detail/reviewMode/confirming* state
+├── main.tsx
+├── index.css              # Tailwind directives + global resets + mobile media query
+├── components/            # 21 components + colocated tests (Foo.tsx + Foo.test.tsx)
+│   ├── Chrome
+│   │   ├── Phone, StatusBar, TopBar, BottomNav    (top + bottom bars, tab nav)
+│   │   └── UndoButton, Toast                      (floating UI)
+│   ├── Swipe screen
+│   │   ├── Card                                   (photo-XL swipe card)
+│   │   ├── SwipeDeck                              (pointer gestures, exit animations, reviewMode banner)
+│   │   ├── ActionRow                              (6 buttons: skip, non, why-not, super-like, like, eye)
+│   │   ├── HeartStamp, StampOverlay, SuperLikeFX  (drag / exit verdict feedback)
+│   │   └── DeckDone                               (end-of-deck recap)
+│   ├── Results screen
+│   │   ├── ResultsScreen                          (flat sorted list of voted activities)
+│   │   └── VerdictBadge                           (heart for oui, star for top, circle for others)
+│   ├── Group screen
+│   │   └── GroupScreen                            (9 hard-coded participants + progress bars)
+│   ├── Detail modal
+│   │   ├── DetailModal                            (slide-up sheet, opened from swipe-tap OR Résultats row)
+│   │   ├── PhotoLightbox                          (fullscreen photo with keyboard + pointer drag nav)
+│   │   ├── MetaChip                               (sand pill: icon/dot + value)
+│   │   └── SectionHeading
+│   └── Modals
+│       └── ConfirmModal                           (rendered at App level — see "Gotcha" below)
+├── hooks/
+│   └── useLocalStorage.ts                         (cross-tab sync via storage event; `defaultValue` captured at mount)
+├── icons/index.tsx                                (typed SVG components: IconProps { size?, color?, fill? })
+├── constants/swipe.ts                             (thresholds, durations, SUPER_MAX=5, VERDICT_META, STORAGE_KEYS)
 ├── utils/
-│   ├── swipe.ts           # Pure drag math (dragVerdict, exitOffset, rotation, intensity)
-│   ├── theme.ts           # YB palette as const
-│   └── photos.ts          # LoremFlickr URL generators (hero + 12 detail photos)
+│   ├── swipe.ts                                   (pure drag math: dragVerdict, exitOffset, rotation, intensity)
+│   ├── theme.ts                                   (YB palette `as const`)
+│   └── photos.ts                                  (heroPhotoUrl, detailPhotos — reads src/data/photos.json)
 ├── types/
-│   ├── activity.ts
-│   └── verdict.ts
+│   ├── activity.ts                                (Activity, Difficulty)
+│   └── verdict.ts                                 (Verdict, VoteEntry)
 ├── data/
-│   ├── activities.ts      # `ACTIVITIES: Activity[]` re-export
-│   └── activities.json    # Generated by `npm run parse:activities`
-└── test/setup.ts          # `@testing-library/jest-dom/vitest`
+│   ├── activities.ts                              (re-exports activities.json typed as Activity[])
+│   ├── activities.json                            (generated by `npm run parse:activities`)
+│   ├── photos.json                                (generated by `npm run fetch:photos` then rewritten by `npm run download:photos`)
+│   └── participants.ts                            (9 hard-coded participants, fake progress for non-Yves)
+└── test/setup.ts                                  (@testing-library/jest-dom/vitest)
 
 scripts/
-└── parse-activities.ts    # Markdown → JSON parser (run via `npm run parse:activities`)
+├── parse-activities.ts        # activites-maurice.md → activities.json
+├── parse-activities.test.ts
+├── fetch-photos.ts            # Pexels API → photos.json (URLs)
+├── photo-query.ts             # FR→EN query builder (80+ translations, Mauritius landmarks)
+├── photo-query.test.ts
+├── download-photos.ts         # photos.json URLs → resize via sharp → public/photos/aXXX/N.jpg (rewrites JSON in place)
+└── preview-photos.ts          # Generates preview-photos.html (gitignored) for quick QA of fetched photos
 
 e2e/
-├── swipe.spec.ts
-├── detail.spec.ts
-├── super-like.spec.ts
-└── persistence.spec.ts
+├── swipe.spec.ts              # Wordmark visible, vote via action row, undo
+├── detail.spec.ts             # Open / close detail modal, vote from modal
+├── super-like.spec.ts         # 5→0 quota countdown
+└── persistence.spec.ts        # Reload survives history
+
+public/
+├── icon.svg                   # PWA icon (yellow square + "yallah" wordmark + coral dot)
+├── manifest.webmanifest       # iOS / Android "Add to Home Screen" config
+├── photos/
+│   ├── hero.jpg               # Bundled placeholder used when an activity has no photo entry
+│   └── aXXX/1.jpg … 12.jpg    # 201 × up to 12 photos, ~80 MB committed
+└── …
 ```
 
 ## Conventions
 
-- **PascalCase** for components, **camelCase** for functions/hooks/vars
-- **Strong typing** — no `any`. Strict tsconfig (`noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`).
-- **Tailwind inline** for layout. Animated/dynamic styles (drag transform, exit keyframes, dynamic colours) use inline `style={}` — that's intentional because they depend on JS-computed values.
-- **Keyframes** declared in `tailwind.config.js` under `theme.extend.keyframes`. Animations applied via `animate-yallahXxx` classes or inline `animation:`.
-- **Test files colocalised** with components (`Foo.test.tsx`). Pure-utility tests (`swipe.test.ts`, `parse-activities.test.ts`) live next to their source.
-- **No prop drilling tax** — the app is one screen + a modal overlay; `App.tsx` holds all state.
-- **Imperative deck API** — `SwipeDeck` exposes `commit(verdict)` via `forwardRef + useImperativeHandle` so buttons / detail modal can trigger swipes without lifting the active-card state into the parent.
-- **`useLocalStorage`** semantics match `useState`: `defaultValue` captures at mount, subsequent updates to that prop are ignored.
+- **PascalCase** for components, **camelCase** for functions / hooks / vars
+- **Strong typing** — no `any`. Strict tsconfig (`noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, `noUncheckedSideEffectImports`).
+- **Tailwind for layout**. Animated / dynamic styles (drag transforms, exit keyframes, dynamic colours) use inline `style={}` because they depend on JS-computed values.
+- **Keyframes** declared in `tailwind.config.js` under `theme.extend.keyframes`. Applied via `animate-yallahXxx` classes or inline `animation:`.
+- **Tests colocalised**: `Foo.tsx` + `Foo.test.tsx`. Pure-utility tests live next to their source (`swipe.test.ts`, `photo-query.test.ts`).
+- **Verdict IDs are stable**: `oui`, `non`, `whynot`, `top`, `skip`. Display labels differ — `oui` shows as "LIKE", `skip` as "PLUS TARD", etc. (see `VERDICT_META`).
+- **`useLocalStorage` semantics** match `useState`: `defaultValue` is captured at mount, subsequent updates to the prop are ignored. Cross-tab sync via the `storage` event.
+- **State syncing during render** — when SwipeDeck needs to re-snap `topIdx` after a prop change, it uses the React 19 [setState-during-render](https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes) pattern instead of `useEffect`. Avoids visual flickers AND the new `react-hooks/set-state-in-effect` lint rule.
+- **Imperative deck API** — `SwipeDeck` exposes `commit(verdict)` via `forwardRef` + `useImperativeHandle` so buttons / detail modal can trigger swipes without lifting the active-card state into the parent.
+
+## Verdict model
+
+5 verdicts, each with its own meta in `constants/swipe.ts`:
+
+| ID | Label shown | Colour | Shape (badge) | Gesture |
+|---|---|---|---|---|
+| `oui` | LIKE | `YB.oui` pink | Heart | Swipe right |
+| `non` | NON | `YB.non` gray | Circle | Swipe left |
+| `whynot` | WHY NOT | `YB.neutre` blue | Circle | Swipe up |
+| `top` | SUPER LIKE | `YB.top` gold | Star | Swipe down |
+| `skip` | PLUS TARD | `#9A93A6` muted | Circle | Button only — exits to the right |
+
+**`top` is quota-limited** to `SUPER_MAX = 5` per session (excluding `quotaHit` entries). When the user attempts a 6th super-like, it silently downgrades to `oui` with `quotaHit: true` set on the history entry, and a toast surfaces the conversion.
+
+**Action-row order** (left → right): `skip · non · why-not · super-like · like · view-toggle` (eye icon at the far right opens the detail modal for the current card).
+
+## Tabs & navigation
+
+`BottomNav` exposes 3 tabs:
+
+1. **Swipe** (`active: 0`) — SwipeDeck, ActionRow, UndoButton, optional DeckDone when finished.
+2. **Résultats** (`active: 1`) — Flat sorted list of voted activities + 5 verdict counters + "Revoir mes votes" + "Remplir aléatoirement" + "Réinitialiser".
+3. **Groupe** (`active: 2`) — 9 hard-coded participants with progress bars (real for Yves from `history.length`, fake stable for the others).
+
+All three render simultaneously inside the Phone wrapper. App switches by toggling `display: contents` / `display: none` on their containers — **never** by conditional unmounting (would reload the card photo and cause a 1s flicker).
+
+## Modals & overlays
+
+- **DetailModal** — opened either by tapping the active card / eye button (`source: 'swipe'`, vote buttons forward to `deck.commit`) or by tapping a Résultats row (`source: 'review'`, vote buttons UPSERT the existing history entry).
+- **PhotoLightbox** — nested inside DetailModal. `<img object-fit: contain>` preserves the photo's natural aspect ratio; horizontal pointer drag swipes between photos (60 px threshold). Keyboard: Esc to close, ← / → to nav.
+- **ConfirmModal** — rendered at the **App level** (sibling of all screens), driven by `confirmingReset` / `confirmingRandomFill` state. **Do not** render it inside a screen with `overflow-y: auto` — its `position: absolute; inset: 0` would anchor to the scrollable container's top, leaving the modal stuck above the visible viewport when the user has scrolled.
+
+## Review mode ("re-balayer le deck")
+
+Entered from **DeckDone** ("Revoir mes votes") or **Résultats** ("Revoir mes votes" coral button, or "Continuer la révision" if already in mode).
+
+When `reviewMode === true`:
+- `SwipeDeck.topIdx` resets to **0** (instead of `history.length`), so the user re-walks every activity.
+- On every card whose activity already has a `VoteEntry`, a floating pill renders on top of the card with the previous verdict's emoji + label + an **"=" button**. Tap "=" → commits the same verdict (no-op net effect, deck advances).
+- `App.handleVerdict` **upserts** by `activity.id` instead of appending — the user editing a vote replaces it in place, no duplicates accumulate.
+- Top-right of the swipe screen, a coral pill **"Mode révision · ✕"** lets the user exit mode (resumes normal swiping, history untouched).
+
+## Photos pipeline
+
+Photos live in `public/photos/aXXX/N.jpg` (where `aXXX` is the activity id, `N` is 1..12). The app reads from `src/data/photos.json`, which maps activity id → array of paths (or remote URLs for activities not yet downloaded).
+
+Three scripts, run in order:
+
+1. **`npm run fetch:photos`** — Calls the Pexels Search API to populate `photos.json` with up to 12 URLs per activity. Uses smart FR→EN query rewriting (see `scripts/photo-query.ts`) anchored on `"mauritius"` so results bias toward Mauritius-tagged content. Auto-loads `.env` via `tsx --env-file-if-exists`. Flat 5 s pause on HTTP 429, retries up to 8 times.
+2. **`npm run preview:photos`** — Generates `preview-photos.html` at the repo root, opens it in the default browser. Lazy-loads images via IntersectionObserver with bounded concurrency (max 2 in flight) + click-to-retry to dodge Pexels' CDN concurrency limits. Local paths are rewritten to `public/photos/...` so the file works via `file://`.
+3. **`npm run download:photos`** — Downloads each Pexels URL, resizes with `sharp` (`fit: cover`, `position: attention`, JPEG q78 mozjpeg) to **800×1000 for the hero** photo (index 1) and **400×500 for carousel** thumbs (2..12), saves to `public/photos/aXXX/N.jpg`. Then rewrites `photos.json` to point at local paths. Throttles 1 worker × 1.2 s default (use `--fast` for 2 × 500 ms when Pexels is generous). Flags: `--probe` (test if quota is OK), `--delay=10m` (deferred start), `--only=a012`, `--force`. Resumable.
+
+Per-activity query overrides go in `scripts/photo-queries.json`. The fetch script picks them up automatically.
+
+## Storage
+
+Single key in `localStorage`:
+
+- `yallah.history.v1` — `VoteEntry[]` = `{ id, verdict, quotaHit? }`. Last-write wins per `id` once review mode has touched it; otherwise raw chronological appends.
+
+**Legacy migration**: when `App.tsx` loads history, any entry with `verdict: 'neutre'` is rewritten to `'whynot'` (the id was renamed in the source tree). Existing users keep their votes.
+
+## PWA & iOS standalone
+
+- `manifest.webmanifest` declares `display: standalone`, `theme_color: #FFCB45`, portrait orientation.
+- `index.html` carries `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style: black-translucent`, `apple-touch-icon`.
+- All chrome (TopBar banner, BottomNav, ResultsScreen, GroupScreen) respects `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)` so the app behaves on iPhones with notches when "Add to Home Screen"-installed.
+- The fake iOS status bar (`9:41` / signal / battery) is hidden under 460 px via the `.phone-statusbar { display: none }` media query in `index.css` — the real OS bar is plenty.
 
 ## Commands
 
-- `npm run dev` — Start dev server
-- `npm run build` — Type check + build
-- `npm test` — Unit tests
-- `npm run test:e2e` — Playwright e2e
-- `npm run lint` — ESLint
-- `npm run parse:activities` — Regenerate `src/data/activities.json` from `activites-maurice.md`
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start Vite dev server on http://localhost:5173 |
+| `npm run build` | `tsc -b` + `vite build` (catches TS errors vitest may miss) |
+| `npm test` | Vitest unit + component tests (jsdom) |
+| `npm run test:watch` | Vitest in watch mode |
+| `npm run test:e2e` | Playwright (iPhone 13 viewport, `chromium` only) |
+| `npm run lint` | ESLint flat config (`react-hooks`, `react-refresh`, `typescript-eslint`) |
+| `npm run parse:activities` | Regen `src/data/activities.json` from `activites-maurice.md` |
+| `npm run fetch:photos` | Populate `photos.json` URLs from Pexels (needs `PEXELS_API_KEY`) |
+| `npm run download:photos` | Download + resize + rewrite `photos.json` to local paths |
+| `npm run preview:photos` | Generate + open `preview-photos.html` |
 
 ## Workflow
 
-- After implementing a feature, update or add tests (unit + e2e where appropriate)
-- Run `npm test` and `npm run lint` before considering a task done
-- For meaningful changes, also run `npm run build` (catches TS errors that vitest may miss)
-- Conventional Commits for messages
+- After implementing a feature, update or add tests (unit + e2e where appropriate).
+- Run `npm test` and `npm run lint` before considering a task done.
+- For meaningful changes, also run `npm run build` (TS errors not always caught by vitest).
+- **Commit format** is Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`).
+- Never rename verdict IDs without adding a migration to `App.tsx` `migrateHistory`.
 
 ## Activity data
 
-The source of truth is `activites-maurice.md` at the repo root — a hand-curated guide with 201 activities for the November 2026 Mauritius trip. The parser is regex-based and is intentionally tolerant: it skips lines it can't classify rather than failing. Fields supported:
+Source of truth is `activites-maurice.md` at the repo root — a hand-curated guide with 201 activities for the November 2026 Mauritius trip. The parser is regex-based and intentionally tolerant: it skips lines it can't classify rather than failing. Fields supported:
 
 - `**Tags** : 🌊 🐅` (emojis, space-separated)
 - `**Lieu** : …`
 - `**Trajet depuis Tamarin** : …`
 - `**Description** : …` (first line only; subsequent bullets are dropped)
 - `**Durée** : …` (optional)
-- `**Difficulté** : 🟢 Label (detail)` (optional, 4 levels)
+- `**Difficulté** : 🟢 Label (detail)` (optional, 4 levels: 🟢🟡🟠🔴 → Facile / Modérée / Difficile / Très difficile)
 - `**Prix** : …`
 - `**Note** : ⭐⭐⭐⭐⭐ N/5`
-- `**Insolite** : …` (optional)
+- `**Insolite** : …` (optional, surfaced in the DetailModal under "Anecdote")
 
 `💎` in tags → `pepite: true`. `🗝️` in tags → `secret: true`.
 
-## Photos
+## Gotchas that cost time
 
-Live URLs from LoremFlickr. The `photos.ts` util biases all activities toward "paradise beach" keywords so the deck feels cohesive. Each activity has a hero photo + 11 carousel photos.
-
-## Storage keys
-
-- `yallah.history.v1` — `VoteEntry[]` (id + verdict + optional quotaHit flag)
+- **Pexels CDN concurrency limit** — `images.pexels.com` rate-limits aggressively even on cached URLs. Bulk downloads (>2 parallel, <500 ms apart) trigger 429s for ~60 s. The preview page now caps in-flight loads at 2 with retry-on-error; the download script defaults to 1 worker × 1.2 s for the same reason.
+- **Pexels API rate** — 200 req/h on a rolling window. The fetch script honours `X-Ratelimit-Reset` on 429.
+- **`position: absolute; inset: 0`** inside a scrollable container — pins to the visible viewport of that container, NOT to the scrolled content. ConfirmModal lives at the App level because of this.
+- **`display: contents`** preserves child layout / `position: absolute` semantics while removing the wrapper from the box tree. Used to gate tab visibility without unmounting children.
+- **iOS Safari ignores `requestFullscreen()`** — the previous fullscreen toggle was removed.
+- **`useEffect` setState** breaks the new `react-hooks/set-state-in-effect` rule. Use the render-time sync pattern instead.
 
 ## Out of scope (v1)
 
-- Backend / multi-user sync
-- Lobby + 3-tab results screen (mentioned in the design brief but deferred)
-- Google auth
-- i18n (French only)
-- PWA / offline first
+- Backend / multi-user sync. Each device is an island.
+- Lobby + 3-tab results screen (mentioned in the original design brief but deferred).
+- Google / OAuth login. Participants are hard-coded in `participants.ts`.
+- i18n. French only — labels live inline in components.
+- Service worker / offline-first. Vercel serves the static bundle; localStorage handles state persistence; that's it.
