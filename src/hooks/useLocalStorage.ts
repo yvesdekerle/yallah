@@ -37,7 +37,11 @@ export function useLocalStorage<T>(
         const resolved =
           typeof next === 'function' ? (next as (p: T) => T)(prev) : next
         try {
-          window.localStorage.setItem(key, JSON.stringify(resolved))
+          if (resolved === null || resolved === undefined) {
+            window.localStorage.removeItem(key)
+          } else {
+            window.localStorage.setItem(key, JSON.stringify(resolved))
+          }
         } catch {
           // Storage may be unavailable — keep the in-memory value anyway.
         }
