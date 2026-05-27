@@ -131,12 +131,13 @@ export default function App() {
   }, [])
 
   const handleReset = useCallback(() => {
+    // userId is cleared too → the blocking IdentityPicker re-appears and
+    // covers the toast (z-[40] > toast z-[9]), so no toast here.
     setHistory([])
     setUserId(null)
     setDone(false)
     setReviewMode(false)
     setChangingIdentity(false)
-    setToast({ id: Date.now(), text: 'Votes réinitialisés', emoji: '↺' })
   }, [setHistory, setUserId])
 
   const handleReview = useCallback(() => {

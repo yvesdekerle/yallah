@@ -5,6 +5,10 @@ import App from './App.tsx'
 describe('App (integration)', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    // Seed userId so the blocking IdentityPicker doesn't overlay the app
+    // during these integration tests — mirrors the precondition of every
+    // real user past their first launch.
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
     vi.useFakeTimers()
   })
   afterEach(() => {
@@ -114,8 +118,6 @@ describe('App (integration)', () => {
     render(<App />)
     fireEvent.click(screen.getByLabelText('groupe'))
     expect(screen.getByText('Le groupe')).toBeInTheDocument()
-    // IdentityPicker is also visible (userId=null → onboarding), so participant
-    // names appear twice. Use testid to target the GroupScreen rows specifically.
     expect(screen.getByTestId('participant-yves')).toBeInTheDocument()
     expect(screen.getByTestId('participant-ade')).toBeInTheDocument()
   })

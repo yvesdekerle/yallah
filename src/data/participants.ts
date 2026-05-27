@@ -7,8 +7,9 @@ export interface Participant {
   color: string
   /**
    * Pre-baked swipe count, used in the Groupe tab while we don't have a real
-   * backend. Omitted for the local user (`yves`) — their progress comes from
-   * the localStorage history.
+   * backend. Displayed for every participant that isn't the local user
+   * (whose progress comes from the localStorage history). Optional because
+   * future participants can be added without a value (falls back to 0).
    */
   fakeProgress?: number
 }
