@@ -27,5 +27,5 @@ export const PARTICIPANTS: Participant[] = [
   { id: 'july', name: 'July', initial: 'J', color: '#FF4D8D', fakeProgress: 178 },
   { id: 'mathieu', name: 'Mathieu', initial: 'M', color: '#4D8BF5', fakeProgress: 12 },
   { id: 'quentin', name: 'Quentin', initial: 'Q', color: '#EFBF04', fakeProgress: 134 },
-  { id: 'yves', name: 'Yves', initial: 'Y', color: '#FF8A00' },
+  { id: 'yves', name: 'Yves', initial: 'Y', color: '#FF8A00', fakeProgress: 64 },
 ]

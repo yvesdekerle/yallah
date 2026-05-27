@@ -182,7 +182,6 @@ export function GroupScreen({
             border: `1px solid ${YB.ink}`,
             boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
           }}
-          aria-label="changer d'identité"
         >
           Changer d'identité
         </button>

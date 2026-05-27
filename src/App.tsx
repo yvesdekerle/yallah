@@ -179,9 +179,8 @@ export default function App() {
     (id: string) => {
       const wasOnboarding = userId === null
       if (wasOnboarding) {
-        // Existing users carry over a history attributed to an implicit
-        // "yves". Wipe it on the first identity choice so the user starts
-        // fresh under their chosen name.
+        // userId is null ⇒ user hasn't identified yet (first launch, or
+        // post-reset). Start them fresh under their newly chosen name.
         setHistory([])
         setDone(false)
         setReviewMode(false)
