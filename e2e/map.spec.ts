@@ -18,7 +18,8 @@ test('tapping the mini-map opens the FullscreenMap', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: /Détail de/ })
   await expect(dialog).toBeVisible()
   const mini = dialog.locator('[data-testid="mini-map-tap-target"]')
-  await expect(mini).toBeVisible({ timeout: 5000 })
+  // ActivityMiniMap is lazy-loaded — first cold start can be slow.
+  await expect(mini).toBeVisible({ timeout: 10000 })
   await mini.click()
   await expect(
     page.getByRole('dialog', { name: 'Carte des activités' }),
