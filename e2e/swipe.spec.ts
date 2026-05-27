@@ -18,7 +18,7 @@ test('renders the yallah wordmark and the first activity', async ({ page }) => {
 test('voting through the action row advances to the next activity', async ({
   page,
 }) => {
-  await page.getByLabel('like').click()
+  await page.getByLabel('like', { exact: true }).click()
   // Wait for the exit animation to finish.
   await page.waitForTimeout(700)
   await expect(
@@ -39,7 +39,7 @@ test('the undo button is disabled until at least one vote is cast', async ({
   page,
 }) => {
   await expect(page.getByLabel('annuler le dernier swipe')).toBeDisabled()
-  await page.getByLabel('like').click()
+  await page.getByLabel('like', { exact: true }).click()
   await page.waitForTimeout(700)
   await expect(page.getByLabel('annuler le dernier swipe')).toBeEnabled()
 })

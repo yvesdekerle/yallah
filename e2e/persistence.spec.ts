@@ -11,7 +11,7 @@ test('votes survive a page reload', async ({ page }) => {
   })
   await page.reload({ waitUntil: 'domcontentloaded' })
 
-  await page.getByLabel('like').click()
+  await page.getByLabel('like', { exact: true }).click()
   await page.waitForTimeout(700)
   await page.getByLabel('non').click()
   await page.waitForTimeout(700)
