@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -14,6 +14,15 @@ import { MetaChip } from './MetaChip.tsx'
 import { SectionHeading } from './SectionHeading.tsx'
 import { ActionRow } from './ActionRow.tsx'
 import { PhotoLightbox } from './PhotoLightbox.tsx'
+import { getCoords } from '../utils/coords.ts'
+
+const ActivityMiniMap = lazy(() =>
+  import('./ActivityMiniMap.tsx').then((m) => ({ default: m.ActivityMiniMap })),
+)
+
+type MapView =
+  | { mode: 'all' }
+  | { mode: 'single'; activityId: string }
 
 interface DetailModalProps {
   activity: Activity
@@ -22,6 +31,9 @@ interface DetailModalProps {
   /** Called with a verdict from the sticky bottom action row. */
   onVerdict: (verdict: Verdict) => void
   superRemaining: number
+  /** Open the FullscreenMap. Optional — when undefined, the mini-map
+      is not tappable (still shown, just inert). */
+  onOpenMap?: (view: MapView) => void
 }
 
 /**
@@ -39,6 +51,7 @@ export function DetailModal({
   onClose,
   onVerdict,
   superRemaining,
+  onOpenMap,
 }: DetailModalProps) {
   const [open, setOpen] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
@@ -325,6 +338,35 @@ export function DetailModal({
                 }}
               />
             ))}
+          </div>
+
+          <SectionHeading>Sur la carte</SectionHeading>
+          <div style={{ marginBottom: 24 }}>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    height: 180,
+                    background: YB.bgSoft,
+                    borderRadius: 12,
+                  }}
+                />
+              }
+            >
+              <ActivityMiniMap
+                coords={getCoords(activity.id)}
+                pinColor={YB.coral}
+                onExpand={
+                  onOpenMap
+                    ? () =>
+                        onOpenMap({
+                          mode: 'single',
+                          activityId: activity.id,
+                        })
+                    : undefined
+                }
+              />
+            </Suspense>
           </div>
 
           <SectionHeading>Le groupe</SectionHeading>

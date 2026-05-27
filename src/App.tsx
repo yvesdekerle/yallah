@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
 import type { Verdict, VoteEntry } from './types/verdict.ts'
 import { ACTIVITIES } from './data/activities.ts'
@@ -24,12 +24,24 @@ import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
 import { ConfirmModal } from './components/ConfirmModal.tsx'
 import { IdentityPicker } from './components/IdentityPicker.tsx'
+import { getCoords } from './utils/coords.ts'
+import type { MapPin } from './components/FullscreenMap.tsx'
+
+const FullscreenMap = lazy(() =>
+  import('./components/FullscreenMap.tsx').then((m) => ({
+    default: m.FullscreenMap,
+  })),
+)
 
 interface ToastState {
   id: number
   text: string
   emoji?: string
 }
+
+type MapView =
+  | { mode: 'all' }
+  | { mode: 'single'; activityId: string }
 
 // Legacy verdict-id migration: the "neutre" id was renamed to "whynot".
 // Anyone with an existing local history needs their entries rewritten so
@@ -53,6 +65,7 @@ export default function App() {
     null,
   )
   const [changingIdentity, setChangingIdentity] = useState(false)
+  const [mapView, setMapView] = useState<MapView | null>(null)
   // useMemo so callers don't see a fresh array on every render unless the
   // underlying storage changed.
   const history = useMemo(() => migrateHistory(rawHistory), [rawHistory])
@@ -85,6 +98,38 @@ export default function App() {
     const used = history.filter((h) => h.verdict === 'top' && !h.quotaHit).length
     return Math.max(0, SUPER_MAX - used)
   }, [history])
+
+  const likedPins = useMemo<MapPin[]>(() => {
+    const out: MapPin[] = []
+    const seen = new Set<string>()
+    for (const h of history) {
+      if (h.verdict !== 'oui' && h.verdict !== 'top') continue
+      if (seen.has(h.id)) continue
+      seen.add(h.id)
+      const coords = getCoords(h.id)
+      if (!coords) continue
+      const activity = ACTIVITIES.find((a) => a.id === h.id)
+      if (!activity) continue
+      out.push({ activity, coords, verdict: h.verdict })
+    }
+    return out
+  }, [history])
+
+  const singleMapPin = useCallback(
+    (activityId: string): MapPin[] => {
+      const coords = getCoords(activityId)
+      if (!coords) return []
+      const activity = ACTIVITIES.find((a) => a.id === activityId)
+      if (!activity) return []
+      const existing = history.find((h) => h.id === activityId)
+      const verdict =
+        existing && (existing.verdict === 'oui' || existing.verdict === 'top')
+          ? existing.verdict
+          : 'oui'
+      return [{ activity, coords, verdict }]
+    },
+    [history],
+  )
 
   const needsOnboarding = userId === null
   const showPicker = needsOnboarding || changingIdentity
@@ -351,6 +396,7 @@ export default function App() {
             onReview={handleReview}
             reviewing={reviewMode}
             onRequestRandomFill={() => setConfirmingRandomFill(true)}
+            onOpenMap={() => setMapView({ mode: 'all' })}
           />
         </div>
 
@@ -383,6 +429,7 @@ export default function App() {
             onClose={() => setDetail(null)}
             superRemaining={superRemaining}
             onVerdict={handleDetailVerdict}
+            onOpenMap={(view) => setMapView(view)}
           />
         )}
 
@@ -424,6 +471,26 @@ export default function App() {
               changingIdentity ? () => setChangingIdentity(false) : undefined
             }
           />
+        )}
+
+        {mapView && (
+          <Suspense fallback={null}>
+            <FullscreenMap
+              pins={
+                mapView.mode === 'single' ? singleMapPin(mapView.activityId) : likedPins
+              }
+              initialCenter={
+                mapView.mode === 'single'
+                  ? (getCoords(mapView.activityId) ?? undefined)
+                  : undefined
+              }
+              onClose={() => setMapView(null)}
+              onSelectActivity={(a) => {
+                setMapView(null)
+                setDetail({ activity: a, source: 'review' })
+              }}
+            />
+          </Suspense>
         )}
       </div>
     </Phone>

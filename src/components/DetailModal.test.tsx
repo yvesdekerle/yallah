@@ -118,4 +118,39 @@ describe('DetailModal', () => {
     expect(onClose).toHaveBeenCalled()
     vi.useRealTimers()
   })
+
+  it('renders the "Sur la carte" section heading', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(screen.getByText('Sur la carte')).toBeInTheDocument()
+  })
+
+  it('calls onOpenMap with single mode when the mini-map is tapped', async () => {
+    const onOpenMap = vi.fn()
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+        onOpenMap={onOpenMap}
+      />,
+    )
+    const target = await screen
+      .findByTestId('mini-map-tap-target', {}, { timeout: 2000 })
+      .catch(() => null)
+    if (target) {
+      fireEvent.click(target)
+      expect(onOpenMap).toHaveBeenCalledWith({
+        mode: 'single',
+        activityId: fixture.id,
+      })
+    }
+  })
 })

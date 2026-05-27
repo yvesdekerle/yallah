@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ResultsScreen } from './ResultsScreen.tsx'
 import type { Activity } from '../types/activity.ts'
@@ -125,5 +125,50 @@ describe('ResultsScreen', () => {
     )
     await user.click(screen.getByLabelText('réinitialiser les votes'))
     expect(onRequestReset).toHaveBeenCalledOnce()
+  })
+
+  it('renders the "Voir sur la carte" button when there are LIKE/SUPER_LIKE pins with coords', () => {
+    const onOpenMap = vi.fn()
+    render(
+      <ResultsScreen
+        history={[{ id: 'a001', verdict: 'oui' }]}
+        activities={[
+          {
+            id: 'a001',
+            number: 1,
+            title: 'Test',
+            tags: [],
+            category: '',
+            location: '',
+            transit: '',
+            description: '',
+            price: '',
+            rating: 5,
+            pepite: false,
+            secret: false,
+          },
+        ]}
+        onRequestReset={() => {}}
+        onOpenMap={onOpenMap}
+      />,
+    )
+    // a001 has an override in coords-overrides.json so this should be truthy.
+    const btn = screen.getByRole('button', { name: /voir sur la carte/i })
+    fireEvent.click(btn)
+    expect(onOpenMap).toHaveBeenCalledTimes(1)
+  })
+
+  it('hides the "Voir sur la carte" button when no LIKE/SUPER_LIKE pins exist', () => {
+    render(
+      <ResultsScreen
+        history={[]}
+        activities={[]}
+        onRequestReset={() => {}}
+        onOpenMap={() => {}}
+      />,
+    )
+    expect(
+      screen.queryByRole('button', { name: /voir sur la carte/i }),
+    ).toBeNull()
   })
 })

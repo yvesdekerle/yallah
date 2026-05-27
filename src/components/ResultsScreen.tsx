@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { getCoords } from '../utils/coords.ts'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict, VoteEntry } from '../types/verdict.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
@@ -23,6 +24,8 @@ interface ResultsScreenProps {
   reviewing?: boolean
   /** Fire a confirmation prompt to randomly fill un-voted activities. */
   onRequestRandomFill?: () => void
+  /** Open the FullscreenMap with all LIKE/SUPER_LIKE pins. */
+  onOpenMap?: () => void
 }
 
 const SUMMARY: { key: Verdict; label: string }[] = [
@@ -62,6 +65,7 @@ export function ResultsScreen({
   onReview,
   reviewing = false,
   onRequestRandomFill,
+  onOpenMap,
 }: ResultsScreenProps) {
   const remaining = activities.length - history.length
   const counts = useMemo(() => {
@@ -97,6 +101,25 @@ export function ResultsScreen({
     out.sort((a, b) => a.activity.number - b.activity.number)
     return out
   }, [history, byId])
+
+  const mappablePins = useMemo(
+    () =>
+      voted.filter(
+        ({ activity, verdict }) =>
+          (verdict === 'oui' || verdict === 'top') &&
+          getCoords(activity.id) !== null,
+      ),
+    [voted],
+  )
+  const missingLocations = useMemo(
+    () =>
+      voted.filter(
+        ({ activity, verdict }) =>
+          (verdict === 'oui' || verdict === 'top') &&
+          getCoords(activity.id) === null,
+      ).length,
+    [voted],
+  )
 
   return (
     <div
@@ -177,6 +200,46 @@ export function ResultsScreen({
             </div>
           ))}
         </div>
+
+        {onOpenMap && mappablePins.length > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={onOpenMap}
+              className="font-sans cursor-pointer border-0"
+              style={{
+                width: '100%',
+                padding: '12px 0',
+                borderRadius: 99,
+                background: YB.coral,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: 14,
+                marginBottom: missingLocations > 0 ? 6 : 18,
+                boxShadow: '0 6px 16px -4px rgba(255,107,71,0.4)',
+              }}
+              aria-label="voir sur la carte"
+            >
+              🗺 Voir sur la carte ({mappablePins.length})
+            </button>
+            {missingLocations > 0 && (
+              <p
+                className="font-sans"
+                style={{
+                  margin: '0 0 18px',
+                  fontSize: 12,
+                  color: YB.muted,
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                }}
+              >
+                {missingLocations} activité{missingLocations > 1 ? 's' : ''} sans
+                localisation précise non affichée
+                {missingLocations > 1 ? 's' : ''}.
+              </p>
+            )}
+          </>
+        )}
 
         {voted.length === 0 ? (
           <div
