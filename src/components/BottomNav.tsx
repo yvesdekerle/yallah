@@ -1,7 +1,7 @@
-import { Cards, Results, People } from '../icons/index.tsx'
+import { Cards, Results, People, Plus } from '../icons/index.tsx'
 import { YB } from '../utils/theme.ts'
 
-export type TabIndex = 0 | 1 | 2
+export type TabIndex = 0 | 1 | 2 | 3
 
 interface BottomNavProps {
   /** Index of the active tab. */
@@ -15,9 +15,10 @@ const TABS = [
   { icon: Cards, label: 'swipe' },
   { icon: Results, label: 'résultats' },
   { icon: People, label: 'groupe' },
+  { icon: Plus, label: 'ajouter' },
 ] as const
 
-/** Static bottom navigation with three tabs. */
+/** Static bottom navigation with four tabs. */
 export function BottomNav({ active, onChange, dark = false }: BottomNavProps) {
   const inkBase = dark ? 'rgba(255,255,255,0.5)' : YB.muted
   const inkActive = dark ? '#fff' : YB.ink

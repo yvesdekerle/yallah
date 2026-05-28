@@ -288,6 +288,20 @@ export function Skip(p: IconProps = {}) {
   )
 }
 
+/** Plus — used for the "Ajouter" tab and add-photo affordances. */
+export function Plus(p: IconProps = {}) {
+  return (
+    <svg {...base(p, 22)}>
+      <path
+        d="M12 5v14M5 12h14"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.6}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 /** Equal-sign — used on the card when re-going through the deck to confirm a previous vote. */
 export function Equal(p: IconProps = {}) {
   return (

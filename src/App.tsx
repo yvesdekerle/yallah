@@ -24,7 +24,12 @@ import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
 import { ConfirmModal } from './components/ConfirmModal.tsx'
 import { IdentityPicker } from './components/IdentityPicker.tsx'
-import { getCoords } from './utils/coords.ts'
+import { AddActivityScreen } from './components/AddActivityScreen.tsx'
+import {
+  useUserActivities,
+  type UserActivityInput,
+} from './hooks/useUserActivities.ts'
+import { coordsFor } from './utils/coords.ts'
 import type { MapPin } from './components/FullscreenMap.tsx'
 import type { MapView } from './types/map.ts'
 
@@ -89,7 +94,26 @@ export default function App() {
     | null
   >(null)
   const [activeTab, setActiveTab] = useState<TabIndex>(0)
+  const [confirmingDeleteActivity, setConfirmingDeleteActivity] = useState<
+    string | null
+  >(null)
   const deckRef = useRef<SwipeDeckHandle>(null)
+
+  const {
+    userActivities,
+    stored: storedUserActivities,
+    add: addUserActivity,
+    update: updateUserActivity,
+    remove: removeUserActivity,
+  } = useUserActivities()
+
+  // Curated activities + the user's own additions (appended at the end so a
+  // freshly-added one surfaces at the tail of the deck — and immediately when
+  // the curated deck was already finished).
+  const allActivities = useMemo<Activity[]>(
+    () => [...ACTIVITIES, ...userActivities],
+    [userActivities],
+  )
 
   const superRemaining = useMemo(() => {
     const used = history.filter((h) => h.verdict === 'top' && !h.quotaHit).length
@@ -103,21 +127,21 @@ export default function App() {
       if (h.verdict !== 'oui' && h.verdict !== 'top') continue
       if (seen.has(h.id)) continue
       seen.add(h.id)
-      const coords = getCoords(h.id)
-      if (!coords) continue
-      const activity = ACTIVITIES.find((a) => a.id === h.id)
+      const activity = allActivities.find((a) => a.id === h.id)
       if (!activity) continue
+      const coords = coordsFor(activity)
+      if (!coords) continue
       out.push({ activity, coords, verdict: h.verdict })
     }
     return out
-  }, [history])
+  }, [history, allActivities])
 
   const singleMapPin = useCallback(
     (activityId: string): MapPin[] => {
-      const coords = getCoords(activityId)
-      if (!coords) return []
-      const activity = ACTIVITIES.find((a) => a.id === activityId)
+      const activity = allActivities.find((a) => a.id === activityId)
       if (!activity) return []
+      const coords = coordsFor(activity)
+      if (!coords) return []
       const existing = history.find((h) => h.id === activityId)
       const verdict =
         existing && (existing.verdict === 'oui' || existing.verdict === 'top')
@@ -125,7 +149,7 @@ export default function App() {
           : 'oui'
       return [{ activity, coords, verdict }]
     },
-    [history],
+    [history, allActivities],
   )
 
   const needsOnboarding = userId === null
@@ -202,7 +226,7 @@ export default function App() {
    */
   const handleRandomFill = useCallback(() => {
     const votedIds = new Set(history.map((h) => h.id))
-    const missing = ACTIVITIES.filter((a) => !votedIds.has(a.id))
+    const missing = allActivities.filter((a) => !votedIds.has(a.id))
     if (missing.length === 0) return
     const verdicts: Verdict[] = ['oui', 'non', 'whynot', 'skip']
     const additions: VoteEntry[] = missing.map((a) => ({
@@ -216,7 +240,36 @@ export default function App() {
       text: `${additions.length} votes générés aléatoirement`,
       emoji: '🎲',
     })
-  }, [history, setHistory])
+  }, [history, allActivities, setHistory])
+
+  const handleAddActivity = useCallback(
+    async (input: UserActivityInput) => {
+      await addUserActivity(input)
+      // A new card now exists past the curated deck — make it reachable even
+      // if the user had already finished swiping everything else.
+      setDone(false)
+      setToast({ id: Date.now(), text: 'Activité ajoutée', emoji: '➕' })
+    },
+    [addUserActivity],
+  )
+
+  const handleUpdateActivity = useCallback(
+    async (id: string, input: UserActivityInput) => {
+      await updateUserActivity(id, input)
+      setToast({ id: Date.now(), text: 'Activité mise à jour', emoji: '✏️' })
+    },
+    [updateUserActivity],
+  )
+
+  const handleConfirmDeleteActivity = useCallback(async () => {
+    const id = confirmingDeleteActivity
+    if (!id) return
+    await removeUserActivity(id)
+    // Drop the vote that referenced this activity so it doesn't linger.
+    setHistory((h) => h.filter((e) => e.id !== id))
+    setConfirmingDeleteActivity(null)
+    setToast({ id: Date.now(), text: 'Activité supprimée', emoji: '🗑' })
+  }, [confirmingDeleteActivity, removeUserActivity, setHistory])
 
   const handlePickIdentity = useCallback(
     (id: string) => {
@@ -341,7 +394,7 @@ export default function App() {
             >
               <SwipeDeck
                 ref={deckRef}
-                activities={ACTIVITIES}
+                activities={allActivities}
                 history={history}
                 superRemaining={superRemaining}
                 reviewMode={reviewMode}
@@ -370,7 +423,7 @@ export default function App() {
                 if (detail) {
                   setDetail(null)
                 } else {
-                  const current = ACTIVITIES[history.length]
+                  const current = allActivities[history.length]
                   if (current) setDetail({ activity: current, source: 'swipe' })
                 }
               }}
@@ -385,7 +438,7 @@ export default function App() {
         >
           <ResultsScreen
             history={history}
-            activities={ACTIVITIES}
+            activities={allActivities}
             onRequestReset={() => setConfirmingReset(true)}
             onSelectActivity={(a) =>
               setDetail({ activity: a, source: 'review' })
@@ -404,8 +457,22 @@ export default function App() {
           <GroupScreen
             currentUserId={userId}
             currentUserProgress={history.length}
-            total={ACTIVITIES.length}
+            total={allActivities.length}
             onChangeIdentity={() => setChangingIdentity(true)}
+          />
+        </div>
+
+        <div
+          style={{ display: activeTab === 3 ? 'contents' : 'none' }}
+          aria-hidden={activeTab !== 3}
+        >
+          <AddActivityScreen
+            userActivities={userActivities}
+            stored={storedUserActivities}
+            onAdd={handleAddActivity}
+            onUpdate={handleUpdateActivity}
+            onRequestDelete={(id) => setConfirmingDeleteActivity(id)}
+            active={activeTab === 3}
           />
         </div>
 
@@ -448,7 +515,7 @@ export default function App() {
         {confirmingRandomFill && (
           <ConfirmModal
             title="Remplir aléatoirement ?"
-            message={`${ACTIVITIES.length - history.length} activités non votées vont recevoir un verdict tiré au sort parmi : oui, non, why not, plus tard. Tu pourras toujours changer chaque vote ensuite.`}
+            message={`${allActivities.length - history.length} activités non votées vont recevoir un verdict tiré au sort parmi : oui, non, why not, plus tard. Tu pourras toujours changer chaque vote ensuite.`}
             confirmLabel="Remplir"
             cancelLabel="Annuler"
             variant="primary"
@@ -457,6 +524,20 @@ export default function App() {
               setConfirmingRandomFill(false)
             }}
             onCancel={() => setConfirmingRandomFill(false)}
+          />
+        )}
+
+        {confirmingDeleteActivity && (
+          <ConfirmModal
+            title="Supprimer cette activité ?"
+            message="L’activité, ton vote associé et ses photos seront supprimés. Cette action est irréversible."
+            confirmLabel="Supprimer"
+            cancelLabel="Annuler"
+            variant="danger"
+            onConfirm={() => {
+              void handleConfirmDeleteActivity()
+            }}
+            onCancel={() => setConfirmingDeleteActivity(null)}
           />
         )}
 
@@ -485,7 +566,7 @@ export default function App() {
               }
               initialCenter={
                 mapView.mode === 'single'
-                  ? (getCoords(mapView.activityId) ?? undefined)
+                  ? (singleMapPin(mapView.activityId)[0]?.coords ?? undefined)
                   : undefined
               }
               onClose={() => setMapView(null)}

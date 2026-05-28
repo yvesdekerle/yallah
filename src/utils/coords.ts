@@ -1,5 +1,6 @@
 import coordsData from '../data/coords.json'
 import overridesData from '../data/coords-overrides.json'
+import type { Activity } from '../types/activity.ts'
 
 export interface Coords {
   lat: number
@@ -28,4 +29,14 @@ export function getCoords(activityId: string): Coords | null {
   const entry = coords[activityId]
   if (entry) return { lat: entry.lat, lng: entry.lng }
   return null
+}
+
+/**
+ * Resolve coordinates for an activity. User-added activities carry their own
+ * `coords`; curated ones look up the Nominatim/override data by id. Returns
+ * `null` when neither source has a value.
+ */
+export function coordsFor(activity: Activity): Coords | null {
+  if (activity.coords) return { lat: activity.coords.lat, lng: activity.coords.lng }
+  return getCoords(activity.id)
 }

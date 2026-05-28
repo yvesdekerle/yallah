@@ -26,4 +26,10 @@ export interface Activity {
   secret: boolean
   /** Optional "Insolite" note (present mostly on 🗝️ entries). */
   insolite?: string
+  /** Runtime-only: true for user-added activities (absent from activities.json). */
+  userAdded?: boolean
+  /** Runtime-only: resolved photo URLs (object URLs for uploads + pasted URLs). */
+  photoUrls?: string[]
+  /** Coordinates for user-added activities (curated ones use coords.json). */
+  coords?: { lat: number; lng: number }
 }

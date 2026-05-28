@@ -36,6 +36,12 @@ function withSize(url: string, w: number, h: number): string {
 
 /** Hero photo URL — used in the card and as the first detail-modal photo. */
 export function heroPhotoUrl(activity: Activity): string {
+  // User-added activities carry their own resolved URLs (object URLs for
+  // uploads + pasted URLs); they bypass the Pexels photos.json lookup.
+  if (activity.photoUrls && activity.photoUrls.length > 0) {
+    return activity.photoUrls[0]!
+  }
+  if (activity.userAdded) return PLACEHOLDER
   const urls = PHOTOS[activity.id]
   if (!urls || urls.length === 0) return PLACEHOLDER
   return withSize(urls[0]!, 900, 1100)
@@ -47,6 +53,10 @@ export function heroPhotoUrl(activity: Activity): string {
  * to the single bundled placeholder.
  */
 export function detailPhotos(activity: Activity): string[] {
+  if (activity.photoUrls && activity.photoUrls.length > 0) {
+    return activity.photoUrls.slice(0, 12)
+  }
+  if (activity.userAdded) return [PLACEHOLDER]
   const urls = PHOTOS[activity.id]
   if (!urls || urls.length === 0) return [PLACEHOLDER]
   return urls.slice(0, 12).map((u) => withSize(u, 900, 900))

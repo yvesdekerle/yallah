@@ -15,7 +15,24 @@ vi.mock('../data/coords-overrides.json', () => ({
   },
 }))
 
-import { getCoords } from './coords.ts'
+import { getCoords, coordsFor } from './coords.ts'
+import type { Activity } from '../types/activity.ts'
+
+const make = (over: Partial<Activity>): Activity => ({
+  id: 'a001',
+  number: 1,
+  title: 't',
+  tags: [],
+  category: 'c',
+  location: 'l',
+  transit: 't',
+  description: 'd',
+  price: 'p',
+  rating: 5,
+  pepite: false,
+  secret: false,
+  ...over,
+})
 
 describe('getCoords', () => {
   beforeEach(() => {
@@ -36,5 +53,20 @@ describe('getCoords', () => {
 
   it('returns null for an unknown activity', () => {
     expect(getCoords('a999')).toBeNull()
+  })
+})
+
+describe('coordsFor', () => {
+  it('prefers the activity own coords (user-added)', () => {
+    const a = make({ id: 'u-1', userAdded: true, coords: { lat: -20.3, lng: 57.4 } })
+    expect(coordsFor(a)).toEqual({ lat: -20.3, lng: 57.4 })
+  })
+
+  it('falls back to getCoords by id when activity has no coords', () => {
+    expect(coordsFor(make({ id: 'a001' }))).toEqual({ lat: -20.443, lng: 57.715 })
+  })
+
+  it('returns null when neither the activity nor the data has coords', () => {
+    expect(coordsFor(make({ id: 'u-x', userAdded: true }))).toBeNull()
   })
 })

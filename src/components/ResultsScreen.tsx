@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { getCoords } from '../utils/coords.ts'
+import { coordsFor } from '../utils/coords.ts'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict, VoteEntry } from '../types/verdict.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
@@ -107,7 +107,7 @@ export function ResultsScreen({
       voted.filter(
         ({ activity, verdict }) =>
           (verdict === 'oui' || verdict === 'top') &&
-          getCoords(activity.id) !== null,
+          coordsFor(activity) !== null,
       ),
     [voted],
   )
@@ -116,7 +116,7 @@ export function ResultsScreen({
       voted.filter(
         ({ activity, verdict }) =>
           (verdict === 'oui' || verdict === 'top') &&
-          getCoords(activity.id) === null,
+          coordsFor(activity) === null,
       ).length,
     [voted],
   )

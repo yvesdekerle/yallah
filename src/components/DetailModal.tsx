@@ -14,7 +14,7 @@ import { MetaChip } from './MetaChip.tsx'
 import { SectionHeading } from './SectionHeading.tsx'
 import { ActionRow } from './ActionRow.tsx'
 import { PhotoLightbox } from './PhotoLightbox.tsx'
-import { getCoords } from '../utils/coords.ts'
+import { coordsFor } from '../utils/coords.ts'
 import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
@@ -372,7 +372,7 @@ export function DetailModal({
               }
             >
               <ActivityMiniMap
-                coords={getCoords(activity.id)}
+                coords={coordsFor(activity)}
                 pinColor={YB.coral}
                 photo={heroPhotoUrl(activity)}
                 onExpand={

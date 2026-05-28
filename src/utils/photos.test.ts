@@ -29,3 +29,29 @@ describe('detailPhotos', () => {
     expect(detailPhotos(make('a999'))).toEqual(['/photos/hero.jpg'])
   })
 })
+
+describe('user-added activities', () => {
+  it('heroPhotoUrl uses the first resolved photoUrl', () => {
+    const a: Activity = {
+      ...make('u-1'),
+      userAdded: true,
+      photoUrls: ['blob:hero', 'blob:two'],
+    }
+    expect(heroPhotoUrl(a)).toBe('blob:hero')
+  })
+
+  it('detailPhotos returns the resolved photoUrls verbatim', () => {
+    const a: Activity = {
+      ...make('u-1'),
+      userAdded: true,
+      photoUrls: ['blob:1', 'https://x/2.jpg'],
+    }
+    expect(detailPhotos(a)).toEqual(['blob:1', 'https://x/2.jpg'])
+  })
+
+  it('falls back to the placeholder when a user activity has no photos', () => {
+    const a: Activity = { ...make('u-1'), userAdded: true, photoUrls: [] }
+    expect(heroPhotoUrl(a)).toBe('/photos/hero.jpg')
+    expect(detailPhotos(a)).toEqual(['/photos/hero.jpg'])
+  })
+})
