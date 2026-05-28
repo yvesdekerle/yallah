@@ -85,7 +85,11 @@ export function PhotoLightbox({
 
   return (
     <div
-      onClick={() => {
+      data-testid="photo-lightbox"
+      onClick={(e) => {
+        // Stop the close-click from bubbling to the DetailModal backdrop,
+        // which would otherwise dismiss the whole sheet underneath.
+        e.stopPropagation()
         if (suppressClickRef.current) {
           suppressClickRef.current = false
           return
