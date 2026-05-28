@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   MapContainer,
   Marker,
@@ -83,6 +83,18 @@ export function FullscreenMap({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
+
+  // When this overlay is opened by a touch tap (e.g. the DetailModal
+  // mini-map), mobile browsers synthesize a "ghost" mouse click ~300ms
+  // later at the original tap coordinates — which now land on this
+  // freshly-mounted overlay and can hit the close button, dismissing the
+  // map instantly. Block all interaction for a short window after mount so
+  // that trailing click is swallowed.
+  const [armed, setArmed] = useState(false)
+  useEffect(() => {
+    const t = window.setTimeout(() => setArmed(true), 400)
+    return () => window.clearTimeout(t)
+  }, [])
 
   return (
     <div
@@ -172,6 +184,15 @@ export function FullscreenMap({
       >
         ✕
       </button>
+
+      {!armed && (
+        <div
+          aria-hidden
+          data-testid="map-click-shield"
+          className="absolute inset-0"
+          style={{ zIndex: 1100 }}
+        />
+      )}
     </div>
   )
 }
