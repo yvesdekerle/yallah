@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
-import { detailPhotos } from '../utils/photos.ts'
+import { detailPhotos, heroPhotoUrl } from '../utils/photos.ts'
 import {
   X,
   Pin,
@@ -134,7 +134,7 @@ export function DetailModal({
             aria-label="fermer"
             className="absolute z-[3] flex items-center justify-center border-0 cursor-pointer"
             style={{
-              top: 14,
+              top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
               left: 14,
               width: 38,
               height: 38,
@@ -149,7 +149,11 @@ export function DetailModal({
           {/* Tag chips */}
           <div
             className="absolute z-[3] flex"
-            style={{ top: 14, right: 14, gap: 4 }}
+            style={{
+              top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
+              right: 14,
+              gap: 4,
+            }}
           >
             {activity.tags.slice(0, 3).map((tag, i) => (
               <span
@@ -370,6 +374,7 @@ export function DetailModal({
               <ActivityMiniMap
                 coords={getCoords(activity.id)}
                 pinColor={YB.coral}
+                photo={heroPhotoUrl(activity)}
                 onExpand={
                   onOpenMap
                     ? () =>

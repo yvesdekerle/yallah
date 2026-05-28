@@ -15,12 +15,18 @@ interface PhotoLightboxProps {
 }
 
 const DRAG_THRESHOLD = 60
+// Below this, a pointer gesture counts as a tap (used to close) rather than a swipe.
+const TAP_SLOP = 8
 
 /**
- * Full-screen photo viewer. Supports:
- * - Click outside the image / X button to close
- * - Arrow keys (← →) to navigate, Escape to close
- * - Horizontal pointer drag (≥60px) to swipe between photos
+ * Full-screen photo viewer built as a sliding filmstrip: all photos sit in a
+ * single flex track translated by `-index * 100%`, so navigating animates the
+ * neighbouring photo into view instead of swapping the source in place.
+ *
+ * - Tap the letterbox / X button / Escape to close
+ * - Arrow keys (← →) or the on-screen arrows to navigate
+ * - Horizontal pointer drag (≥60px) to swipe between photos, with rubber-band
+ *   resistance at the first / last photo
  */
 export function PhotoLightbox({
   photos,
@@ -29,8 +35,12 @@ export function PhotoLightbox({
   onClose,
 }: PhotoLightboxProps) {
   const [enter, setEnter] = useState(false)
-  const [drag, setDrag] = useState({ x: 0, dragging: false })
-  const startRef = useRef<{ x: number } | null>(null)
+  const [dragX, setDragX] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const startRef = useRef<{ x: number; moved: boolean } | null>(null)
+  // After a real swipe a synthetic click fires — suppress it so the gesture
+  // that lands on the backdrop doesn't also close the viewer.
+  const suppressClickRef = useRef(false)
 
   useEffect(() => {
     requestAnimationFrame(() => setEnter(true))
@@ -47,39 +57,92 @@ export function PhotoLightbox({
   }, [index, photos.length, onIndex, onClose])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    e.stopPropagation()
     e.currentTarget.setPointerCapture?.(e.pointerId)
-    startRef.current = { x: e.clientX }
-    setDrag({ x: 0, dragging: true })
+    startRef.current = { x: e.clientX, moved: false }
+    setDragging(true)
   }
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (!drag.dragging || !startRef.current) return
-    setDrag({ x: e.clientX - startRef.current.x, dragging: true })
+    if (!startRef.current) return
+    const dx = e.clientX - startRef.current.x
+    if (Math.abs(dx) > TAP_SLOP) startRef.current.moved = true
+    // Rubber-band when dragging past the first / last photo.
+    const atEdge =
+      (index === 0 && dx > 0) || (index === photos.length - 1 && dx < 0)
+    setDragX(atEdge ? dx * 0.35 : dx)
   }
 
   const onPointerUp = () => {
-    if (!drag.dragging) return
-    const dx = drag.x
-    if (dx > DRAG_THRESHOLD && index > 0) onIndex(index - 1)
-    else if (dx < -DRAG_THRESHOLD && index < photos.length - 1) onIndex(index + 1)
-    setDrag({ x: 0, dragging: false })
+    if (!startRef.current) return
+    const dx = dragX
+    if (dx < -DRAG_THRESHOLD && index < photos.length - 1) onIndex(index + 1)
+    else if (dx > DRAG_THRESHOLD && index > 0) onIndex(index - 1)
+    suppressClickRef.current = startRef.current.moved
     startRef.current = null
+    setDragX(0)
+    setDragging(false)
   }
 
   return (
     <div
-      onClick={(e) => {
-        e.stopPropagation()
+      onClick={() => {
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false
+          return
+        }
         onClose()
       }}
       onMouseDown={(e) => e.stopPropagation()}
-      className="absolute inset-0 z-[50] flex items-center justify-center"
+      className="absolute inset-0 z-[50] overflow-hidden"
       style={{
         background: enter ? 'rgba(10,12,18,0.96)' : 'rgba(10,12,18,0)',
         transition: 'background 0.22s',
       }}
     >
+      <div
+        className="flex h-full w-full"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        style={{
+          transform: `translateX(calc(${-index * 100}% + ${dragX}px))`,
+          transition: dragging
+            ? 'none'
+            : 'transform 0.34s cubic-bezier(.22,.61,.36,1)',
+          touchAction: 'pan-y',
+          willChange: 'transform',
+          opacity: enter ? 1 : 0,
+          cursor: dragging ? 'grabbing' : 'grab',
+        }}
+      >
+        {photos.map((src, i) => (
+          <div
+            key={i}
+            className="flex h-full shrink-0 items-center justify-center"
+            style={{ flex: '0 0 100%', padding: '0 16px' }}
+          >
+            <img
+              src={src}
+              alt={`photo ${i + 1} sur ${photos.length}`}
+              draggable={false}
+              onClick={(e) => e.stopPropagation()}
+              className="select-none"
+              style={{
+                maxWidth: 'min(600px, 100%)',
+                maxHeight: 'calc(100vh - 80px)',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                borderRadius: 18,
+                boxShadow: '0 20px 60px -20px rgba(0,0,0,0.6)',
+                background: '#181B1F',
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
       <button
         type="button"
         onClick={(e) => {
@@ -89,7 +152,7 @@ export function PhotoLightbox({
         aria-label="fermer la photo"
         className="absolute z-[2] flex items-center justify-center border-0 cursor-pointer"
         style={{
-          top: 18,
+          top: 'calc(env(safe-area-inset-top, 0px) + 18px)',
           right: 18,
           width: 40,
           height: 40,
@@ -105,7 +168,7 @@ export function PhotoLightbox({
       <div
         className="absolute z-[2] -translate-x-1/2 font-mono"
         style={{
-          top: 26,
+          top: 'calc(env(safe-area-inset-top, 0px) + 26px)',
           left: '50%',
           fontSize: 12,
           color: 'rgba(255,255,255,0.7)',
@@ -114,39 +177,6 @@ export function PhotoLightbox({
       >
         {index + 1} / {photos.length}
       </div>
-
-      <img
-        src={photos[index]}
-        alt={`photo ${index + 1} sur ${photos.length}`}
-        draggable={false}
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="select-none"
-        style={{
-          maxWidth: 'min(600px, calc(100% - 32px))',
-          maxHeight: 'calc(100vh - 80px)',
-          width: 'auto',
-          height: 'auto',
-          objectFit: 'contain',
-          borderRadius: 18,
-          boxShadow: '0 20px 60px -20px rgba(0,0,0,0.6)',
-          opacity: enter ? 1 : 0,
-          transform: enter
-            ? `translateX(${drag.x}px) scale(${drag.dragging ? 0.98 : 1})`
-            : 'scale(0.92)',
-          transition: drag.dragging
-            ? 'none'
-            : 'opacity 0.22s, transform 0.22s cubic-bezier(.2,.7,.3,1)',
-          cursor: drag.dragging ? 'grabbing' : 'grab',
-          touchAction: 'pan-y',
-          background: '#181B1F',
-          // Image keeps its natural aspect ratio — shorter side fits the
-          // constraint, no cropping, no forced square box.
-        }}
-      />
 
       {index > 0 && (
         <button

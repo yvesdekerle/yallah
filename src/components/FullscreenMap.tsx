@@ -12,6 +12,7 @@ import type { Verdict } from '../types/verdict.ts'
 import type { Coords } from '../utils/coords.ts'
 import { YB } from '../utils/theme.ts'
 import { heroPhotoUrl } from '../utils/photos.ts'
+import { photoPinIcon } from '../utils/mapMarkers.ts'
 
 export interface MapPin {
   activity: Activity
@@ -29,32 +30,13 @@ interface FullscreenMapProps {
 // Centre on Maurice when there are no pins and no initialCenter.
 const MAURITIUS_CENTER: [number, number] = [-20.25, 57.55]
 
-// Circular hero-photo marker, ringed in the verdict colour (gold for a
-// super-like, pink for a like) so the verdict still reads at a glance.
-function photoPinIcon(activity: Activity, verdict: Verdict): L.DivIcon {
-  const ring = verdict === 'top' ? YB.top : YB.oui
-  const badge = verdict === 'top' ? '★' : '♥'
-  const photo = heroPhotoUrl(activity)
-  const html = `
-    <div style="position:relative;width:44px;height:44px;">
-      <div style="
-        width:44px;height:44px;border-radius:50%;
-        background-image:url('${photo}');background-size:cover;background-position:center;
-        border:3px solid ${ring};box-shadow:0 2px 6px rgba(20,30,50,0.4);
-      "></div>
-      <span style="
-        position:absolute;right:-2px;bottom:-2px;
-        width:18px;height:18px;border-radius:50%;
-        background:${ring};color:#fff;font-size:11px;line-height:18px;
-        text-align:center;border:2px solid #fff;
-      ">${badge}</span>
-    </div>
-  `
-  return L.divIcon({
-    html,
-    className: '',
-    iconSize: [44, 44],
-    iconAnchor: [22, 22],
+// Ring the hero-photo marker in the verdict colour (gold for a super-like,
+// pink for a like) with a matching glyph so the verdict reads at a glance.
+function verdictPinIcon(activity: Activity, verdict: Verdict): L.DivIcon {
+  return photoPinIcon({
+    photo: heroPhotoUrl(activity),
+    ring: verdict === 'top' ? YB.top : YB.oui,
+    badge: verdict === 'top' ? '★' : '♥',
   })
 }
 
@@ -131,7 +113,7 @@ export function FullscreenMap({
           <Marker
             key={p.activity.id}
             position={[p.coords.lat, p.coords.lng]}
-            icon={photoPinIcon(p.activity, p.verdict)}
+            icon={verdictPinIcon(p.activity, p.verdict)}
           >
             <Popup>
               <div className="font-sans" style={{ minWidth: 160 }}>

@@ -2,14 +2,17 @@ import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import type { Coords } from '../utils/coords.ts'
 import { YB } from '../utils/theme.ts'
+import { photoPinIcon } from '../utils/mapMarkers.ts'
 
 interface ActivityMiniMapProps {
   coords: Coords | null
   pinColor: string
+  /** Hero photo for the circular marker. Falls back to a plain dot when absent. */
+  photo?: string
   onExpand?: () => void
 }
 
-function makePinIcon(color: string): L.DivIcon {
+function makeDotIcon(color: string): L.DivIcon {
   const html = `
     <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="9" fill="${color}" stroke="#fff" stroke-width="2.5" />
@@ -26,6 +29,7 @@ function makePinIcon(color: string): L.DivIcon {
 export function ActivityMiniMap({
   coords,
   pinColor,
+  photo,
   onExpand,
 }: ActivityMiniMapProps) {
   if (coords === null) {
@@ -59,6 +63,9 @@ export function ActivityMiniMap({
         overflow: 'hidden',
         cursor: onExpand ? 'pointer' : 'default',
         position: 'relative',
+        // Sandbox Leaflet's internal pane z-indexes (200–700) so they can't
+        // leak above sibling overlays like the photo lightbox.
+        isolation: 'isolate',
       }}
     >
       <MapContainer
@@ -78,7 +85,11 @@ export function ActivityMiniMap({
         />
         <Marker
           position={[coords.lat, coords.lng]}
-          icon={makePinIcon(pinColor)}
+          icon={
+            photo
+              ? photoPinIcon({ photo, ring: pinColor, size: 40 })
+              : makeDotIcon(pinColor)
+          }
         />
       </MapContainer>
     </div>
