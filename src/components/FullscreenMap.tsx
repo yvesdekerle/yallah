@@ -86,10 +86,12 @@ export function FullscreenMap({
 
   // When this overlay is opened by a touch tap (e.g. the DetailModal
   // mini-map), mobile browsers synthesize a "ghost" mouse click ~300ms
-  // later at the original tap coordinates — which now land on this
-  // freshly-mounted overlay and can hit the close button, dismissing the
-  // map instantly. Block all interaction for a short window after mount so
-  // that trailing click is swallowed.
+  // later at the original tap coordinates — which land on this
+  // freshly-mounted overlay and can fire the close button, dismissing the
+  // map instantly. Ignore close/select actions until a short window has
+  // elapsed after open, regardless of which element received the event.
+  // (A handler-level guard is immune to the z-index/hit-testing quirks an
+  // overlay "shield" div is subject to on mobile Safari.)
   const [armed, setArmed] = useState(false)
   useEffect(() => {
     const t = window.setTimeout(() => setArmed(true), 400)
@@ -144,7 +146,10 @@ export function FullscreenMap({
                 </div>
                 <button
                   type="button"
-                  onClick={() => onSelectActivity(p.activity)}
+                  onClick={() => {
+                    if (!armed) return
+                    onSelectActivity(p.activity)
+                  }}
                   className="font-sans cursor-pointer border-0"
                   style={{
                     padding: '6px 12px',
@@ -165,7 +170,10 @@ export function FullscreenMap({
 
       <button
         type="button"
-        onClick={onClose}
+        onClick={() => {
+          if (!armed) return
+          onClose()
+        }}
         aria-label="fermer la carte"
         className="absolute font-sans cursor-pointer border-0"
         style={{
@@ -184,15 +192,6 @@ export function FullscreenMap({
       >
         ✕
       </button>
-
-      {!armed && (
-        <div
-          aria-hidden
-          data-testid="map-click-shield"
-          className="absolute inset-0"
-          style={{ zIndex: 1100 }}
-        />
-      )}
     </div>
   )
 }

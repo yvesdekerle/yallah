@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import type { Activity } from '../types/activity.ts'
 
@@ -45,7 +45,18 @@ const fakeActivity = (id: string, title: string, n: number): Activity => ({
   secret: false,
 })
 
+// Past the 400ms ghost-click guard so close/select actions are armed.
+function arm() {
+  act(() => {
+    vi.advanceTimersByTime(450)
+  })
+}
+
 describe('FullscreenMap', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('renders one marker per pin', () => {
     render(
       <FullscreenMap
@@ -68,7 +79,8 @@ describe('FullscreenMap', () => {
     expect(screen.getAllByTestId('leaflet-marker')).toHaveLength(2)
   })
 
-  it('calls onClose when the close button is tapped', () => {
+  it('calls onClose when the close button is tapped (after the guard window)', () => {
+    vi.useFakeTimers()
     const onClose = vi.fn()
     render(
       <FullscreenMap
@@ -77,11 +89,28 @@ describe('FullscreenMap', () => {
         onSelectActivity={() => {}}
       />,
     )
+    arm()
     fireEvent.click(screen.getByLabelText('fermer la carte'))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('calls onSelectActivity when a popup detail button is tapped', () => {
+  it('ignores a close click within the ghost-click guard window', () => {
+    vi.useFakeTimers()
+    const onClose = vi.fn()
+    render(
+      <FullscreenMap
+        pins={[]}
+        onClose={onClose}
+        onSelectActivity={() => {}}
+      />,
+    )
+    // No timer advance — still inside the 400ms window.
+    fireEvent.click(screen.getByLabelText('fermer la carte'))
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('calls onSelectActivity when a popup detail button is tapped (after the guard window)', () => {
+    vi.useFakeTimers()
     const onSelect = vi.fn()
     const a = fakeActivity('a001', 'Blue Bay', 1)
     render(
@@ -91,6 +120,7 @@ describe('FullscreenMap', () => {
         onSelectActivity={onSelect}
       />,
     )
+    arm()
     fireEvent.click(screen.getByRole('button', { name: /voir le détail/i }))
     expect(onSelect).toHaveBeenCalledWith(a)
   })
