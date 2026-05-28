@@ -14,6 +14,12 @@
  * For each activity, returns `null` if Nominatim has no result OR if
  * the returned point falls outside Mauritius' rough bounding box.
  * Hand-curate the misses in `src/data/coords-overrides.json`.
+ *
+ * Location strings are cleaned before querying: parentheticals are
+ * dropped ("Blue Bay (sud-est)" → "Blue Bay") and multi-site strings
+ * are reduced to their first place ("Tamarin, Flic-en-Flac" →
+ * "Tamarin"). This lifts the hit rate considerably vs. querying the
+ * raw descriptive text.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -87,12 +93,26 @@ function inBbox(lat: number, lng: number): boolean {
   )
 }
 
-async function geocode(location: string): Promise<CoordEntry | null> {
-  const q = encodeURIComponent(`${location} Mauritius`)
+/**
+ * Normalise a raw `location` string into a single geocodable place:
+ * - drop parentheticals: "Blue Bay (sud-est)" → "Blue Bay"
+ * - keep the first place of a multi-site string, splitting on the
+ *   earliest of `,`, `/`, " et ", " ou ":
+ *   "Tamarin, Flic-en-Flac" → "Tamarin"
+ * Returns "" when nothing usable remains (caller treats as a miss).
+ */
+function cleanLocation(raw: string): string {
+  const withoutParens = raw.replace(/\([^)]*\)/g, ' ')
+  const firstPlace = withoutParens.split(/\s*(?:,|\/|\bet\b|\bou\b)\s*/i)[0] ?? ''
+  return firstPlace.replace(/\s+/g, ' ').trim()
+}
+
+async function queryNominatim(query: string): Promise<CoordEntry | null> {
+  const q = encodeURIComponent(`${query} Mauritius`)
   const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } })
   if (!res.ok) {
-    console.warn(`  HTTP ${res.status} for "${location}"`)
+    console.warn(`  HTTP ${res.status} for "${query}"`)
     return null
   }
   const data = (await res.json()) as Array<{ lat: string; lon: string }>
@@ -112,7 +132,8 @@ async function main() {
   const activities = loadActivities()
   const coords = loadCoords()
 
-  // Dedup by location string so we only hit Nominatim once per place.
+  // Dedup by CLEANED location so "Tamarin" and "Tamarin (sud)" share a
+  // single Nominatim request.
   const locationCache = new Map<string, CoordEntry | null>()
 
   let processed = 0
@@ -132,14 +153,15 @@ async function main() {
       continue
     }
 
+    const cleaned = cleanLocation(a.location)
     let entry: CoordEntry | null
-    if (locationCache.has(a.location)) {
-      entry = locationCache.get(a.location)!
+    if (locationCache.has(cleaned)) {
+      entry = locationCache.get(cleaned)!
     } else {
-      console.log(`[${processed + 1}] ${a.id} — ${a.location}`)
-      entry = await geocode(a.location)
-      locationCache.set(a.location, entry)
-      await sleep(THROTTLE_MS)
+      console.log(`[${processed + 1}] ${a.id} — ${a.location} → "${cleaned}"`)
+      entry = cleaned ? await queryNominatim(cleaned) : null
+      locationCache.set(cleaned, entry)
+      if (cleaned) await sleep(THROTTLE_MS)
     }
     coords[a.id] = entry
     saveCoords(coords)
