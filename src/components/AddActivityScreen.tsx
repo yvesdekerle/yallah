@@ -76,6 +76,11 @@ export function AddActivityScreen({
     () => Array.from(new Set(ACTIVITIES.map((a) => a.category))),
     [],
   )
+  // Every emoji tag used across the curated activities, offered as a palette.
+  const existingTags = useMemo(
+    () => Array.from(new Set(ACTIVITIES.flatMap((a) => a.tags))),
+    [],
+  )
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [fields, setFields] = useState({ ...EMPTY })
@@ -194,8 +199,20 @@ export function AddActivityScreen({
     setTagInput('')
   }
 
-  const removeTag = (tag: string) =>
-    setFields((f) => ({ ...f, tags: f.tags.filter((t) => t !== tag) }))
+  const toggleTag = (tag: string) =>
+    setFields((f) => ({
+      ...f,
+      tags: f.tags.includes(tag)
+        ? f.tags.filter((t) => t !== tag)
+        : [...f.tags, tag],
+    }))
+
+  // Existing palette + any custom tags the user typed (so they're toggleable
+  // and removable from the same place).
+  const tagPalette = [
+    ...existingTags,
+    ...fields.tags.filter((t) => !existingTags.includes(t)),
+  ]
 
   const canSubmit = fields.title.trim() !== '' && !saving
 
@@ -370,31 +387,33 @@ export function AddActivityScreen({
           </Field>
 
           <Field label="Tags (emojis)">
-            <div className="flex flex-wrap items-center" style={{ gap: 6, marginBottom: 8 }}>
-              {fields.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center"
-                  style={{
-                    gap: 4,
-                    background: '#fff',
-                    borderRadius: 99,
-                    padding: '4px 6px 4px 10px',
-                    fontSize: 15,
-                  }}
-                >
-                  {tag}
+            <div className="flex flex-wrap items-center" style={{ gap: 6, marginBottom: 10 }}>
+              {tagPalette.map((tag) => {
+                const on = fields.tags.includes(tag)
+                return (
                   <button
+                    key={tag}
                     type="button"
-                    onClick={() => removeTag(tag)}
-                    aria-label={`retirer ${tag}`}
-                    className="inline-flex items-center justify-center border-0 cursor-pointer"
-                    style={{ width: 18, height: 18, borderRadius: 99, background: YB.bgSoft, padding: 0 }}
+                    onClick={() => toggleTag(tag)}
+                    aria-pressed={on}
+                    aria-label={`tag ${tag}`}
+                    className="inline-flex items-center justify-center cursor-pointer"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 99,
+                      fontSize: 19,
+                      lineHeight: 1,
+                      padding: 0,
+                      background: on ? YB.coral : '#fff',
+                      border: on ? '2px solid transparent' : `1px solid ${YB.bgSoft}`,
+                      boxShadow: on ? '0 4px 10px -3px rgba(255,107,71,0.5)' : 'none',
+                    }}
                   >
-                    <X color={YB.ink} size={12} />
+                    {tag}
                   </button>
-                </span>
-              ))}
+                )
+              })}
             </div>
             <div className="flex" style={{ gap: 8 }}>
               <input
@@ -407,8 +426,8 @@ export function AddActivityScreen({
                     addTag()
                   }
                 }}
-                placeholder="🌊 puis Entrée"
-                aria-label="ajouter un tag"
+                placeholder="Autre emoji, puis Entrée"
+                aria-label="ajouter un tag personnalisé"
                 style={inputStyle}
               />
               <SmallButton onClick={addTag} label="Ajouter" />
@@ -661,12 +680,13 @@ const inputStyle: React.CSSProperties = {
   flex: 1,
   minWidth: 0,
   width: '100%',
-  height: 42,
-  borderRadius: 10,
+  height: 50,
+  borderRadius: 12,
   border: `1px solid ${YB.bgSoft}`,
   background: '#fff',
-  padding: '0 12px',
-  fontSize: 14,
+  // 16px keeps iOS Safari from auto-zooming the viewport on focus.
+  padding: '0 14px',
+  fontSize: 16,
   color: YB.ink,
   boxSizing: 'border-box',
 }
@@ -767,7 +787,7 @@ function SmallButton({ onClick, label }: { onClick: () => void; label: string })
       type="button"
       onClick={onClick}
       className="font-sans cursor-pointer border-0"
-      style={{ height: 42, padding: '0 14px', borderRadius: 10, background: YB.ink, color: '#fff', fontWeight: 700, fontSize: 13, flexShrink: 0 }}
+      style={{ height: 50, padding: '0 16px', borderRadius: 12, background: YB.ink, color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}
     >
       {label}
     </button>

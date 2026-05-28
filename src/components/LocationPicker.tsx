@@ -81,12 +81,12 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
   const inputStyle: React.CSSProperties = {
     flex: 1,
     minWidth: 0,
-    height: 40,
+    height: 46,
     borderRadius: 10,
     border: `1px solid ${YB.bgSoft}`,
     background: '#fff',
     padding: '0 12px',
-    fontSize: 14,
+    fontSize: 16,
     color: YB.ink,
   }
 
@@ -113,7 +113,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           disabled={searching || query.trim() === ''}
           className="font-sans cursor-pointer border-0"
           style={{
-            height: 40,
+            height: 46,
             padding: '0 14px',
             borderRadius: 10,
             background: YB.ink,
