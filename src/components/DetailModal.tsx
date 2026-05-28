@@ -60,9 +60,26 @@ export function DetailModal({
     requestAnimationFrame(() => setOpen(true))
   }, [])
 
+  // The active swipe card opens this modal on `pointerup` (tap-vs-drag is
+  // decided there). On touch, a synthesized `click` follows the pointer
+  // sequence and lands on this just-mounted backdrop — closing the modal
+  // the instant it opens. Ignore backdrop clicks for a short window after
+  // mount so that opening-tap echo can't dismiss it. (The X button is not
+  // guarded — it's an explicit, deliberate action.)
+  const [armed, setArmed] = useState(false)
+  useEffect(() => {
+    const t = window.setTimeout(() => setArmed(true), 400)
+    return () => window.clearTimeout(t)
+  }, [])
+
   const close = () => {
     setOpen(false)
     window.setTimeout(onClose, 250)
+  }
+
+  const closeFromBackdrop = () => {
+    if (!armed) return
+    close()
   }
 
   const handleAction = (v: Verdict) => {
@@ -72,7 +89,7 @@ export function DetailModal({
 
   return (
     <div
-      onClick={close}
+      onClick={closeFromBackdrop}
       role="dialog"
       aria-modal="true"
       aria-label={`Détail de ${activity.title}`}
