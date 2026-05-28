@@ -353,7 +353,8 @@ export function AddActivityScreen({
                   key={d.label}
                   selected={difficultyIdx === i}
                   onClick={() => setDifficultyIdx(i)}
-                  label={`${d.dot} ${d.label}`}
+                  dot={d.dot}
+                  label={d.label}
                 />
               ))}
             </div>
@@ -680,12 +681,12 @@ const inputStyle: React.CSSProperties = {
   flex: 1,
   minWidth: 0,
   width: '100%',
-  height: 50,
-  borderRadius: 12,
+  height: 56,
+  borderRadius: 14,
   border: `1px solid ${YB.bgSoft}`,
   background: '#fff',
   // 16px keeps iOS Safari from auto-zooming the viewport on focus.
-  padding: '0 14px',
+  padding: '0 16px',
   fontSize: 16,
   color: YB.ink,
   boxSizing: 'border-box',
@@ -759,24 +760,42 @@ function FieldArea({
   )
 }
 
-function Chip({ selected, onClick, label }: { selected: boolean; onClick: () => void; label: string }) {
+function Chip({
+  selected,
+  onClick,
+  label,
+  dot,
+}: {
+  selected: boolean
+  onClick: () => void
+  label: string
+  dot?: string
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className="font-sans cursor-pointer"
+      className="inline-flex items-center justify-center font-sans cursor-pointer"
       style={{
-        padding: '7px 12px',
+        minHeight: 40,
+        gap: 6,
+        padding: '0 14px',
         borderRadius: 99,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 600,
+        lineHeight: 1,
         background: selected ? YB.ink : '#fff',
         color: selected ? '#fff' : YB.ink,
         border: selected ? '1px solid transparent' : `1px solid ${YB.bgSoft}`,
       }}
     >
-      {label}
+      {dot && (
+        <span aria-hidden style={{ fontSize: 13, lineHeight: 1 }}>
+          {dot}
+        </span>
+      )}
+      <span style={{ lineHeight: 1 }}>{label}</span>
     </button>
   )
 }
@@ -787,7 +806,7 @@ function SmallButton({ onClick, label }: { onClick: () => void; label: string })
       type="button"
       onClick={onClick}
       className="font-sans cursor-pointer border-0"
-      style={{ height: 50, padding: '0 16px', borderRadius: 12, background: YB.ink, color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}
+      style={{ height: 56, padding: '0 16px', borderRadius: 14, background: YB.ink, color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}
     >
       {label}
     </button>
