@@ -429,7 +429,7 @@ export function AddActivityScreen({
                 }}
                 placeholder="Autre emoji, puis Entrée"
                 aria-label="ajouter un tag personnalisé"
-                style={inputStyle}
+                style={{ ...inputStyle, flex: 1 }}
               />
               <SmallButton onClick={addTag} label="Ajouter" />
             </div>
@@ -494,11 +494,12 @@ export function AddActivityScreen({
               className="inline-flex items-center font-sans cursor-pointer"
               style={{
                 gap: 6,
+                height: 60,
                 background: '#fff',
                 border: `1px solid ${YB.bgSoft}`,
-                borderRadius: 10,
-                padding: '8px 12px',
-                fontSize: 13,
+                borderRadius: 14,
+                padding: '0 18px',
+                fontSize: 14,
                 fontWeight: 700,
                 color: YB.ink,
                 marginBottom: 8,
@@ -531,7 +532,7 @@ export function AddActivityScreen({
                 }}
                 placeholder="…ou coller une URL d’image"
                 aria-label="coller une url d’image"
-                style={inputStyle}
+                style={{ ...inputStyle, flex: 1 }}
               />
               <SmallButton onClick={addUrlPhoto} label="Ajouter" />
             </div>
@@ -678,7 +679,6 @@ export function AddActivityScreen({
 }
 
 const inputStyle: React.CSSProperties = {
-  flex: 1,
   minWidth: 0,
   width: '100%',
   height: 60,
