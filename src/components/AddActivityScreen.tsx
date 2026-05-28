@@ -681,7 +681,7 @@ const inputStyle: React.CSSProperties = {
   flex: 1,
   minWidth: 0,
   width: '100%',
-  height: 56,
+  height: 60,
   borderRadius: 14,
   border: `1px solid ${YB.bgSoft}`,
   background: '#fff',
@@ -806,7 +806,7 @@ function SmallButton({ onClick, label }: { onClick: () => void; label: string })
       type="button"
       onClick={onClick}
       className="font-sans cursor-pointer border-0"
-      style={{ height: 56, padding: '0 16px', borderRadius: 14, background: YB.ink, color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}
+      style={{ height: 60, padding: '0 18px', borderRadius: 14, background: YB.ink, color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}
     >
       {label}
     </button>
