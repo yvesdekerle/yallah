@@ -162,7 +162,7 @@ Each activity gets optional lat/lng for the map feature.
 - `src/data/coords-overrides.json` is hand-curated (`{ activityId: { lat, lng } }`) for messy locations the script couldn't resolve. Override always wins.
 - `src/utils/coords.ts` exposes `getCoords(activityId): Coords | null`, merging the two sources.
 
-The maps themselves use **Leaflet 1.9 + react-leaflet 5** with **OSM Mapnik tiles** (free, attribution required, baked into TileLayer). The CSS is imported globally in `src/index.css`. Components `ActivityMiniMap` (passive 180 px in DetailModal) and `FullscreenMap` (overlay opened from Résultats) are **lazy-loaded** via `React.lazy` so the Swipe tab stays under ~115 KB gzipped.
+The maps themselves use **Leaflet 1.9 + react-leaflet 5** with **CartoDB Voyager raster tiles** (`basemaps.cartocdn.com/rastertiles/voyager`, free, attribution required — OSM + CARTO — baked into TileLayer). The CSS is imported globally in `src/index.css`. Components `ActivityMiniMap` (passive 180 px in DetailModal) and `FullscreenMap` (overlay opened from Résultats) are **lazy-loaded** via `React.lazy` so the Swipe tab stays under ~115 KB gzipped.
 
 ## Storage
 
