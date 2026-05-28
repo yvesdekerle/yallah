@@ -12,7 +12,7 @@ interface BottomNavProps {
 }
 
 const TABS = [
-  { icon: Cards, label: 'swipe' },
+  { icon: Cards, label: 'vote' },
   { icon: Results, label: 'résultats' },
   { icon: People, label: 'groupe' },
   { icon: Plus, label: 'ajouter' },

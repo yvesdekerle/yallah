@@ -18,7 +18,7 @@ import { UndoButton } from './components/UndoButton.tsx'
 import { ActionRow } from './components/ActionRow.tsx'
 import { Toast } from './components/Toast.tsx'
 import { DetailModal } from './components/DetailModal.tsx'
-import { DeckDone } from './components/DeckDone.tsx'
+import { ReviewPrompt } from './components/ReviewPrompt.tsx'
 import { SwipeDeck, type SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
@@ -114,6 +114,15 @@ export default function App() {
     () => [...ACTIVITIES, ...userActivities],
     [userActivities],
   )
+
+  // True once every activity has a vote — drives the "Revoir les votes ?"
+  // prompt. Derived from history so it's correct regardless of how the votes
+  // were made (swipe, random fill, review-mode upserts).
+  const allVoted = useMemo(() => {
+    if (allActivities.length === 0) return false
+    const voted = new Set(history.map((h) => h.id))
+    return allActivities.every((a) => voted.has(a.id))
+  }, [history, allActivities])
 
   const superRemaining = useMemo(() => {
     const used = history.filter((h) => h.verdict === 'top' && !h.quotaHit).length
@@ -215,8 +224,11 @@ export default function App() {
 
   const handleExitReview = useCallback(() => {
     setReviewMode(false)
+    // If everything's still voted, fall back to the "Revoir les votes ?"
+    // prompt rather than an empty deck.
+    setDone(allVoted)
     setToast({ id: Date.now(), text: 'Mode révision terminé', emoji: '✓' })
-  }, [])
+  }, [allVoted])
 
   /**
    * Fill all activities that haven't been voted on yet with a random
@@ -234,7 +246,8 @@ export default function App() {
       verdict: verdicts[Math.floor(Math.random() * verdicts.length)]!,
     }))
     setHistory((h) => [...h, ...additions])
-    setDone(false)
+    // Everything's now voted → land on the "Revoir les votes ?" prompt.
+    setDone(true)
     setToast({
       id: Date.now(),
       text: `${additions.length} votes générés aléatoirement`,
@@ -379,42 +392,32 @@ export default function App() {
               </span>
             </button>
           )}
-          {!done ? (
-            <div
-              className="phone-card-area absolute"
-              style={{
-                top: 76,
-                left: 10,
-                right: 10,
-                bottom: 79,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <SwipeDeck
-                ref={deckRef}
-                activities={allActivities}
-                history={history}
-                superRemaining={superRemaining}
-                reviewMode={reviewMode}
-                onVerdict={handleVerdict}
-                onComplete={() =>
-                  window.setTimeout(() => setDone(true), EXIT_MS)
-                }
-                onOpenDetail={(a) =>
-                  setDetail({ activity: a, source: 'swipe' })
-                }
-              />
-            </div>
-          ) : (
-            <DeckDone
+          <div
+            className="phone-card-area absolute"
+            style={{
+              top: 76,
+              left: 10,
+              right: 10,
+              bottom: 79,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* When everything's voted we keep the cards on screen (in
+                review layout) and gate them behind the "Revoir les votes ?"
+                prompt instead of an empty screen. */}
+            <SwipeDeck
+              ref={deckRef}
+              activities={allActivities}
               history={history}
-              bg={YB.bgSun}
-              onReset={handleReset}
-              onReview={history.length > 0 ? handleReview : undefined}
+              superRemaining={superRemaining}
+              reviewMode={reviewMode || done}
+              onVerdict={handleVerdict}
+              onComplete={() => window.setTimeout(() => setDone(true), EXIT_MS)}
+              onOpenDetail={(a) => setDetail({ activity: a, source: 'swipe' })}
             />
-          )}
+          </div>
           {!done && (
             <ActionRow
               onAct={handleAction}
@@ -430,6 +433,7 @@ export default function App() {
               detailOpen={detail !== null}
             />
           )}
+          {done && <ReviewPrompt onConfirm={handleReview} />}
         </div>
 
         <div

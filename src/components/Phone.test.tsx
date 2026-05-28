@@ -24,11 +24,12 @@ describe('TopBar', () => {
 })
 
 describe('BottomNav', () => {
-  it('renders all three tabs', () => {
+  it('renders all four tabs', () => {
     render(<BottomNav active={0} onChange={() => {}} />)
-    expect(screen.getByLabelText('swipe')).toBeInTheDocument()
+    expect(screen.getByLabelText('vote')).toBeInTheDocument()
     expect(screen.getByLabelText('résultats')).toBeInTheDocument()
     expect(screen.getByLabelText('groupe')).toBeInTheDocument()
+    expect(screen.getByLabelText('ajouter')).toBeInTheDocument()
   })
 
   it('marks the active tab via aria-pressed', () => {
@@ -37,7 +38,7 @@ describe('BottomNav', () => {
       'aria-pressed',
       'true',
     )
-    expect(screen.getByLabelText('swipe')).toHaveAttribute(
+    expect(screen.getByLabelText('vote')).toHaveAttribute(
       'aria-pressed',
       'false',
     )
