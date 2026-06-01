@@ -119,7 +119,7 @@ interface DetailModalProps {
 
 /**
  * Slide-up bottom-sheet detail view for a single activity. Hosts:
- * - Hero photo with pagination dots
+ * - Hero photo (first photo only — the carousel lives further down)
  * - Meta-chip strip (duration, difficulty, rating, price, transit)
  * - Description
  * - Horizontal scroll-snap photo carousel (12 photos)
@@ -138,7 +138,6 @@ export function DetailModal({
   myVerdict = null,
 }: DetailModalProps) {
   const [open, setOpen] = useState(false)
-  const [photoIdx, setPhotoIdx] = useState(0)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [legendOpen, setLegendOpen] = useState(false)
 
@@ -203,7 +202,7 @@ export function DetailModal({
           className="relative w-full overflow-hidden"
           style={{
             aspectRatio: '4 / 4.1',
-            background: `url(${photos[photoIdx]}) center center/cover, ${YB.ink}`,
+            background: `url(${photos[0]}) center center/cover, ${YB.ink}`,
           }}
         >
           {/* Bottom gradient for title legibility */}
@@ -317,37 +316,6 @@ export function DetailModal({
               </div>
             )}
           </div>
-
-          {photos.length > 1 && (
-            <div
-              className="absolute z-[3] flex"
-              style={{ bottom: 88, right: 18, gap: 5 }}
-              role="tablist"
-              aria-label="pagination photos"
-            >
-              {photos.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === photoIdx}
-                  aria-label={`photo ${i + 1}`}
-                  onClick={() => setPhotoIdx(i)}
-                  style={{
-                    width: i === photoIdx ? 18 : 6,
-                    height: 6,
-                    border: 'none',
-                    borderRadius: 99,
-                    background:
-                      i === photoIdx ? '#fff' : 'rgba(255,255,255,0.5)',
-                    cursor: 'pointer',
-                    padding: 0,
-                    transition: 'width 0.2s, background 0.2s',
-                  }}
-                />
-              ))}
-            </div>
-          )}
 
           {/* Title block */}
           <div

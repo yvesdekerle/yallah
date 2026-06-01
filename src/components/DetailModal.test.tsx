@@ -104,7 +104,7 @@ describe('DetailModal', () => {
     vi.useRealTimers()
   })
 
-  it('changing the active pagination dot updates aria-selected', () => {
+  it('does not render the hero pagination dots (removed — gallery below carries the rest)', () => {
     render(
       <DetailModal
         activity={fixture}
@@ -113,13 +113,7 @@ describe('DetailModal', () => {
         superRemaining={5}
       />,
     )
-    // 12 photo dots — click the 3rd one.
-    const dots = screen.getAllByRole('tab')
-    expect(dots.length).toBe(12)
-    expect(dots[0]).toHaveAttribute('aria-selected', 'true')
-    fireEvent.click(dots[2]!)
-    expect(dots[2]).toHaveAttribute('aria-selected', 'true')
-    expect(dots[0]).toHaveAttribute('aria-selected', 'false')
+    expect(screen.queryByLabelText('pagination photos')).not.toBeInTheDocument()
   })
 
   it('voting from the action row calls onVerdict and then closes', () => {
