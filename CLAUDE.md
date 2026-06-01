@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Yallah — mobile-first swipe app for picking activities in a group, Tinder-style. First use case is a 9-person trip to Mauritius in November 2026 against 201 hand-curated activities. **Local-only in v1**: no backend, no auth, no multi-user sync. Each user swipes on their own device, votes live in `localStorage`, results are compared visually.
+Yallah — mobile-first swipe app for picking activities in a group, Tinder-style. First use case is a 9-person trip to Mauritius in November 2026 against 198 hand-curated activities. **Local-only in v1**: no backend, no auth, no multi-user sync. Each user swipes on their own device, votes live in `localStorage`, results are compared visually.
 
 ## Tech Stack
 
@@ -82,7 +82,7 @@ public/
 ├── manifest.webmanifest       # iOS / Android "Add to Home Screen" config
 ├── photos/
 │   ├── hero.jpg               # Bundled placeholder used when an activity has no photo entry
-│   └── aXXX/1.jpg … 12.jpg    # 201 × up to 12 photos, ~80 MB committed
+│   └── aXXX/1.jpg … 12.jpg    # 198 × up to 12 photos, ~80 MB committed
 └── …
 ```
 
@@ -206,7 +206,7 @@ Two keys in `localStorage`:
 
 ## Activity data
 
-Source of truth is `activites-maurice.md` at the repo root — a hand-curated guide with 201 activities for the November 2026 Mauritius trip. The parser is regex-based and intentionally tolerant: it skips lines it can't classify rather than failing. Fields supported:
+Source of truth is `activites-maurice.md` at the repo root — a hand-curated guide with 198 activities for the November 2026 Mauritius trip. The parser is regex-based and intentionally tolerant: it skips lines it can't classify rather than failing. Fields supported:
 
 - `**Tags** : 🌊 🐅` (emojis, space-separated)
 - `**Lieu** : …`

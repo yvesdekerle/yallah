@@ -93,7 +93,7 @@
     "category": "🌊 Mer & Sports nautiques",
     "location": "Black River / Tamarin, Trou aux Biches",
     "transit": "~5 min (Tamarin/Black River) ou ~55 min (Trou aux Biches)",
-    "description": "Tamarin est LE port historique de la pêche au gros (marlin bleu, thon, dorade). Sorties demi-journée ou journée. Novembre = bon mois pour le marlin.",
+    "description": "Tamarin est LE port historique de la pêche au gros (marlin bleu, voilier, thon jaune, dorade). Sorties demi-journée ou journée. Novembre = bon mois pour le marlin. Plusieurs capitaines français basés à Tamarin organisent des sorties pour passionnés (pas le tourisme de masse).",
     "duration": "Demi-journée (~3–4h)",
     "price": "400–700 € le bateau pour la journée (à diviser à 9 ça reste raisonnable)",
     "rating": 5,
@@ -619,28 +619,6 @@
     "transit": "~1h (Grand Baie) ou ~1h15 (Trou d'Eau Douce/Belle Mare)",
     "description": "Si tu ne surfes pas mais veux voir : aller au coucher du soleil au Morne pour regarder les pros surfer One Eye, vague légendaire. Spectacle gratuit.",
     "price": "Gratuit",
-    "rating": 4,
-    "pepite": false,
-    "secret": false,
-    "journee": false
-  },
-  {
-    "id": "a029",
-    "number": 29,
-    "title": "Sortie pêche au gros avec un capitaine français",
-    "tags": [
-      "🌊"
-    ],
-    "category": "🌊 Mer & Sports nautiques",
-    "location": "Black River, Tamarin",
-    "transit": "~0–10 min (sur place)",
-    "description": "Plusieurs capitaines français basés à Tamarin organisent des sorties pour passionnés (pas le tourisme de masse). Marlin bleu, voilier, thon jaune. Novembre = bonne saison marlin.",
-    "duration": "Demi-journée ou journée (4h ou 8h)",
-    "difficulty": {
-      "dot": "#22C268",
-      "label": "Facile"
-    },
-    "price": "800–1 200 € la journée bateau (8 pers)",
     "rating": 4,
     "pepite": false,
     "secret": false,
@@ -3053,24 +3031,6 @@
     "insolite": "La version qui transforme une journée de courses en moment hors du temps. Beaucoup de clients reviennent depuis 15 ans selon Jacques."
   },
   {
-    "id": "a150",
-    "number": 150,
-    "title": "Visite d'une raffinerie de sucre (en activité)",
-    "tags": [
-      "🏛️",
-      "🍽️"
-    ],
-    "category": "🏛️ Culture, Histoire & Mémoire",
-    "location": "Médine ou Riche en Eau (selon ouverture)",
-    "transit": "~20 min",
-    "description": "Pas le musée L'Aventure du Sucre, mais une vraie raffinerie en activité. La canne est récoltée juin-décembre, donc novembre = pleine saison, odeur de mélasse partout. Visites parfois possibles via contact direct.",
-    "price": "Gratuit (sur demande)",
-    "rating": 5,
-    "pepite": false,
-    "secret": false,
-    "journee": false
-  },
-  {
     "id": "a151",
     "number": 151,
     "title": "Monument de l'esclave inconnu (pied du Morne)",
@@ -3870,30 +3830,11 @@
     "category": "🧘 Bien-être & Détente",
     "location": "Plateau central, sud sauvage, sommet du Morne (privatisable)",
     "transit": "~1h05",
-    "description": "Hémisphère sud = ciel différent, Croix du Sud visible, Voie lactée magnifique. Quelques astronomes amateurs proposent des soirées avec télescope. Hôtels du sud parfois aussi.",
+    "description": "Hémisphère sud = ciel différent, Croix du Sud visible, Voie lactée magnifique. Identification des constellations australes (Croix du Sud, Centaurus, Nuages de Magellan visibles en novembre). Sorties nocturnes organisées avec télescope au sommet du Morne (privatisable) ou plateau du Pétrin. Hôtels du sud parfois aussi.",
     "price": "30–80 €/pers ou gratuit (allongé sur la plage)",
     "rating": 5,
     "pepite": false,
     "secret": false,
-    "journee": false
-  },
-  {
-    "id": "a196",
-    "number": 196,
-    "title": "Stargazing organisé au Morne ou Pétrin",
-    "tags": [
-      "🧘",
-      "🌳",
-      "🗝️"
-    ],
-    "category": "🧘 Bien-être & Détente",
-    "location": "Sommet du Morne (privatisable) ou plateau du Pétrin",
-    "transit": "~50 min",
-    "description": "Sortie nocturne organisée, télescope, identification des constellations australes (Croix du Sud, Centaurus, Nuages de Magellan visibles en novembre). Quelques astronomes amateurs proposent.",
-    "price": "30–80 €/pers",
-    "rating": 5,
-    "pepite": false,
-    "secret": true,
     "journee": false,
     "insolite": "Vraiment pas grand monde fait ça à Maurice."
   },

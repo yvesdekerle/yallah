@@ -106,10 +106,10 @@ describe('App (integration)', () => {
       vi.advanceTimersByTime(800)
     })
     fireEvent.click(screen.getByLabelText('résultats'))
-    // "1 / 201" string also appears in the GroupScreen (Yves' progress)
+    // "1 / 198" string also appears in the GroupScreen (Yves' progress)
     // since all tabs stay mounted — use a more specific match.
     expect(
-      screen.getByText('1 / 201 activités swipées.'),
+      screen.getByText('1 / 198 activités swipées.'),
     ).toBeInTheDocument()
     expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
   })
@@ -132,7 +132,7 @@ describe('App (integration)', () => {
     fireEvent.click(screen.getByLabelText('réinitialiser les votes'))
     expect(screen.getByText('Tout effacer ?')).toBeInTheDocument()
     fireEvent.click(screen.getByText('Tout effacer'))
-    expect(screen.getByText('0 / 201 activités swipées.')).toBeInTheDocument()
+    expect(screen.getByText('0 / 198 activités swipées.')).toBeInTheDocument()
     expect(
       JSON.parse(window.localStorage.getItem('yallah.history.v1')!),
     ).toEqual([])

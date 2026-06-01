@@ -176,7 +176,7 @@ Ganga Asnan : bains rituels à Grand Bassin. À vérifier si la date tombe penda
 **Tags** : 🌊  
 **Lieu** : Black River / Tamarin, Trou aux Biches  
 **Trajet depuis Tamarin** : ~5 min (Tamarin/Black River) ou ~55 min (Trou aux Biches)  
-**Description** : Tamarin est LE port historique de la pêche au gros (marlin bleu, thon, dorade). Sorties demi-journée ou journée. Novembre = bon mois pour le marlin.  
+**Description** : Tamarin est LE port historique de la pêche au gros (marlin bleu, voilier, thon jaune, dorade). Sorties demi-journée ou journée. Novembre = bon mois pour le marlin. Plusieurs capitaines français basés à Tamarin organisent des sorties pour passionnés (pas le tourisme de masse).  
 **Durée** : Demi-journée (~3–4h)  
 **Prix** : 400–700 € le bateau pour la journée (à diviser à 9 ça reste raisonnable)  
 **Note** : ⭐⭐⭐⭐⭐ 5/5
@@ -446,18 +446,6 @@ Ganga Asnan : bains rituels à Grand Bassin. À vérifier si la date tombe penda
 **Trajet depuis Tamarin** : ~1h (Grand Baie) ou ~1h15 (Trou d'Eau Douce/Belle Mare)  
 **Description** : Si tu ne surfes pas mais veux voir : aller au coucher du soleil au Morne pour regarder les pros surfer One Eye, vague légendaire. Spectacle gratuit.  
 **Prix** : Gratuit  
-**Note** : ⭐⭐⭐⭐☆ 4/5
-
-
-#### n°29 — Sortie pêche au gros avec un capitaine français *(ancien n°140)*
-
-**Tags** : 🌊  
-**Lieu** : Black River, Tamarin  
-**Trajet depuis Tamarin** : ~0–10 min (sur place)  
-**Description** : Plusieurs capitaines français basés à Tamarin organisent des sorties pour passionnés (pas le tourisme de masse). Marlin bleu, voilier, thon jaune. Novembre = bonne saison marlin.  
-**Durée** : Demi-journée ou journée (4h ou 8h)  
-**Difficulté** : 🟢 Facile (tolérer la mer (sorties 4–8h))  
-**Prix** : 800–1 200 € la journée bateau (8 pers)  
 **Note** : ⭐⭐⭐⭐☆ 4/5
 
 
@@ -1801,16 +1789,6 @@ Ganga Asnan : bains rituels à Grand Bassin. À vérifier si la date tombe penda
 **Insolite** : La version qui transforme une journée de courses en moment hors du temps. Beaucoup de clients reviennent depuis 15 ans selon Jacques.
 
 
-#### n°150 — Visite d'une raffinerie de sucre (en activité) *(ancien n°138)*
-
-**Tags** : 🏛️ 🍽️  
-**Lieu** : Médine ou Riche en Eau (selon ouverture)  
-**Trajet depuis Tamarin** : ~20 min  
-**Description** : Pas le musée L'Aventure du Sucre, mais une **vraie raffinerie en activité**. La canne est récoltée juin-décembre, donc novembre = pleine saison, odeur de mélasse partout. Visites parfois possibles via contact direct.  
-**Prix** : Gratuit (sur demande)  
-**Note** : ⭐⭐⭐⭐⭐ 5/5
-
-
 #### n°151 — Monument de l'esclave inconnu (pied du Morne) *(ancien n°152)*
 
 **Tags** : 🏛️  
@@ -2276,18 +2254,8 @@ Ganga Asnan : bains rituels à Grand Bassin. À vérifier si la date tombe penda
 **Tags** : 🧘 🌳  
 **Lieu** : Plateau central, sud sauvage, sommet du Morne (privatisable)  
 **Trajet depuis Tamarin** : ~1h05  
-**Description** : Hémisphère sud = ciel différent, Croix du Sud visible, Voie lactée magnifique. Quelques astronomes amateurs proposent des soirées avec télescope. Hôtels du sud parfois aussi.  
+**Description** : Hémisphère sud = ciel différent, Croix du Sud visible, Voie lactée magnifique. Identification des constellations australes (Croix du Sud, Centaurus, Nuages de Magellan visibles en novembre). Sorties nocturnes organisées avec télescope au sommet du Morne (privatisable) ou plateau du Pétrin. Hôtels du sud parfois aussi.  
 **Prix** : 30–80 €/pers ou gratuit (allongé sur la plage)  
-**Note** : ⭐⭐⭐⭐⭐ 5/5
-
-
-#### n°196 — Stargazing organisé au Morne ou Pétrin *(ancien n°146)*
-
-**Tags** : 🧘 🌳 🗝️  
-**Lieu** : Sommet du Morne (privatisable) ou plateau du Pétrin  
-**Trajet depuis Tamarin** : ~50 min  
-**Description** : Sortie nocturne organisée, télescope, identification des constellations australes (Croix du Sud, Centaurus, Nuages de Magellan visibles en novembre). Quelques astronomes amateurs proposent.  
-**Prix** : 30–80 €/pers  
 **Note** : ⭐⭐⭐⭐⭐ 5/5  
 **Insolite** : Vraiment pas grand monde fait ça à Maurice.
 
