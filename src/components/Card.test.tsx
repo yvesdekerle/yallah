@@ -1,13 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-
-vi.mock('../utils/links.ts', () => ({
-  getLinks: (activityId: string) =>
-    activityId === 'with-link'
-      ? [{ url: 'https://example.com', label: 'Site officiel' }]
-      : [],
-}))
-
 import { Card } from './Card.tsx'
 import type { Activity } from '../types/activity.ts'
 
@@ -75,16 +67,7 @@ describe('Card', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('renders the primary link as a CTA below the meta strip', () => {
-    render(<Card activity={{ ...fixture, id: 'with-link' }} />)
-    const link = screen.getByRole('link', { name: /Ouvrir Site officiel/i })
-    expect(link).toHaveAttribute('href', 'https://example.com')
-    expect(link).toHaveAttribute('target', '_blank')
-    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
-    expect(link).toHaveTextContent('Site officiel')
-  })
-
-  it('omits the link CTA when the activity has no links', () => {
+  it('does not surface the booking link on the Card (kept in the DetailModal only)', () => {
     render(<Card activity={fixture} />)
     expect(
       screen.queryByRole('link', { name: /^Ouvrir/i }),
