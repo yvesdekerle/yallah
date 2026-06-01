@@ -168,10 +168,15 @@ export function Card({ activity }: CardProps) {
             fontSize: 13,
           }}
         >
-          <span className="inline-flex items-center" style={{ gap: 5 }}>
-            <StarFilled color={YB.primary} size={13} />
-            <span>{activity.rating.toFixed(1)}</span>
-          </span>
+          {activity.duration && (
+            <span
+              className="inline-flex items-center"
+              style={{ gap: 5, color: 'rgba(255,255,255,0.85)' }}
+            >
+              <Clock color="rgba(255,255,255,0.85)" size={13} />
+              {activity.duration}
+            </span>
+          )}
           {activity.difficulty && (
             <span
               className="inline-flex items-center"
@@ -190,15 +195,10 @@ export function Card({ activity }: CardProps) {
               <span>{activity.difficulty.label}</span>
             </span>
           )}
-          {activity.duration && (
-            <span
-              className="inline-flex items-center"
-              style={{ gap: 5, color: 'rgba(255,255,255,0.85)' }}
-            >
-              <Clock color="rgba(255,255,255,0.85)" size={13} />
-              {activity.duration}
-            </span>
-          )}
+          <span className="inline-flex items-center" style={{ gap: 5 }}>
+            <StarFilled color={YB.primary} size={13} />
+            <span>{activity.rating.toFixed(1)}</span>
+          </span>
           <span
             className="font-sans"
             style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}
