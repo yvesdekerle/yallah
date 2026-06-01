@@ -1,1 +1,67 @@
-{}
+{
+  "a001": [
+    { "url": "https://www.getyourguide.com/blue-bay-l189535/blue-bay-blue-bay-glass-bottom-boat-visit-and-snorkeling-t515764/", "label": "GetYourGuide" },
+    { "url": "https://www.viator.com/Mauritius-attractions/Blue-Bay-Marine-Park/d4463-a20244", "label": "Viator" }
+  ],
+  "a002": [
+    { "url": "https://www.padi.com/dive-center/republic-of-mauritius/diving-world-trou-aux-biches/", "label": "Centre PADI Trou aux Biches" },
+    { "url": "https://travel.padi.com/dive-course/mauritius/discover-scuba-diving-1185/", "label": "Baptême PADI" }
+  ],
+  "a003": [
+    { "url": "https://blue-safari.com/", "label": "Site officiel Blue Safari" },
+    { "url": "https://mauritiusattractions.com/blue-safari-mauritius-submarine-subscooter-i-296.html", "label": "Mauritius Attractions" }
+  ],
+  "a004": [
+    { "url": "https://yemayaadventures.com/sea-kayaking-mauritius/", "label": "Yemaya Adventures" },
+    { "url": "https://www.getyourguide.com/en-gb/ambre-island-l157908/ile-d-ambre-kayaking-t691510/", "label": "GetYourGuide" }
+  ],
+  "a005": [
+    { "url": "https://www.getyourguide.com/grand-baie-l2072/mauritius-big-game-fishing-trip-from-grand-baie-t997439/", "label": "GetYourGuide" },
+    { "url": "https://blackrivercharters.mu/activities-excursions/big-game-fishing-in-mauritius/", "label": "Black River Charters" }
+  ],
+  "a006": [
+    { "url": "https://justdivingmauritius.com/en/flat-island-safari-sharks/", "label": "Just Diving Mauritius" },
+    { "url": "https://mauritiusattractions.com/shark-diving-snake-island-round-island-p-1714.html", "label": "Mauritius Attractions" }
+  ],
+  "a007": [
+    { "url": "https://www.getyourguide.com/tamarin-l110542/abseiling-canyoning-mauritius-t536999/", "label": "GetYourGuide" },
+    { "url": "https://www.trekkingmauritius.com/tour/canyoning-tamarind-falls/", "label": "Trekking Mauritius" }
+  ],
+  "a008": [
+    { "url": "https://www.getyourguide.com/tamarin-l110542/mauritius-dolphin-and-whale-watching-with-snorkeling-t927807/", "label": "GetYourGuide" },
+    { "url": "https://www.viator.com/tours/Mauritius/Swimming-with-Wild-Dolphins-and-Whale-Watching/d4463-9433P4", "label": "Viator" }
+  ],
+  "a009": [
+    { "url": "https://anbalaba.com/en/fishing-baie-du-cap", "label": "Anbalaba Baie du Cap" }
+  ],
+  "a010": [
+    { "url": "https://www.padi.com/dive-site/republic-of-mauritius/cathedral-5/", "label": "Site PADI Cathedral" },
+    { "url": "https://www.sundiversmauritius.com/portfolio-item/cathedral/", "label": "Sundivers Mauritius" }
+  ],
+  "a011": [
+    { "url": "https://yachtmauritius.com/cruise/sunset-cruise/", "label": "Yacht Mauritius" },
+    { "url": "https://jph.mu/sunset-cruise/", "label": "JPH Charter" }
+  ],
+  "a012": [],
+  "a013": [],
+  "a014": [
+    { "url": "https://speedboatseaduction-mauritius.com/fr/ballades/171-ballade-en-pirogue-a-voile.html", "label": "Speedboat Seaduction" }
+  ],
+  "a015": [
+    { "url": "http://www.coraldiving.com/", "label": "Coral Diving Mahebourg" }
+  ],
+  "a016": [],
+  "a017": [
+    { "url": "https://blue-safari.com/subscooter/", "label": "Blue Safari Subscooter" },
+    { "url": "https://www.atomleisure.mu/subscooter-blue-safari.html", "label": "Atom Leisure" }
+  ],
+  "a018": [
+    { "url": "https://www.manawa.com/en/providers/2900-seabob-mauritius", "label": "Seabob sur Manawa" },
+    { "url": "https://www.aquajet.mu/en/", "label": "Aquajet Mauritius" }
+  ],
+  "a019": [
+    { "url": "https://www.lemorne-kiteschool.com/", "label": "Le Morne Kite School" },
+    { "url": "https://www.ion-club.net/le-morne/", "label": "ION Club Le Morne" }
+  ],
+  "a020": []
+}

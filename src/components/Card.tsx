@@ -3,6 +3,7 @@ import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
 import { heroPhotoUrl } from '../utils/photos.ts'
 import { Pin, Clock, StarFilled } from '../icons/index.tsx'
+import { getLinks } from '../utils/links.ts'
 
 interface CardProps {
   activity: Activity
@@ -213,6 +214,52 @@ export function Card({ activity }: CardProps) {
           >
             {activity.price}
           </div>
+          {(() => {
+            const cardLinks = getLinks(activity.id)
+            if (cardLinks.length === 0) return null
+            const link = cardLinks[0]!
+            return (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerMove={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center font-sans"
+                style={{
+                  marginTop: 10,
+                  padding: '7px 12px',
+                  gap: 7,
+                  background: 'rgba(255,255,255,0.18)',
+                  borderRadius: 99,
+                  color: '#fff',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                  maxWidth: '100%',
+                }}
+                aria-label={`Ouvrir ${link.label || link.url}`}
+              >
+                <span aria-hidden>🔗</span>
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {link.label || link.url.replace(/^https?:\/\//, '')}
+                </span>
+                <span aria-hidden style={{ opacity: 0.75 }}>
+                  ↗
+                </span>
+              </a>
+            )
+          })()}
         </div>
       </div>
     </div>
