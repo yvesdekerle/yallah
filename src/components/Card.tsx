@@ -90,7 +90,10 @@ export function Card({ activity }: CardProps) {
                 padding: 0,
                 cursor: 'pointer',
                 fontSize: 16,
-                boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
+                boxShadow:
+                  tag === '💎'
+                    ? `0 0 0 2px ${YB.top}, 0 2px 8px -2px rgba(20,30,50,0.15)`
+                    : '0 2px 8px -2px rgba(20,30,50,0.15)',
               }}
             >
               {tag}
