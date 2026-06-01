@@ -160,7 +160,7 @@ export function Card({ activity }: CardProps) {
         </p>
 
         <div
-          className="flex items-center justify-between font-sans"
+          className="font-sans"
           style={{
             paddingTop: 12,
             borderTop: '1px solid rgba(255,255,255,0.16)',
@@ -168,43 +168,51 @@ export function Card({ activity }: CardProps) {
             fontSize: 13,
           }}
         >
-          {activity.duration && (
-            <span
-              className="inline-flex items-center"
-              style={{ gap: 5, color: 'rgba(255,255,255,0.85)' }}
-            >
-              <Clock color="rgba(255,255,255,0.85)" size={13} />
-              {activity.duration}
+          <div
+            className="flex items-center flex-wrap"
+            style={{
+              columnGap: 12,
+              rowGap: 4,
+              color: 'rgba(255,255,255,0.85)',
+            }}
+          >
+            {activity.duration && (
+              <span className="inline-flex items-center" style={{ gap: 5 }}>
+                <Clock color="rgba(255,255,255,0.85)" size={13} />
+                {activity.duration}
+              </span>
+            )}
+            {activity.difficulty && (
+              <span className="inline-flex items-center" style={{ gap: 6 }}>
+                <span
+                  style={{
+                    width: 9,
+                    height: 9,
+                    borderRadius: 99,
+                    background: activity.difficulty.dot,
+                    boxShadow: '0 0 0 1px rgba(255,255,255,0.45)',
+                  }}
+                  aria-hidden
+                />
+                <span>{activity.difficulty.label}</span>
+              </span>
+            )}
+            <span className="inline-flex items-center" style={{ gap: 5 }}>
+              <StarFilled color={YB.primary} size={13} />
+              <span>{activity.rating.toFixed(1)}</span>
             </span>
-          )}
-          {activity.difficulty && (
-            <span
-              className="inline-flex items-center"
-              style={{ gap: 6, color: 'rgba(255,255,255,0.85)' }}
-            >
-              <span
-                style={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: 99,
-                  background: activity.difficulty.dot,
-                  boxShadow: '0 0 0 1px rgba(255,255,255,0.45)',
-                }}
-                aria-hidden
-              />
-              <span>{activity.difficulty.label}</span>
-            </span>
-          )}
-          <span className="inline-flex items-center" style={{ gap: 5 }}>
-            <StarFilled color={YB.primary} size={13} />
-            <span>{activity.rating.toFixed(1)}</span>
-          </span>
-          <span
-            className="font-sans"
-            style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              fontWeight: 700,
+              fontSize: 13.5,
+              color: '#fff',
+              lineHeight: 1.35,
+            }}
           >
             {activity.price}
-          </span>
+          </div>
         </div>
       </div>
     </div>
