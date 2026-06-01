@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -10,7 +17,6 @@ import {
   Wallet,
   StarFilled,
 } from '../icons/index.tsx'
-import { MetaChip } from './MetaChip.tsx'
 import { SectionHeading } from './SectionHeading.tsx'
 import { ActionRow } from './ActionRow.tsx'
 import { PhotoLightbox } from './PhotoLightbox.tsx'
@@ -25,6 +31,7 @@ import { ratingComment } from '../utils/rating.ts'
 import { getReviewSummary } from '../utils/reviewSummary.ts'
 import { labelForTag } from '../utils/tags.ts'
 import { fakeVote } from '../utils/groupVotes.ts'
+import { shortPrice } from '../utils/format.ts'
 import { PARTICIPANTS } from '../data/participants.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
 import type { MapView } from '../types/map.ts'
@@ -32,6 +39,64 @@ import type { MapView } from '../types/map.ts'
 const ActivityMiniMap = lazy(() =>
   import('./ActivityMiniMap.tsx').then((m) => ({ default: m.ActivityMiniMap })),
 )
+
+function MetaTile({
+  icon,
+  iconBg,
+  label,
+  value,
+}: {
+  icon: ReactNode
+  iconBg: string
+  label: string
+  value: string
+}) {
+  return (
+    <div
+      className="flex flex-col items-center font-sans"
+      style={{ gap: 6, padding: '4px 6px', minWidth: 0 }}
+    >
+      <span
+        className="inline-flex items-center justify-center"
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 99,
+          background: iconBg,
+          flexShrink: 0,
+        }}
+        aria-hidden
+      >
+        {icon}
+      </span>
+      <span
+        className="font-mono"
+        style={{
+          fontSize: 9.5,
+          letterSpacing: 0.9,
+          color: YB.muted,
+          textTransform: 'uppercase',
+          fontWeight: 700,
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: YB.ink,
+          textAlign: 'center',
+          lineHeight: 1.2,
+          maxWidth: '100%',
+          overflowWrap: 'break-word',
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
 
 interface DetailModalProps {
   activity: Activity
@@ -380,38 +445,85 @@ export function DetailModal({
               </div>
             )}
 
-          {/* Meta chips */}
+          {/* Meta tiles — Durée / Niveau / Note / Prix in a 4-column grid */}
           <div
-            className="flex flex-wrap"
-            style={{ gap: 8, marginBottom: 26 }}
+            className="font-sans"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: 2,
+              marginBottom: 18,
+              padding: '14px 8px',
+              background: '#fff',
+              borderRadius: 18,
+              boxShadow: '0 2px 10px -4px rgba(20,30,50,0.08)',
+            }}
+            aria-label="Caractéristiques de l'activité"
           >
-            {activity.journee && (
-              <MetaChip
-                icon={<span style={{ fontSize: 14 }}>☀️</span>}
-                value="Journée"
-              />
-            )}
-            {activity.duration && (
-              <MetaChip
-                icon={<Clock color={YB.ink} size={14} />}
-                value={activity.duration}
-              />
-            )}
-            {activity.difficulty && (
-              <MetaChip
-                dot={activity.difficulty.dot}
-                value={activity.difficulty.label}
-              />
-            )}
-            <MetaChip
-              icon={<StarFilled color={YB.top} size={14} />}
+            <MetaTile
+              icon={<Clock color={YB.bgLagoon} size={20} />}
+              iconBg={`${YB.bgLagoon}33`}
+              label="Durée"
+              value={activity.duration ?? '—'}
+            />
+            <MetaTile
+              icon={
+                activity.difficulty ? (
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 99,
+                      background: activity.difficulty.dot,
+                      display: 'inline-block',
+                    }}
+                    aria-hidden
+                  />
+                ) : (
+                  <span aria-hidden />
+                )
+              }
+              iconBg={
+                activity.difficulty
+                  ? `${activity.difficulty.dot}22`
+                  : `${YB.muted}22`
+              }
+              label="Niveau"
+              value={activity.difficulty?.label ?? '—'}
+            />
+            <MetaTile
+              icon={<StarFilled color={YB.top} size={20} />}
+              iconBg={`${YB.top}26`}
+              label="Note"
               value={activity.rating.toFixed(1)}
             />
-            <MetaChip
-              icon={<Wallet color={YB.ink} size={14} />}
-              value={activity.price}
+            <MetaTile
+              icon={<Wallet color={YB.bgPistachio} size={20} />}
+              iconBg={`${YB.bgPistachio}55`}
+              label="Prix"
+              value={shortPrice(activity.price)}
             />
           </div>
+
+          {activity.journee && (
+            <div
+              className="inline-flex items-center font-sans"
+              style={{
+                gap: 6,
+                marginBottom: 18,
+                padding: '5px 12px 5px 8px',
+                borderRadius: 99,
+                background: `${YB.primary}33`,
+                color: YB.ink,
+                fontSize: 12.5,
+                fontWeight: 700,
+              }}
+              aria-label="Activité d'une journée entière"
+            >
+              <span aria-hidden>☀️</span>
+              Journée entière
+            </div>
+          )}
 
           {(() => {
             const summary =
@@ -473,20 +585,21 @@ export function DetailModal({
                 {tamarinValue && (
                   <>
                     <span
-                      style={{ fontSize: 14, lineHeight: 1 }}
+                      className="inline-flex items-center justify-center"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 99,
+                        background: '#fff',
+                        fontSize: 16,
+                        lineHeight: 1,
+                      }}
                       aria-hidden
                     >
                       🚗
                     </span>
-                    <div
-                      className="flex items-center"
-                      style={{ gap: 8, color: YB.ink }}
-                    >
-                      <span style={{ fontWeight: 600 }}>
-                        {BASE_TAMARIN.label}
-                      </span>
-                      <span style={{ color: YB.ink2 }}>·</span>
-                      <span>{tamarinValue}</span>
+                    <div style={{ color: YB.ink, fontWeight: 600 }}>
+                      {tamarinValue} depuis {BASE_TAMARIN.label}
                     </div>
                   </>
                 )}
@@ -494,9 +607,12 @@ export function DetailModal({
                   <>
                     <span aria-hidden />
                     <div
-                      className="flex items-center"
-                      style={{ gap: 8, color: YB.ink2 }}
+                      style={{
+                        color: YB.ink2,
+                        fontStyle: 'italic',
+                      }}
                     >
+                      {troubValue} depuis{' '}
                       <span style={{ fontWeight: 600 }}>
                         {BASE_TROU_AUX_BICHES.label}
                       </span>
@@ -509,10 +625,13 @@ export function DetailModal({
             )
           })()}
 
+          <SectionHeading>L'expérience</SectionHeading>
           <p
             className="font-sans"
             style={{
               margin: '0 0 32px',
+              padding: '4px 0 4px 18px',
+              borderLeft: `4px solid ${YB.primary}`,
               fontSize: 15.5,
               lineHeight: 1.55,
               color: YB.ink,

@@ -2,8 +2,9 @@ import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
 import { heroPhotoUrl } from '../utils/photos.ts'
-import { Pin, Clock, StarFilled } from '../icons/index.tsx'
+import { Pin, Clock, StarFilled, Wallet } from '../icons/index.tsx'
 import { getLinks } from '../utils/links.ts'
+import { shortPrice, formatLocation } from '../utils/format.ts'
 
 interface CardProps {
   activity: Activity
@@ -124,9 +125,10 @@ export function Card({ activity }: CardProps) {
         </h2>
 
         <div
-          className="flex items-center"
+          className="flex items-center flex-wrap"
           style={{
-            gap: 8,
+            columnGap: 8,
+            rowGap: 4,
             marginTop: 8,
             fontSize: 12.5,
             color: 'rgba(255,255,255,0.9)',
@@ -135,12 +137,16 @@ export function Card({ activity }: CardProps) {
         >
           <span className="inline-flex items-center" style={{ gap: 4 }}>
             <Pin color="rgba(255,255,255,0.9)" size={13} />
-            {activity.location}
+            {formatLocation(activity.location)}
           </span>
-          <span style={{ opacity: 0.4 }}>·</span>
-          <span className="font-mono" style={{ fontSize: 10.5 }}>
-            {activity.transit}
-          </span>
+          {activity.transit && (
+            <>
+              <span style={{ opacity: 0.4 }}>·</span>
+              <span style={{ fontSize: 12 }}>
+                {activity.transit} depuis Tamarin
+              </span>
+            </>
+          )}
         </div>
 
         <p
@@ -160,59 +166,93 @@ export function Card({ activity }: CardProps) {
           {activity.description}
         </p>
 
-        <div
-          className="font-sans"
-          style={{
-            paddingTop: 12,
-            borderTop: '1px solid rgba(255,255,255,0.16)',
-            fontWeight: 600,
-            fontSize: 13,
-          }}
-        >
+        <div className="font-sans" style={{ paddingTop: 14 }}>
           <div
-            className="flex items-center flex-wrap"
-            style={{
-              columnGap: 12,
-              rowGap: 4,
-              color: 'rgba(255,255,255,0.85)',
-            }}
+            className="flex flex-wrap"
+            style={{ gap: 8, fontWeight: 700, fontSize: 13.5 }}
           >
+            <span
+              className="inline-flex items-center"
+              style={{
+                gap: 7,
+                padding: '7px 13px 7px 9px',
+                borderRadius: 99,
+                background: 'rgba(255,255,255,0.16)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                color: '#fff',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <span
+                className="inline-flex items-center justify-center"
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 99,
+                  background: 'rgba(255,203,69,0.85)',
+                }}
+                aria-hidden
+              >
+                <StarFilled color={YB.ink} size={12} />
+              </span>
+              {activity.rating.toFixed(1)}
+            </span>
+
             {activity.duration && (
-              <span className="inline-flex items-center" style={{ gap: 5 }}>
-                <Clock color="rgba(255,255,255,0.85)" size={13} />
+              <span
+                className="inline-flex items-center"
+                style={{
+                  gap: 7,
+                  padding: '7px 13px 7px 9px',
+                  borderRadius: 99,
+                  background: 'rgba(255,255,255,0.16)',
+                  border: '1px solid rgba(255,255,255,0.22)',
+                  color: '#fff',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                <span
+                  className="inline-flex items-center justify-center"
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 99,
+                    background: 'rgba(255,255,255,0.2)',
+                  }}
+                  aria-hidden
+                >
+                  <Clock color="#fff" size={12} />
+                </span>
                 {activity.duration}
               </span>
             )}
-            {activity.difficulty && (
-              <span className="inline-flex items-center" style={{ gap: 6 }}>
-                <span
-                  style={{
-                    width: 9,
-                    height: 9,
-                    borderRadius: 99,
-                    background: activity.difficulty.dot,
-                    boxShadow: '0 0 0 1px rgba(255,255,255,0.45)',
-                  }}
-                  aria-hidden
-                />
-                <span>{activity.difficulty.label}</span>
+
+            <span
+              className="inline-flex items-center"
+              style={{
+                gap: 7,
+                padding: '7px 13px 7px 9px',
+                borderRadius: 99,
+                background: 'rgba(255,255,255,0.16)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                color: '#fff',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <span
+                className="inline-flex items-center justify-center"
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 99,
+                  background: 'rgba(255,255,255,0.2)',
+                }}
+                aria-hidden
+              >
+                <Wallet color="#fff" size={12} />
               </span>
-            )}
-            <span className="inline-flex items-center" style={{ gap: 5 }}>
-              <StarFilled color={YB.primary} size={13} />
-              <span>{activity.rating.toFixed(1)}</span>
+              {shortPrice(activity.price)}
             </span>
-          </div>
-          <div
-            style={{
-              marginTop: 6,
-              fontWeight: 700,
-              fontSize: 13.5,
-              color: '#fff',
-              lineHeight: 1.35,
-            }}
-          >
-            {activity.price}
           </div>
           {(() => {
             const cardLinks = getLinks(activity.id)

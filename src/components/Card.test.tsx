@@ -35,9 +35,13 @@ describe('Card', () => {
     expect(
       screen.getByText('Snorkeling à Blue Bay Marine Park'),
     ).toBeInTheDocument()
-    expect(screen.getByText('Blue Bay (sud-est)')).toBeInTheDocument()
-    expect(screen.getByText('~1h–1h15')).toBeInTheDocument()
-    expect(screen.getByText('~25–35 €/pers')).toBeInTheDocument()
+    // formatLocation: trailing "(sud-est)" becomes " · sud-est"
+    expect(screen.getByText('Blue Bay · sud-est')).toBeInTheDocument()
+    expect(
+      screen.getByText('~1h–1h15 depuis Tamarin'),
+    ).toBeInTheDocument()
+    // shortPrice strips "/pers en excursion organisée" from the chip.
+    expect(screen.getByText('25–35 €')).toBeInTheDocument()
     expect(screen.getByText('5.0')).toBeInTheDocument()
   })
 
@@ -52,14 +56,8 @@ describe('Card', () => {
     expect(screen.queryByText('~3–4h')).not.toBeInTheDocument()
   })
 
-  it('shows the difficulty label inline in the meta strip', () => {
+  it('does not show the difficulty label on the Card (moved to the DetailModal NIVEAU tile)', () => {
     render(<Card activity={fixture} />)
-    expect(screen.getByText('Facile')).toBeInTheDocument()
-  })
-
-  it('omits the difficulty block when no difficulty is set', () => {
-    const noDiff: Activity = { ...fixture, difficulty: undefined }
-    render(<Card activity={noDiff} />)
     expect(screen.queryByText('Facile')).not.toBeInTheDocument()
   })
 
