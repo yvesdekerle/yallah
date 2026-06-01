@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { Card } from './Card.tsx'
 import type { Activity } from '../types/activity.ts'
 
@@ -79,5 +79,17 @@ describe('Card', () => {
     render(<Card activity={fixture} />)
     expect(screen.getByText('🌊')).toBeInTheDocument()
     expect(screen.getByText('🐅')).toBeInTheDocument()
+  })
+
+  it('opens a tag legend when a chip is tapped, closes when tapped again', () => {
+    render(<Card activity={fixture} />)
+    expect(screen.queryByLabelText('Légende des tags')).not.toBeInTheDocument()
+    const chip = screen.getByLabelText('Mer & sports nautiques')
+    fireEvent.click(chip)
+    const panel = screen.getByLabelText('Légende des tags')
+    expect(panel).toHaveTextContent('Mer & sports nautiques')
+    expect(panel).toHaveTextContent('Faune sauvage')
+    fireEvent.click(chip)
+    expect(screen.queryByLabelText('Légende des tags')).not.toBeInTheDocument()
   })
 })
