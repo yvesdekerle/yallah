@@ -55,6 +55,20 @@ describe('Card', () => {
     expect(screen.queryByText('Facile')).not.toBeInTheDocument()
   })
 
+  it('shows a "Journée" chip when the activity is a full-day destination', () => {
+    render(<Card activity={{ ...fixture, journee: true }} />)
+    expect(
+      screen.getByLabelText(/journée entière/i),
+    ).toBeInTheDocument()
+  })
+
+  it('omits the "Journée" chip when journee is false', () => {
+    render(<Card activity={fixture} />)
+    expect(
+      screen.queryByLabelText(/journée entière/i),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders tags', () => {
     render(<Card activity={fixture} />)
     expect(screen.getByText('🌊')).toBeInTheDocument()

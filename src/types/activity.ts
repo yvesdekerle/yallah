@@ -24,6 +24,10 @@ export interface Activity {
   pepite: boolean
   /** True when tagged 🗝️ in the source. */
   secret: boolean
+  /** True when the activity is a full-day destination — auto-derived from
+      a "Journée complète" duration or an explicit ☀️ tag in the source.
+      Optional in fixtures; the parser always emits a boolean. */
+  journee?: boolean
   /** Optional "Insolite" note (present mostly on 🗝️ entries). */
   insolite?: string
   /** Runtime-only: true for user-added activities (absent from activities.json). */

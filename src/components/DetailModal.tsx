@@ -316,6 +316,12 @@ export function DetailModal({
             className="flex flex-wrap"
             style={{ gap: 8, marginBottom: 26 }}
           >
+            {activity.journee && (
+              <MetaChip
+                icon={<span style={{ fontSize: 14 }}>☀️</span>}
+                value="Journée"
+              />
+            )}
             {activity.duration && (
               <MetaChip
                 icon={<Clock color={YB.ink} size={14} />}

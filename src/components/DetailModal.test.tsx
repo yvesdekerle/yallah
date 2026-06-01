@@ -181,6 +181,18 @@ describe('DetailModal', () => {
     expect(block).not.toHaveTextContent('Trou aux Biches')
   })
 
+  it('renders a "Journée" meta chip when the activity is a full-day destination', () => {
+    render(
+      <DetailModal
+        activity={{ ...fixture, journee: true }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(screen.getByText('Journée')).toBeInTheDocument()
+  })
+
   it('renders a rating comment derived from the rating value', () => {
     render(
       <DetailModal

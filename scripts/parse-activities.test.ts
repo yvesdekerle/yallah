@@ -162,6 +162,49 @@ describe('parseActivities (integration)', () => {
     expect(result[0]!.secret).toBe(false)
   })
 
+  it('flags journee from "Journée complète" duration or ☀️ tag', () => {
+    const fullDay = `
+## Activités par catégorie
+
+### Cat
+
+#### n°1 — Sortie journée
+**Tags** : 🌊
+**Lieu** : X
+**Trajet depuis Tamarin** : ~1h
+**Description** : test.
+**Durée** : Journée complète
+**Prix** : 50 €
+**Note** : ⭐⭐⭐⭐⭐ 5/5
+
+
+#### n°2 — Sortie demi-journée
+**Tags** : 🌊
+**Lieu** : X
+**Trajet depuis Tamarin** : ~1h
+**Description** : test.
+**Durée** : Demi-journée
+**Prix** : 50 €
+**Note** : ⭐⭐⭐⭐⭐ 5/5
+
+
+#### n°3 — Sortie tag-soleil
+**Tags** : 🌊 ☀️
+**Lieu** : X
+**Trajet depuis Tamarin** : ~1h
+**Description** : test.
+**Prix** : 50 €
+**Note** : ⭐⭐⭐⭐⭐ 5/5
+
+
+## Récap
+`
+    const result = parseActivities(fullDay)
+    expect(result[0]!.journee).toBe(true)
+    expect(result[1]!.journee).toBe(false)
+    expect(result[2]!.journee).toBe(true)
+  })
+
   it('captures optional insolite', () => {
     const result = parseActivities(sample)
     expect(result[1]!.insolite).toBe('Très peu connu.')

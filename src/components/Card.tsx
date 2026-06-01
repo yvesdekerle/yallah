@@ -33,22 +33,45 @@ export function Card({ activity }: CardProps) {
     >
       {/* N° chip — top-left */}
       <div
-        className="absolute font-sans"
-        style={{
-          top: 14,
-          left: 14,
-          background: 'rgba(255,255,255,0.94)',
-          color: YB.ink,
-          fontWeight: 800,
-          fontSize: 12,
-          padding: '5px 11px',
-          borderRadius: 99,
-          letterSpacing: 0.2,
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
-        }}
+        className="absolute flex items-center font-sans"
+        style={{ top: 14, left: 14, gap: 6 }}
       >
-        Nº{activity.number.toString().padStart(2, '0')}
+        <span
+          style={{
+            background: 'rgba(255,255,255,0.94)',
+            color: YB.ink,
+            fontWeight: 800,
+            fontSize: 12,
+            padding: '5px 11px',
+            borderRadius: 99,
+            letterSpacing: 0.2,
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
+          }}
+        >
+          Nº{activity.number.toString().padStart(2, '0')}
+        </span>
+        {activity.journee && (
+          <span
+            className="inline-flex items-center"
+            style={{
+              gap: 4,
+              background: 'rgba(255,203,69,0.95)',
+              color: YB.ink,
+              fontWeight: 700,
+              fontSize: 11,
+              padding: '5px 9px',
+              borderRadius: 99,
+              letterSpacing: 0.1,
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
+            }}
+            aria-label="activité d'une journée entière"
+          >
+            <span aria-hidden>☀️</span>
+            Journée
+          </span>
+        )}
       </div>
 
       {/* Tag chips — top-right */}

@@ -134,12 +134,15 @@ function parseActivities(src: string): Activity[] {
     const tags = parseTags(tagsRaw)
     const pepite = tags.includes('💎')
     const secret = tags.includes('🗝️')
+    const sunTagged = tags.includes('☀️') || tags.includes('☀')
 
     const headingHadDiamond = /💎/.test(block.headingLine)
     const finalPepite = pepite || headingHadDiamond
 
     const difficulty = get('Difficulté') ? parseDifficulty(get('Difficulté')!) : undefined
     const rating = parseRating(get('Note') ?? '')
+    const duration = get('Durée')
+    const journee = sunTagged || /journée complète/i.test(duration ?? '')
 
     activities.push({
       id: `a${heading.number.toString().padStart(3, '0')}`,
@@ -150,12 +153,13 @@ function parseActivities(src: string): Activity[] {
       location: get('Lieu') ?? '',
       transit: get('Trajet depuis Tamarin') ?? '',
       description: get('Description') ?? '',
-      duration: get('Durée'),
+      duration,
       difficulty,
       price: get('Prix') ?? '',
       rating,
       pepite: finalPepite,
       secret,
+      journee,
       insolite: get('Insolite'),
     })
     block = null
