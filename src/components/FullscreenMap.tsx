@@ -25,6 +25,9 @@ interface FullscreenMapProps {
   initialCenter?: Coords
   onClose: () => void
   onSelectActivity: (a: Activity) => void
+  /** Stacking order. 40 by default; bumped to 60 when the map needs to
+      sit on top of a still-open DetailModal (z 50). */
+  zIndex?: number
 }
 
 // Centre on Maurice when there are no pins and no initialCenter.
@@ -68,6 +71,7 @@ export function FullscreenMap({
   initialCenter,
   onClose,
   onSelectActivity,
+  zIndex = 40,
 }: FullscreenMapProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -96,7 +100,8 @@ export function FullscreenMap({
       role="dialog"
       aria-modal="true"
       aria-label="Carte des activités"
-      className="absolute inset-0 z-[40]"
+      className="absolute inset-0"
+      style={{ zIndex }}
     >
       <MapContainer
         center={MAURITIUS_CENTER}

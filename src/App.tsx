@@ -68,6 +68,10 @@ export default function App() {
   )
   const [changingIdentity, setChangingIdentity] = useState(false)
   const [mapView, setMapView] = useState<MapView | null>(null)
+  // When true the FullscreenMap renders ABOVE a still-open DetailModal.
+  // Set when the user opens the map from the DetailModal mini-map so
+  // closing the map returns them to the modal instead of the deck.
+  const [mapAboveDetail, setMapAboveDetail] = useState(false)
   // useMemo so callers don't see a fresh array on every render unless the
   // underlying storage changed.
   const history = useMemo(() => migrateHistory(rawHistory), [rawHistory])
@@ -426,6 +430,10 @@ export default function App() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              // Trap SwipeDeck's internal z-indices (exiting card z 10,
+              // drag stamps z 9) inside this stacking context so they
+              // can't paint over the ActionRow (z 7) sitting outside.
+              isolation: 'isolate',
             }}
           >
             {/* When everything's voted we keep the cards on screen (in
@@ -531,10 +539,11 @@ export default function App() {
             superRemaining={superRemaining}
             onVerdict={handleDetailVerdict}
             onOpenMap={(view) => {
-              // Close the DetailModal first — it sits above the
-              // FullscreenMap (z 50 vs 40) and would otherwise hide it.
-              setDetail(null)
+              // Keep the DetailModal mounted underneath so closing the
+              // map returns the user to it. The map bumps to z 60 so it
+              // renders on top of the modal (z 50).
               setMapView(view)
+              setMapAboveDetail(true)
             }}
             meDone={history.length >= allActivities.length}
             userId={userId}
@@ -616,13 +625,20 @@ export default function App() {
                   ? (singleMapPin(mapView.activityId)[0]?.coords ?? undefined)
                   : undefined
               }
-              onClose={() => setMapView(null)}
+              onClose={() => {
+                setMapView(null)
+                setMapAboveDetail(false)
+              }}
               onSelectActivity={(a) => {
                 // Keep the map mounted underneath so closing the DetailModal
                 // returns the user to it instead of dumping them back to the
                 // swipe deck.
                 setDetail({ activity: a, source: 'review' })
+                // Map was opened from outside (Results or swipe), keep it
+                // below the modal we're about to open.
+                setMapAboveDetail(false)
               }}
+              zIndex={mapAboveDetail ? 60 : 40}
             />
           </Suspense>
         )}
