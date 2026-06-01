@@ -598,25 +598,23 @@ export function DetailModal({
                     >
                       🚗
                     </span>
-                    <div style={{ color: YB.ink, fontWeight: 600 }}>
-                      {tamarinValue} depuis {BASE_TAMARIN.label}
+                    <div style={{ color: YB.ink }}>
+                      <span style={{ fontWeight: 700 }}>
+                        {BASE_TAMARIN.label}
+                      </span>
+                      {' : '}
+                      {tamarinValue}
                     </div>
                   </>
                 )}
                 {troubValue && (
                   <>
                     <span aria-hidden />
-                    <div
-                      style={{
-                        color: YB.ink2,
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      {troubValue} depuis{' '}
-                      <span style={{ fontWeight: 600 }}>
+                    <div style={{ color: YB.ink2 }}>
+                      <span style={{ fontWeight: 700 }}>
                         {BASE_TROU_AUX_BICHES.label}
                       </span>
-                      <span>·</span>
+                      {' : '}
                       <span style={{ fontStyle: 'italic' }}>{troubValue}</span>
                     </div>
                   </>
