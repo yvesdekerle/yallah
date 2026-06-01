@@ -20,6 +20,7 @@ import {
   BASE_TROU_AUX_BICHES,
   estimateDriveTime,
 } from '../utils/distance.ts'
+import { getLinks } from '../utils/links.ts'
 import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
@@ -419,6 +420,72 @@ export function DetailModal({
               </p>
             </>
           )}
+
+          {(() => {
+            const activityLinks = getLinks(activity.id)
+            if (activityLinks.length === 0) return null
+            return (
+              <>
+                <SectionHeading count={activityLinks.length}>
+                  Liens
+                </SectionHeading>
+                <ul
+                  className="font-sans"
+                  style={{
+                    listStyle: 'none',
+                    margin: '0 0 32px',
+                    padding: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                  }}
+                  aria-label="Liens utiles"
+                >
+                  {activityLinks.map((link, i) => (
+                    <li key={`${link.url}-${i}`}>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center"
+                        style={{
+                          gap: 10,
+                          padding: '12px 14px',
+                          background: YB.bgSoft,
+                          borderRadius: 12,
+                          textDecoration: 'none',
+                          color: YB.ink,
+                          fontSize: 14,
+                        }}
+                      >
+                        <span style={{ fontSize: 16 }} aria-hidden>
+                          🔗
+                        </span>
+                        <span
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {link.label || link.url.replace(/^https?:\/\//, '')}
+                        </span>
+                        <span
+                          style={{ color: YB.muted, fontSize: 16 }}
+                          aria-hidden
+                        >
+                          ↗
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )
+          })()}
 
           <SectionHeading count={photos.length}>Photos</SectionHeading>
           <div

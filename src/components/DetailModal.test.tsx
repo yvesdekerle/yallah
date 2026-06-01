@@ -12,6 +12,16 @@ vi.mock('react-leaflet', () => ({
   ),
 }))
 
+vi.mock('../utils/links.ts', () => ({
+  getLinks: (activityId: string) =>
+    activityId === 'a042'
+      ? [
+          { url: 'https://example.com', label: 'Site officiel' },
+          { url: 'https://example.com/booking' },
+        ]
+      : [],
+}))
+
 import { DetailModal } from './DetailModal.tsx'
 import type { Activity } from '../types/activity.ts'
 
@@ -169,6 +179,37 @@ describe('DetailModal', () => {
     const block = screen.getByLabelText('Trajets depuis les villas')
     expect(block).toHaveTextContent('Tamarin')
     expect(block).not.toHaveTextContent('Trou aux Biches')
+  })
+
+  it('renders a "Liens" section listing curated activity links', () => {
+    render(
+      <DetailModal
+        activity={{ ...fixture, id: 'a042' }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const list = screen.getByLabelText('Liens utiles')
+    const links = list.querySelectorAll('a')
+    expect(links).toHaveLength(2)
+    expect(links[0]).toHaveAttribute('href', 'https://example.com')
+    expect(links[0]).toHaveAttribute('target', '_blank')
+    expect(links[0]).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(links[0]).toHaveTextContent('Site officiel')
+    expect(links[1]).toHaveTextContent('example.com/booking')
+  })
+
+  it('omits the "Liens" section when the activity has none', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(screen.queryByLabelText('Liens utiles')).not.toBeInTheDocument()
   })
 
   it('renders the "Sur la carte" section heading', () => {
