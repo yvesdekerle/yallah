@@ -22,6 +22,7 @@ import {
 } from '../utils/distance.ts'
 import { getLinks } from '../utils/links.ts'
 import { ratingComment } from '../utils/rating.ts'
+import { getReviewSummary } from '../utils/reviewSummary.ts'
 import { labelForTag } from '../utils/tags.ts'
 import { fakeVote } from '../utils/groupVotes.ts'
 import { PARTICIPANTS } from '../data/participants.ts'
@@ -413,26 +414,31 @@ export function DetailModal({
           </div>
 
           {(() => {
-            const comment = ratingComment(activity.rating)
-            if (!comment) return null
+            const summary =
+              getReviewSummary(activity.id) ?? ratingComment(activity.rating)
+            if (!summary) return null
             return (
               <div
-                className="flex items-center font-sans"
+                className="flex font-sans"
                 style={{
+                  alignItems: 'flex-start',
                   gap: 8,
                   marginBottom: 22,
                   fontSize: 13.5,
                   fontStyle: 'italic',
                   color: YB.ink2,
+                  lineHeight: 1.45,
                 }}
                 aria-label="Justification de la note"
               >
-                <StarFilled color={YB.top} size={14} />
+                <span style={{ marginTop: 2, flexShrink: 0 }} aria-hidden>
+                  <StarFilled color={YB.top} size={14} />
+                </span>
                 <span>
                   <strong style={{ fontStyle: 'normal', color: YB.ink }}>
                     {activity.rating.toFixed(1)}/5
                   </strong>{' '}
-                  · {comment}
+                  · {summary}
                 </span>
               </div>
             )

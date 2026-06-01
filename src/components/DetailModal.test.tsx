@@ -193,7 +193,7 @@ describe('DetailModal', () => {
     expect(screen.getByText('Journée')).toBeInTheDocument()
   })
 
-  it('renders a rating comment derived from the rating value', () => {
+  it('prefers the curated review summary when one exists for the activity', () => {
     render(
       <DetailModal
         activity={fixture}
@@ -204,6 +204,20 @@ describe('DetailModal', () => {
     )
     const block = screen.getByLabelText('Justification de la note')
     expect(block).toHaveTextContent('5.0/5')
+    // a001 has a curated summary about Blue Bay coraux/bateaux.
+    expect(block).toHaveTextContent(/coraux|bateau/i)
+  })
+
+  it('falls back to the generic rating comment for activities without a curated summary', () => {
+    render(
+      <DetailModal
+        activity={{ ...fixture, id: 'a999-unknown' }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const block = screen.getByLabelText('Justification de la note')
     expect(block).toHaveTextContent(/temps forts/i)
   })
 
