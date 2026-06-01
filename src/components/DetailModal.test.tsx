@@ -238,6 +238,39 @@ describe('DetailModal', () => {
     expect(screen.queryByLabelText('Liens utiles')).not.toBeInTheDocument()
   })
 
+  it('opens a tag legend panel when a tag chip is tapped', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(screen.queryByLabelText('Légende des tags')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText('Mer & sports nautiques'))
+    const panel = screen.getByLabelText('Légende des tags')
+    expect(panel).toBeInTheDocument()
+    expect(panel).toHaveTextContent('Mer & sports nautiques')
+    expect(panel).toHaveTextContent('Faune sauvage')
+  })
+
+  it('closes the legend panel when a chip is tapped again', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const chip = screen.getByLabelText('Mer & sports nautiques')
+    fireEvent.click(chip)
+    expect(screen.getByLabelText('Légende des tags')).toBeInTheDocument()
+    fireEvent.click(chip)
+    expect(screen.queryByLabelText('Légende des tags')).not.toBeInTheDocument()
+  })
+
   it('renders the "Sur la carte" section heading', () => {
     render(
       <DetailModal

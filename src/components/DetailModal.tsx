@@ -22,6 +22,7 @@ import {
 } from '../utils/distance.ts'
 import { getLinks } from '../utils/links.ts'
 import { ratingComment } from '../utils/rating.ts'
+import { labelForTag } from '../utils/tags.ts'
 import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
@@ -60,6 +61,7 @@ export function DetailModal({
   const [open, setOpen] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+  const [legendOpen, setLegendOpen] = useState(false)
 
   const photos = useMemo(() => detailPhotos(activity), [activity])
 
@@ -153,32 +155,85 @@ export function DetailModal({
             <X color={YB.ink} size={20} />
           </button>
 
-          {/* Tag chips */}
+          {/* Tag chips — tap to toggle the legend */}
           <div
-            className="absolute z-[3] flex"
+            className="absolute z-[3] flex flex-col"
             style={{
               top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
               right: 14,
-              gap: 4,
+              alignItems: 'flex-end',
+              gap: 6,
             }}
           >
-            {activity.tags.slice(0, 3).map((tag, i) => (
-              <span
-                key={`${tag}-${i}`}
-                className="inline-flex items-center justify-center"
+            <div className="flex" style={{ gap: 4 }}>
+              {activity.tags.slice(0, 3).map((tag, i) => (
+                <button
+                  type="button"
+                  key={`${tag}-${i}`}
+                  onClick={() => setLegendOpen((v) => !v)}
+                  aria-label={labelForTag(tag)}
+                  aria-expanded={legendOpen}
+                  className="inline-flex items-center justify-center"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 99,
+                    background: legendOpen
+                      ? '#fff'
+                      : 'rgba(255,255,255,0.95)',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    fontSize: 16,
+                    boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+            {legendOpen && (
+              <div
+                role="dialog"
+                aria-label="Légende des tags"
+                className="font-sans"
+                onClick={(e) => e.stopPropagation()}
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 99,
-                  background: 'rgba(255,255,255,0.95)',
-                  fontSize: 16,
-                  boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
+                  background: 'rgba(255,255,255,0.97)',
+                  color: YB.ink,
+                  borderRadius: 14,
+                  padding: '10px 12px',
+                  boxShadow: '0 6px 20px -6px rgba(20,30,50,0.35)',
+                  maxWidth: 220,
+                  fontSize: 12.5,
+                  lineHeight: 1.35,
                 }}
-                aria-hidden
               >
-                {tag}
-              </span>
-            ))}
+                <ul
+                  style={{
+                    listStyle: 'none',
+                    margin: 0,
+                    padding: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6,
+                  }}
+                >
+                  {activity.tags.slice(0, 3).map((tag, i) => (
+                    <li
+                      key={`legend-${tag}-${i}`}
+                      className="flex items-center"
+                      style={{ gap: 8 }}
+                    >
+                      <span style={{ fontSize: 15 }} aria-hidden>
+                        {tag}
+                      </span>
+                      <span>{labelForTag(tag)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {photos.length > 1 && (
