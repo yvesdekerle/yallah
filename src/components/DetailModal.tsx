@@ -615,7 +615,7 @@ export function DetailModal({
                         {BASE_TROU_AUX_BICHES.label}
                       </span>
                       {' : '}
-                      <span style={{ fontStyle: 'italic' }}>{troubValue}</span>
+                      {troubValue}
                     </div>
                   </>
                 )}
