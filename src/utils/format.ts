@@ -26,3 +26,13 @@ export function shortPrice(price: string): string {
 export function formatLocation(loc: string): string {
   return loc.replace(/\s*\(([^)]+)\)\s*$/, ' · $1')
 }
+
+/**
+ * Strips parenthesized clarifications from a duration string for the
+ * compact Card pill. "~2h (briefing + plongée)" → "~2h", and a string
+ * with multiple groups like "~4h (rando) ou ~5h (canyoning)" becomes
+ * "~4h ou ~5h". The DetailModal keeps the full original text.
+ */
+export function shortDuration(duration: string): string {
+  return duration.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim()
+}

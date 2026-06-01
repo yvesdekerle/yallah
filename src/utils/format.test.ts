@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { shortPrice, formatLocation } from './format.ts'
+import { shortPrice, formatLocation, shortDuration } from './format.ts'
 
 describe('shortPrice', () => {
   it('extracts the first € amount', () => {
@@ -25,6 +25,27 @@ describe('shortPrice', () => {
 
   it('strips the leading ~', () => {
     expect(shortPrice('~50 €')).toBe('50 €')
+  })
+})
+
+describe('shortDuration', () => {
+  it('strips a single parenthesized clarification', () => {
+    expect(shortDuration('~2h (briefing + plongée)')).toBe('~2h')
+  })
+
+  it('strips multiple parenthesized groups, preserving glue words', () => {
+    expect(
+      shortDuration('~4h (rando classique) ou ~5h (canyoning)'),
+    ).toBe('~4h ou ~5h')
+  })
+
+  it('leaves durations without parens unchanged', () => {
+    expect(shortDuration('~3–4h')).toBe('~3–4h')
+    expect(shortDuration('Journée complète')).toBe('Journée complète')
+  })
+
+  it('returns the prefix only when the whole detail is parenthesized', () => {
+    expect(shortDuration('Demi-journée (~3–4h)')).toBe('Demi-journée')
   })
 })
 

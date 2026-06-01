@@ -3,7 +3,7 @@ import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
 import { heroPhotoUrl } from '../utils/photos.ts'
 import { Pin, Clock, StarFilled, Wallet } from '../icons/index.tsx'
-import { shortPrice, formatLocation } from '../utils/format.ts'
+import { shortPrice, shortDuration, formatLocation } from '../utils/format.ts'
 
 interface CardProps {
   activity: Activity
@@ -222,7 +222,7 @@ export function Card({ activity }: CardProps) {
                 >
                   <Clock color="#fff" size={12} />
                 </span>
-                {activity.duration}
+                {shortDuration(activity.duration)}
               </span>
             )}
 
