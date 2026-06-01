@@ -181,6 +181,20 @@ describe('DetailModal', () => {
     expect(block).not.toHaveTextContent('Trou aux Biches')
   })
 
+  it('renders a rating comment derived from the rating value', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const block = screen.getByLabelText('Justification de la note')
+    expect(block).toHaveTextContent('5.0/5')
+    expect(block).toHaveTextContent(/temps forts/i)
+  })
+
   it('renders a "Liens" section listing curated activity links', () => {
     render(
       <DetailModal

@@ -21,6 +21,7 @@ import {
   estimateDriveTime,
 } from '../utils/distance.ts'
 import { getLinks } from '../utils/links.ts'
+import { ratingComment } from '../utils/rating.ts'
 import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
@@ -336,6 +337,32 @@ export function DetailModal({
               value={activity.price}
             />
           </div>
+
+          {(() => {
+            const comment = ratingComment(activity.rating)
+            if (!comment) return null
+            return (
+              <div
+                className="flex items-center font-sans"
+                style={{
+                  gap: 8,
+                  marginBottom: 22,
+                  fontSize: 13.5,
+                  fontStyle: 'italic',
+                  color: YB.ink2,
+                }}
+                aria-label="Justification de la note"
+              >
+                <StarFilled color={YB.top} size={14} />
+                <span>
+                  <strong style={{ fontStyle: 'normal', color: YB.ink }}>
+                    {activity.rating.toFixed(1)}/5
+                  </strong>{' '}
+                  · {comment}
+                </span>
+              </div>
+            )
+          })()}
 
           {(() => {
             const coords = coordsFor(activity)
