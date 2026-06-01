@@ -5,6 +5,7 @@ import {
   parseDifficulty,
   parseRating,
   parseTags,
+  stripMarkdownMarkers,
 } from './parse-activities.ts'
 
 describe('parseHeading', () => {
@@ -78,6 +79,26 @@ describe('parseRating', () => {
   it('returns 0 when no rating found', () => {
     expect(parseRating('')).toBe(0)
     expect(parseRating('no number here')).toBe(0)
+  })
+})
+
+describe('stripMarkdownMarkers', () => {
+  it('removes ** bold markers', () => {
+    expect(stripMarkdownMarkers('foo **bar** baz')).toBe('foo bar baz')
+  })
+
+  it('removes stray single * markers', () => {
+    expect(stripMarkdownMarkers('film *Santosha* culte')).toBe(
+      'film Santosha culte',
+    )
+  })
+
+  it('collapses double spaces created by removal', () => {
+    expect(stripMarkdownMarkers('foo  **  bar')).toBe('foo bar')
+  })
+
+  it('keeps text without any markers intact', () => {
+    expect(stripMarkdownMarkers('plain text')).toBe('plain text')
   })
 })
 

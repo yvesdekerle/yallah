@@ -43,6 +43,14 @@ function normalize(line: string): string {
   return line.replace(/\s+$/, '').replace(/\r$/, '')
 }
 
+// Remove markdown bold/italic markers (`**foo**`, `*foo*`) from free-form
+// text fields. The app renders descriptions as plain text, so raw markers
+// leaked into the JSON appear as literal `**` in the UI. Collapses any
+// resulting double spaces too.
+function stripMarkdownMarkers(value: string): string {
+  return value.replace(/\*+/g, '').replace(/  +/g, ' ').trim()
+}
+
 // Split a tags line into a list of emoji-or-symbol tokens. We do NOT try to be
 // strict on what's a "tag" — anything non-whitespace token is a tag.
 function parseTags(value: string): string[] {
@@ -144,6 +152,7 @@ function parseActivities(src: string): Activity[] {
     const duration = get('Durée')
     const journee = sunTagged || /journée complète/i.test(duration ?? '')
 
+    const insoliteRaw = get('Insolite')
     activities.push({
       id: `a${heading.number.toString().padStart(3, '0')}`,
       number: heading.number,
@@ -152,7 +161,7 @@ function parseActivities(src: string): Activity[] {
       category: currentCategory,
       location: get('Lieu') ?? '',
       transit: get('Trajet depuis Tamarin') ?? '',
-      description: get('Description') ?? '',
+      description: stripMarkdownMarkers(get('Description') ?? ''),
       duration,
       difficulty,
       price: get('Prix') ?? '',
@@ -160,7 +169,7 @@ function parseActivities(src: string): Activity[] {
       pepite: finalPepite,
       secret,
       journee,
-      insolite: get('Insolite'),
+      insolite: insoliteRaw ? stripMarkdownMarkers(insoliteRaw) : undefined,
     })
     block = null
   }
@@ -206,4 +215,11 @@ if (invokedDirectly) {
   main()
 }
 
-export { parseActivities, parseHeading, parseDifficulty, parseRating, parseTags }
+export {
+  parseActivities,
+  parseHeading,
+  parseDifficulty,
+  parseRating,
+  parseTags,
+  stripMarkdownMarkers,
+}
