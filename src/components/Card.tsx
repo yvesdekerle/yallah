@@ -60,27 +60,6 @@ export function Card({ activity }: CardProps) {
         >
           Nº{activity.number.toString().padStart(2, '0')}
         </span>
-        {activity.journee && (
-          <span
-            className="inline-flex items-center"
-            style={{
-              gap: 4,
-              background: 'rgba(255,203,69,0.95)',
-              color: YB.ink,
-              fontWeight: 700,
-              fontSize: 11,
-              padding: '5px 9px',
-              borderRadius: 99,
-              letterSpacing: 0.1,
-              backdropFilter: 'blur(8px)',
-              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
-            }}
-            aria-label="activité d'une journée entière"
-          >
-            <span aria-hidden>☀️</span>
-            Journée
-          </span>
-        )}
       </div>
 
       {/* Tag chips — top-right, tap to toggle the legend */}

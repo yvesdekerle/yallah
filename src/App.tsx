@@ -248,12 +248,18 @@ export default function App() {
       superRemaining,
       missing.length,
     )
-    const shuffled = [...missing]
-      .map((a) => ({ a, r: Math.random() }))
-      .sort((x, y) => x.r - y.r)
-      .map((x) => x.a)
+    // Bias super-likes toward activities with coords so they actually
+    // show up as pins on the FullscreenMap.
+    const shuffle = <T,>(arr: T[]): T[] =>
+      [...arr]
+        .map((a) => ({ a, r: Math.random() }))
+        .sort((x, y) => x.r - y.r)
+        .map((x) => x.a)
+    const withCoords = shuffle(missing.filter((a) => coordsFor(a) !== null))
+    const withoutCoords = shuffle(missing.filter((a) => coordsFor(a) === null))
+    const superPool = [...withCoords, ...withoutCoords]
     const superLikeIds = new Set(
-      shuffled.slice(0, actualSupers).map((a) => a.id),
+      superPool.slice(0, actualSupers).map((a) => a.id),
     )
 
     const passive: Verdict[] = ['oui', 'non', 'whynot', 'skip']
@@ -444,8 +450,17 @@ export default function App() {
                 if (detail) {
                   setDetail(null)
                 } else {
-                  const current = allActivities[history.length]
-                  if (current) setDetail({ activity: current, source: 'swipe' })
+                  // Use the deck's notion of the current card so review
+                  // mode (topIdx independent of history.length) opens the
+                  // right activity instead of the next-to-vote one.
+                  const current =
+                    deckRef.current?.getCurrent() ??
+                    allActivities[history.length]
+                  if (current)
+                    setDetail({
+                      activity: current,
+                      source: reviewMode ? 'review' : 'swipe',
+                    })
                 }
               }}
               detailOpen={detail !== null}

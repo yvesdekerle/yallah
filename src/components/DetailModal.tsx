@@ -505,26 +505,6 @@ export function DetailModal({
             />
           </div>
 
-          {activity.journee && (
-            <div
-              className="inline-flex items-center font-sans"
-              style={{
-                gap: 6,
-                marginBottom: 18,
-                padding: '5px 12px 5px 8px',
-                borderRadius: 99,
-                background: `${YB.primary}33`,
-                color: YB.ink,
-                fontSize: 12.5,
-                fontWeight: 700,
-              }}
-              aria-label="Activité d'une journée entière"
-            >
-              <span aria-hidden>☀️</span>
-              Journée entière
-            </div>
-          )}
-
           {(() => {
             const summary =
               getReviewSummary(activity.id) ?? ratingComment(activity.rating)

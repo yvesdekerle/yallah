@@ -48,6 +48,10 @@ interface SwipeDeckProps {
 export interface SwipeDeckHandle {
   /** Programmatically commit a verdict (used by buttons / detail modal). */
   commit: (verdict: Verdict) => void
+  /** Returns the activity currently on top of the deck, or null when
+      the deck is exhausted. Used by the ActionRow eye button so it
+      opens the right card in both normal and review modes. */
+  getCurrent: () => Activity | null
 }
 
 interface ExitingState {
@@ -152,7 +156,11 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
       [exiting, current, onVerdict, onComplete, superRemaining, drag.x, drag.y, rotate, topIdx, activities.length],
     )
 
-    useImperativeHandle(ref, () => ({ commit }), [commit])
+    useImperativeHandle(
+      ref,
+      () => ({ commit, getCurrent: () => current ?? null }),
+      [commit, current],
+    )
 
     const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
       if (exiting || !current) return

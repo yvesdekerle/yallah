@@ -181,7 +181,7 @@ describe('DetailModal', () => {
     expect(block).not.toHaveTextContent('Trou aux Biches')
   })
 
-  it('renders a "Journée entière" badge when the activity is a full-day destination', () => {
+  it('does not surface the journée flag in DetailModal (badge removed pending decision)', () => {
     render(
       <DetailModal
         activity={{ ...fixture, journee: true }}
@@ -191,8 +191,8 @@ describe('DetailModal', () => {
       />,
     )
     expect(
-      screen.getByLabelText("Activité d'une journée entière"),
-    ).toBeInTheDocument()
+      screen.queryByLabelText("Activité d'une journée entière"),
+    ).not.toBeInTheDocument()
   })
 
   it('prefers the curated review summary when one exists for the activity', () => {
