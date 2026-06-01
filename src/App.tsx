@@ -232,18 +232,36 @@ export default function App() {
 
   /**
    * Fill all activities that haven't been voted on yet with a random
-   * verdict picked from the four "passive" verdicts (no super-likes —
-   * keeps the 5-quota intact). Useful to seed a deck quickly for demo
-   * purposes or when you want to focus on a smaller subset.
+   * verdict. Guarantees at least 2 super-likes per fill (clamped to the
+   * remaining quota and the pool size) so the Résultats screen doesn't
+   * end up empty of "top" picks. Remaining slots draw from the four
+   * passive verdicts.
    */
   const handleRandomFill = useCallback(() => {
     const votedIds = new Set(history.map((h) => h.id))
     const missing = allActivities.filter((a) => !votedIds.has(a.id))
     if (missing.length === 0) return
-    const verdicts: Verdict[] = ['oui', 'non', 'whynot', 'skip']
+
+    const wantSupers = 2 + Math.floor(Math.random() * 2) // 2 or 3
+    const actualSupers = Math.min(
+      wantSupers,
+      superRemaining,
+      missing.length,
+    )
+    const shuffled = [...missing]
+      .map((a) => ({ a, r: Math.random() }))
+      .sort((x, y) => x.r - y.r)
+      .map((x) => x.a)
+    const superLikeIds = new Set(
+      shuffled.slice(0, actualSupers).map((a) => a.id),
+    )
+
+    const passive: Verdict[] = ['oui', 'non', 'whynot', 'skip']
     const additions: VoteEntry[] = missing.map((a) => ({
       id: a.id,
-      verdict: verdicts[Math.floor(Math.random() * verdicts.length)]!,
+      verdict: superLikeIds.has(a.id)
+        ? 'top'
+        : passive[Math.floor(Math.random() * passive.length)]!,
     }))
     setHistory((h) => [...h, ...additions])
     // Everything's now voted → land on the "Revoir les votes ?" prompt.
@@ -253,7 +271,7 @@ export default function App() {
       text: `${additions.length} votes générés aléatoirement`,
       emoji: '🎲',
     })
-  }, [history, allActivities, setHistory])
+  }, [history, allActivities, setHistory, superRemaining])
 
   const handleAddActivity = useCallback(
     async (input: UserActivityInput) => {
