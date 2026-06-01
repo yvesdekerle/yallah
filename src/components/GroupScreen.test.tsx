@@ -34,7 +34,7 @@ describe('GroupScreen', () => {
       expect(screen.getByText(p.name)).toBeInTheDocument()
     }
     expect(PARTICIPANTS.map((p) => p.name)).toEqual([
-      'Adé', 'Alex', 'Amély', 'Audrey', 'Chloé', 'July', 'Mathieu', 'Quentin', 'Yves',
+      'Adé', 'Alex', 'Amly', 'Audrey', 'Chloé', 'July', 'Mathieu', 'Quentin', 'Yves',
     ])
   })
 

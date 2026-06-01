@@ -22,7 +22,7 @@ export interface Participant {
 export const PARTICIPANTS: Participant[] = [
   { id: 'ade', name: 'Adé', initial: 'A', color: '#FFCB45', fakeProgress: 87 },
   { id: 'alex', name: 'Alex', initial: 'A', color: '#FF6B47', fakeProgress: 142 },
-  { id: 'amely', name: 'Amély', initial: 'A', color: '#5BC0B8', fakeProgress: 56 },
+  { id: 'amely', name: 'Amly', initial: 'A', color: '#5BC0B8', fakeProgress: 56 },
   { id: 'audrey', name: 'Audrey', initial: 'A', color: '#C5B3DB', fakeProgress: 201 },
   { id: 'chloe', name: 'Chloé', initial: 'C', color: '#CDDE7E', fakeProgress: 23 },
   { id: 'july', name: 'July', initial: 'J', color: '#FF4D8D', fakeProgress: 178 },
