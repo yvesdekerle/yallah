@@ -36,3 +36,12 @@ export function formatLocation(loc: string): string {
 export function shortDuration(duration: string): string {
   return duration.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim()
 }
+
+/**
+ * Display string for a /5 rating. Integers lose the trailing ".0":
+ * 5 → "5", 4.5 → "4.5". Source data is integer-only today but the
+ * helper future-proofs half-step ratings.
+ */
+export function formatRating(rating: number): string {
+  return Number.isInteger(rating) ? rating.toString() : rating.toFixed(1)
+}

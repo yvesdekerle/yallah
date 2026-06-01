@@ -34,7 +34,8 @@ describe('Card', () => {
     ).toBeInTheDocument()
     // shortPrice strips "/pers en excursion organisée" from the chip.
     expect(screen.getByText('25–35 €')).toBeInTheDocument()
-    expect(screen.getByText('5.0')).toBeInTheDocument()
+    // Integer ratings drop the .0 on the Card pill.
+    expect(screen.getByText('5')).toBeInTheDocument()
   })
 
   it('renders the activity number as a zero-padded chip', () => {

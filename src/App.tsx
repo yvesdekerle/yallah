@@ -398,7 +398,7 @@ export default function App() {
               top: 76,
               left: 10,
               right: 10,
-              bottom: 79,
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 70px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

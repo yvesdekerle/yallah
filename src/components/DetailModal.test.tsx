@@ -205,7 +205,7 @@ describe('DetailModal', () => {
       />,
     )
     const block = screen.getByLabelText('Justification de la note')
-    expect(block).toHaveTextContent('5.0/5')
+    expect(block).toHaveTextContent('5/5')
     // a001 has a curated summary about Blue Bay coraux/bateaux.
     expect(block).toHaveTextContent(/coraux|bateau/i)
   })

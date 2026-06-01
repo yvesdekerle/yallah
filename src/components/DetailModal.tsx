@@ -31,7 +31,7 @@ import { ratingComment } from '../utils/rating.ts'
 import { getReviewSummary } from '../utils/reviewSummary.ts'
 import { labelForTag } from '../utils/tags.ts'
 import { fakeVote } from '../utils/groupVotes.ts'
-import { shortPrice } from '../utils/format.ts'
+import { shortPrice, formatRating } from '../utils/format.ts'
 import { PARTICIPANTS } from '../data/participants.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
 import type { MapView } from '../types/map.ts'
@@ -495,7 +495,7 @@ export function DetailModal({
               icon={<StarFilled color={YB.top} size={20} />}
               iconBg={`${YB.top}26`}
               label="Note"
-              value={activity.rating.toFixed(1)}
+              value={formatRating(activity.rating)}
             />
             <MetaTile
               icon={<Wallet color={YB.bgPistachio} size={20} />}
@@ -548,7 +548,7 @@ export function DetailModal({
                 </span>
                 <span>
                   <strong style={{ fontStyle: 'normal', color: YB.ink }}>
-                    {activity.rating.toFixed(1)}/5
+                    {formatRating(activity.rating)}/5
                   </strong>{' '}
                   · {summary}
                 </span>

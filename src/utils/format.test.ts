@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { shortPrice, formatLocation, shortDuration } from './format.ts'
+import {
+  shortPrice,
+  formatLocation,
+  shortDuration,
+  formatRating,
+} from './format.ts'
 
 describe('shortPrice', () => {
   it('extracts the first € amount', () => {
@@ -46,6 +51,18 @@ describe('shortDuration', () => {
 
   it('returns the prefix only when the whole detail is parenthesized', () => {
     expect(shortDuration('Demi-journée (~3–4h)')).toBe('Demi-journée')
+  })
+})
+
+describe('formatRating', () => {
+  it('drops the .0 on integer ratings', () => {
+    expect(formatRating(5)).toBe('5')
+    expect(formatRating(3)).toBe('3')
+  })
+
+  it('keeps one decimal on half-step ratings', () => {
+    expect(formatRating(4.5)).toBe('4.5')
+    expect(formatRating(3.2)).toBe('3.2')
   })
 })
 
