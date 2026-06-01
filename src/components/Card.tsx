@@ -54,7 +54,6 @@ export function Card({ activity }: CardProps) {
             padding: '5px 11px',
             borderRadius: 99,
             letterSpacing: 0.2,
-            backdropFilter: 'blur(8px)',
             boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
           }}
         >
@@ -87,7 +86,6 @@ export function Card({ activity }: CardProps) {
                 height: 32,
                 borderRadius: 99,
                 background: legendOpen ? '#fff' : 'rgba(255,255,255,0.94)',
-                backdropFilter: 'blur(8px)',
                 border: 'none',
                 padding: 0,
                 cursor: 'pointer',
@@ -222,10 +220,9 @@ export function Card({ activity }: CardProps) {
                 gap: 7,
                 padding: '7px 13px 7px 9px',
                 borderRadius: 99,
-                background: 'rgba(255,255,255,0.16)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                background: 'rgba(20,30,50,0.42)',
+                border: '1px solid rgba(255,255,255,0.18)',
                 color: '#fff',
-                backdropFilter: 'blur(8px)',
               }}
             >
               <span
@@ -250,10 +247,9 @@ export function Card({ activity }: CardProps) {
                   gap: 7,
                   padding: '7px 13px 7px 9px',
                   borderRadius: 99,
-                  background: 'rgba(255,255,255,0.16)',
-                  border: '1px solid rgba(255,255,255,0.22)',
+                  background: 'rgba(20,30,50,0.42)',
+                  border: '1px solid rgba(255,255,255,0.18)',
                   color: '#fff',
-                  backdropFilter: 'blur(8px)',
                 }}
               >
                 <span
@@ -278,10 +274,9 @@ export function Card({ activity }: CardProps) {
                 gap: 7,
                 padding: '7px 13px 7px 9px',
                 borderRadius: 99,
-                background: 'rgba(255,255,255,0.16)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                background: 'rgba(20,30,50,0.42)',
+                border: '1px solid rgba(255,255,255,0.18)',
                 color: '#fff',
-                backdropFilter: 'blur(8px)',
               }}
             >
               <span
