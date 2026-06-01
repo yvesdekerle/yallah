@@ -181,7 +181,7 @@ export function DetailModal({
       role="dialog"
       aria-modal="true"
       aria-label={`Détail de ${activity.title}`}
-      className="absolute inset-0 z-[30]"
+      className="absolute inset-0 z-[50]"
       style={{
         background: open ? 'rgba(20,25,40,0.5)' : 'rgba(20,25,40,0)',
         transition: 'background 0.25s',

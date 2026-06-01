@@ -580,7 +580,9 @@ export default function App() {
               }
               onClose={() => setMapView(null)}
               onSelectActivity={(a) => {
-                setMapView(null)
+                // Keep the map mounted underneath so closing the DetailModal
+                // returns the user to it instead of dumping them back to the
+                // swipe deck.
                 setDetail({ activity: a, source: 'review' })
               }}
             />
