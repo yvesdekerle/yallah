@@ -438,41 +438,53 @@ export function DetailModal({
               <div
                 className="font-sans"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 6,
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr',
+                  columnGap: 10,
+                  rowGap: 6,
+                  alignItems: 'center',
                   marginBottom: 26,
                   padding: '12px 14px',
                   background: YB.bgSoft,
                   borderRadius: 12,
+                  fontSize: 14,
                 }}
                 aria-label="Trajets depuis les villas"
               >
                 {tamarinValue && (
-                  <div
-                    className="flex items-center"
-                    style={{ gap: 10, fontSize: 14, color: YB.ink }}
-                  >
-                    <span style={{ fontSize: 14 }} aria-hidden>
+                  <>
+                    <span
+                      style={{ fontSize: 14, lineHeight: 1 }}
+                      aria-hidden
+                    >
                       🚗
                     </span>
-                    <span style={{ fontWeight: 600 }}>{BASE_TAMARIN.label}</span>
-                    <span style={{ color: YB.ink2 }}>·</span>
-                    <span>{tamarinValue}</span>
-                  </div>
+                    <div
+                      className="flex items-center"
+                      style={{ gap: 8, color: YB.ink }}
+                    >
+                      <span style={{ fontWeight: 600 }}>
+                        {BASE_TAMARIN.label}
+                      </span>
+                      <span style={{ color: YB.ink2 }}>·</span>
+                      <span>{tamarinValue}</span>
+                    </div>
+                  </>
                 )}
                 {troubValue && (
-                  <div
-                    className="flex items-center"
-                    style={{ gap: 10, fontSize: 14, color: YB.ink2 }}
-                  >
-                    <span style={{ width: 14 }} aria-hidden />
-                    <span style={{ fontWeight: 600 }}>
-                      {BASE_TROU_AUX_BICHES.label}
-                    </span>
-                    <span>·</span>
-                    <span style={{ fontStyle: 'italic' }}>{troubValue}</span>
-                  </div>
+                  <>
+                    <span aria-hidden />
+                    <div
+                      className="flex items-center"
+                      style={{ gap: 8, color: YB.ink2 }}
+                    >
+                      <span style={{ fontWeight: 600 }}>
+                        {BASE_TROU_AUX_BICHES.label}
+                      </span>
+                      <span>·</span>
+                      <span style={{ fontStyle: 'italic' }}>{troubValue}</span>
+                    </div>
+                  </>
                 )}
               </div>
             )
