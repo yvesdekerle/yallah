@@ -38,7 +38,7 @@ describe('GroupScreen', () => {
     ])
   })
 
-  it('uses the real progress for the currentUserId, fake for everyone else', () => {
+  it('uses the real progress for the local user and masks others until done', () => {
     render(
       <GroupScreen
         currentUserId="chloe"
@@ -52,11 +52,50 @@ describe('GroupScreen', () => {
     expect(chloeRow).toHaveTextContent('toi')
 
     const yvesRow = screen.getByTestId('participant-yves')
-    expect(yvesRow).toHaveTextContent('64 / 201')
+    expect(yvesRow).not.toHaveTextContent('64 / 201')
+    expect(yvesRow).toHaveTextContent('🔒')
     expect(yvesRow).not.toHaveTextContent('toi')
+  })
+
+  it("reveals everyone else's progress once the local user has finished", () => {
+    render(
+      <GroupScreen
+        currentUserId="chloe"
+        currentUserProgress={201}
+        total={201}
+        onChangeIdentity={noop}
+      />,
+    )
+    const yvesRow = screen.getByTestId('participant-yves')
+    expect(yvesRow).toHaveTextContent('64 / 201')
+    expect(yvesRow).not.toHaveTextContent('🔒')
 
     const alexRow = screen.getByTestId('participant-alex')
     expect(alexRow).toHaveTextContent('142 / 201')
+  })
+
+  it('shows a lock banner while the local user has not finished', () => {
+    render(
+      <GroupScreen
+        currentUserId="chloe"
+        currentUserProgress={37}
+        total={201}
+        onChangeIdentity={noop}
+      />,
+    )
+    expect(screen.getByTestId('reveal-lock-banner')).toBeInTheDocument()
+  })
+
+  it('hides the lock banner once the local user has finished', () => {
+    render(
+      <GroupScreen
+        currentUserId="chloe"
+        currentUserProgress={201}
+        total={201}
+        onChangeIdentity={noop}
+      />,
+    )
+    expect(screen.queryByTestId('reveal-lock-banner')).not.toBeInTheDocument()
   })
 
   it('shows no "toi" badge when currentUserId is null', () => {
@@ -74,11 +113,11 @@ describe('GroupScreen', () => {
     }
   })
 
-  it('shows ✓ fini when a participant reached the total', () => {
+  it('shows ✓ fini for a finished participant once everyone is revealed', () => {
     render(
       <GroupScreen
         currentUserId="yves"
-        currentUserProgress={0}
+        currentUserProgress={201}
         total={201}
         onChangeIdentity={noop}
       />,

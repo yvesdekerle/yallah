@@ -25,6 +25,7 @@ export function GroupScreen({
   total,
   onChangeIdentity,
 }: GroupScreenProps) {
+  const meDone = total > 0 && currentUserProgress >= total
   return (
     <div
       className="absolute inset-0 z-[1] overflow-y-auto font-sans"
@@ -54,9 +55,35 @@ export function GroupScreen({
           {PARTICIPANTS.length} personnes pour Maurice — novembre 2026.
         </p>
 
+        {!meDone && (
+          <div
+            className="flex items-start font-sans"
+            style={{
+              gap: 10,
+              padding: '12px 14px',
+              marginBottom: 14,
+              background: '#fff',
+              borderRadius: 14,
+              fontSize: 13,
+              color: YB.ink2,
+              lineHeight: 1.45,
+              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
+            }}
+            data-testid="reveal-lock-banner"
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }} aria-hidden>
+              🔒
+            </span>
+            <span>
+              Les votes des autres seront révélés quand tu auras fini ton deck.
+            </span>
+          </div>
+        )}
+
         <div className="flex flex-col" style={{ gap: 8 }}>
           {PARTICIPANTS.map((p) => {
             const isMe = currentUserId !== null && p.id === currentUserId
+            const reveal = isMe || meDone
             const progress = isMe
               ? currentUserProgress
               : (p.fakeProgress ?? 0)
@@ -127,13 +154,25 @@ export function GroupScreen({
                     className="font-mono"
                     style={{
                       fontSize: 12,
-                      color: isDone ? YB.green : YB.muted,
+                      color: reveal
+                        ? isDone
+                          ? YB.green
+                          : YB.muted
+                        : YB.muted,
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
                     }}
-                    aria-label={`${progress} sur ${total} activités swipées`}
+                    aria-label={
+                      reveal
+                        ? `${progress} sur ${total} activités swipées`
+                        : 'votes masqués'
+                    }
                   >
-                    {isDone ? '✓ fini' : `${progress} / ${total}`}
+                    {reveal
+                      ? isDone
+                        ? '✓ fini'
+                        : `${progress} / ${total}`
+                      : '🔒'}
                   </span>
                 </div>
 
@@ -148,13 +187,13 @@ export function GroupScreen({
                   role="progressbar"
                   aria-valuemin={0}
                   aria-valuemax={total}
-                  aria-valuenow={progress}
+                  aria-valuenow={reveal ? progress : 0}
                 >
                   <div
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      width: `${pct}%`,
+                      width: reveal ? `${pct}%` : '0%',
                       background: isDone ? YB.green : p.color,
                       borderRadius: 99,
                       transition: 'width 0.3s ease-out',
