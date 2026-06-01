@@ -497,7 +497,12 @@ export default function App() {
             onClose={() => setDetail(null)}
             superRemaining={superRemaining}
             onVerdict={handleDetailVerdict}
-            onOpenMap={(view) => setMapView(view)}
+            onOpenMap={(view) => {
+              // Close the DetailModal first — it sits above the
+              // FullscreenMap (z 50 vs 40) and would otherwise hide it.
+              setDetail(null)
+              setMapView(view)
+            }}
             meDone={history.length >= allActivities.length}
             userId={userId}
             myVerdict={
