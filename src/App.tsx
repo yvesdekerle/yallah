@@ -498,6 +498,11 @@ export default function App() {
             superRemaining={superRemaining}
             onVerdict={handleDetailVerdict}
             onOpenMap={(view) => setMapView(view)}
+            meDone={history.length >= allActivities.length}
+            userId={userId}
+            myVerdict={
+              history.find((h) => h.id === detail.activity.id)?.verdict ?? null
+            }
           />
         )}
 

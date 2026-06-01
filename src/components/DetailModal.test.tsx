@@ -356,6 +356,42 @@ describe('DetailModal', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('shows the locked placeholder in "Le groupe" when meDone is false', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(screen.queryByTestId('group-votes')).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/Les votes du groupe apparaîtront ici une fois/i),
+    ).toBeInTheDocument()
+  })
+
+  it('reveals the group votes panel when meDone is true', () => {
+    render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+        meDone
+        userId="yves"
+        myVerdict="oui"
+      />,
+    )
+    const panel = screen.getByTestId('group-votes')
+    expect(panel).toBeInTheDocument()
+    expect(panel.querySelectorAll('li')).toHaveLength(9)
+    // Yves' row carries the "toi" badge and his real verdict (LIKE).
+    const yvesRow = screen.getByTestId('group-vote-yves')
+    expect(yvesRow).toHaveTextContent('toi')
+    expect(yvesRow).toHaveTextContent('LIKE')
+  })
+
   it('calls onOpenMap with single mode when the mini-map is tapped', async () => {
     const onOpenMap = vi.fn()
     render(

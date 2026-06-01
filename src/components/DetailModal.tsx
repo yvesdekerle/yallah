@@ -23,6 +23,9 @@ import {
 import { getLinks } from '../utils/links.ts'
 import { ratingComment } from '../utils/rating.ts'
 import { labelForTag } from '../utils/tags.ts'
+import { fakeVote } from '../utils/groupVotes.ts'
+import { PARTICIPANTS } from '../data/participants.ts'
+import { VERDICT_META } from '../constants/swipe.ts'
 import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
@@ -39,6 +42,13 @@ interface DetailModalProps {
   /** Open the FullscreenMap. Optional — when undefined, the mini-map
       is not tappable (still shown, just inert). */
   onOpenMap?: (view: MapView) => void
+  /** True once the local user has voted on every activity. Gates the
+      "Le groupe" votes panel — placeholder before, reveal after. */
+  meDone?: boolean
+  /** Id of the local user — used to slot the real verdict in the group panel. */
+  userId?: string | null
+  /** Local user's verdict for this activity, if any. */
+  myVerdict?: Verdict | null
 }
 
 /**
@@ -47,7 +57,7 @@ interface DetailModalProps {
  * - Meta-chip strip (duration, difficulty, rating, price, transit)
  * - Description
  * - Horizontal scroll-snap photo carousel (12 photos)
- * - Group placeholder
+ * - Group votes (locked behind `meDone`; placeholder until then)
  * - Sticky bottom action row (5 buttons, reused from the swipe screen)
  * - Lightbox overlay when a photo is clicked
  */
@@ -57,6 +67,9 @@ export function DetailModal({
   onVerdict,
   superRemaining,
   onOpenMap,
+  meDone = false,
+  userId = null,
+  myVerdict = null,
 }: DetailModalProps) {
   const [open, setOpen] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
@@ -660,37 +673,142 @@ export function DetailModal({
           </div>
 
           <SectionHeading>Le groupe</SectionHeading>
-          <div
-            className="flex items-center font-sans"
-            style={{
-              padding: 18,
-              background: YB.bgSoft,
-              borderRadius: 16,
-              fontSize: 14,
-              color: YB.ink2,
-              lineHeight: 1.55,
-              gap: 12,
-            }}
-          >
-            <span
-              className="inline-flex items-center justify-center"
+          {meDone ? (
+            <ul
+              data-testid="group-votes"
+              className="font-sans"
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 99,
-                background: '#fff',
-                fontSize: 16,
-                flexShrink: 0,
+                listStyle: 'none',
+                margin: 0,
+                padding: 12,
+                background: YB.bgSoft,
+                borderRadius: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6,
               }}
-              aria-hidden
+              aria-label="Votes du groupe pour cette activité"
             >
-              👥
-            </span>
-            <span>
-              Les votes du groupe apparaîtront ici une fois que tout le monde
-              aura swipé.
-            </span>
-          </div>
+              {PARTICIPANTS.map((p) => {
+                const isMe = userId !== null && p.id === userId
+                const verdict =
+                  isMe && myVerdict
+                    ? myVerdict
+                    : fakeVote(p.id, activity.id)
+                const meta = VERDICT_META[verdict]
+                return (
+                  <li
+                    key={p.id}
+                    className="flex items-center"
+                    style={{
+                      gap: 10,
+                      padding: '8px 10px',
+                      background: '#fff',
+                      borderRadius: 12,
+                      fontSize: 14,
+                    }}
+                    data-testid={`group-vote-${p.id}`}
+                  >
+                    <span
+                      className="inline-flex items-center justify-center font-sans"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 99,
+                        background: p.color,
+                        color: '#fff',
+                        fontSize: 12,
+                        fontWeight: 800,
+                        flexShrink: 0,
+                        textShadow: '0 1px 2px rgba(0,0,0,0.15)',
+                      }}
+                      aria-hidden
+                    >
+                      {p.initial}
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontWeight: 600,
+                        color: YB.ink,
+                      }}
+                    >
+                      {p.name}
+                      {isMe && (
+                        <span
+                          className="font-mono"
+                          style={{
+                            marginLeft: 6,
+                            fontSize: 9.5,
+                            letterSpacing: 0.6,
+                            padding: '1px 5px',
+                            borderRadius: 99,
+                            background: YB.ink,
+                            color: '#fff',
+                            textTransform: 'uppercase',
+                            verticalAlign: 'middle',
+                          }}
+                        >
+                          toi
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      className="inline-flex items-center font-sans"
+                      style={{
+                        gap: 5,
+                        padding: '3px 9px',
+                        borderRadius: 99,
+                        background: `${meta.color}1f`,
+                        color: meta.color,
+                        fontSize: 11.5,
+                        fontWeight: 700,
+                        letterSpacing: 0.2,
+                      }}
+                    >
+                      <span aria-hidden style={{ fontSize: 12 }}>
+                        {meta.emoji}
+                      </span>
+                      {meta.label}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <div
+              className="flex items-center font-sans"
+              style={{
+                padding: 18,
+                background: YB.bgSoft,
+                borderRadius: 16,
+                fontSize: 14,
+                color: YB.ink2,
+                lineHeight: 1.55,
+                gap: 12,
+              }}
+            >
+              <span
+                className="inline-flex items-center justify-center"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 99,
+                  background: '#fff',
+                  fontSize: 16,
+                  flexShrink: 0,
+                }}
+                aria-hidden
+              >
+                🔒
+              </span>
+              <span>
+                Les votes du groupe apparaîtront ici une fois que tu auras fini
+                ton deck.
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Sticky bottom action bar */}
