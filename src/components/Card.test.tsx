@@ -44,6 +44,17 @@ describe('Card', () => {
     expect(screen.queryByText('~3–4h')).not.toBeInTheDocument()
   })
 
+  it('shows the difficulty label inline in the meta strip', () => {
+    render(<Card activity={fixture} />)
+    expect(screen.getByText('Facile')).toBeInTheDocument()
+  })
+
+  it('omits the difficulty block when no difficulty is set', () => {
+    const noDiff: Activity = { ...fixture, difficulty: undefined }
+    render(<Card activity={noDiff} />)
+    expect(screen.queryByText('Facile')).not.toBeInTheDocument()
+  })
+
   it('renders tags', () => {
     render(<Card activity={fixture} />)
     expect(screen.getByText('🌊')).toBeInTheDocument()

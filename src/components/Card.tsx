@@ -149,6 +149,24 @@ export function Card({ activity }: CardProps) {
             <StarFilled color={YB.primary} size={13} />
             <span>{activity.rating.toFixed(1)}</span>
           </span>
+          {activity.difficulty && (
+            <span
+              className="inline-flex items-center"
+              style={{ gap: 6, color: 'rgba(255,255,255,0.85)' }}
+            >
+              <span
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: 99,
+                  background: activity.difficulty.dot,
+                  boxShadow: '0 0 0 1px rgba(255,255,255,0.45)',
+                }}
+                aria-hidden
+              />
+              <span>{activity.difficulty.label}</span>
+            </span>
+          )}
           {activity.duration && (
             <span
               className="inline-flex items-center"
