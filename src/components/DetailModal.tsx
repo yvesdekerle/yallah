@@ -15,6 +15,11 @@ import { SectionHeading } from './SectionHeading.tsx'
 import { ActionRow } from './ActionRow.tsx'
 import { PhotoLightbox } from './PhotoLightbox.tsx'
 import { coordsFor } from '../utils/coords.ts'
+import {
+  BASE_TAMARIN,
+  BASE_TROU_AUX_BICHES,
+  estimateDriveTime,
+} from '../utils/distance.ts'
 import type { MapView } from '../types/map.ts'
 
 const ActivityMiniMap = lazy(() =>
@@ -252,6 +257,58 @@ export function DetailModal({
 
         {/* Body */}
         <div style={{ padding: '22px 22px 200px' }}>
+          {activity.difficulty &&
+            (activity.difficulty.label === 'Difficile' ||
+              activity.difficulty.label === 'Très difficile') && (
+              <div
+                role="note"
+                aria-label={`Avertissement difficulté: ${activity.difficulty.label}`}
+                className="flex font-sans"
+                style={{
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  padding: '14px 16px',
+                  marginBottom: 22,
+                  background: `${activity.difficulty.dot}14`,
+                  border: `1px solid ${activity.difficulty.dot}33`,
+                  borderLeft: `4px solid ${activity.difficulty.dot}`,
+                  borderRadius: 12,
+                }}
+              >
+                <span
+                  style={{ fontSize: 22, lineHeight: 1, marginTop: 1 }}
+                  aria-hidden
+                >
+                  ⚠️
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: activity.difficulty.dot,
+                      marginBottom: 2,
+                      letterSpacing: -0.1,
+                    }}
+                  >
+                    {activity.difficulty.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 13.5,
+                      lineHeight: 1.4,
+                      color: YB.ink2,
+                    }}
+                  >
+                    {activity.difficulty.detail
+                      ? activity.difficulty.detail.charAt(0).toUpperCase() +
+                        activity.difficulty.detail.slice(1)
+                      : 'Bonne condition physique requise.'}
+                  </div>
+                </div>
+              </div>
+            )}
+
           {/* Meta chips */}
           <div
             className="flex flex-wrap"
@@ -277,13 +334,60 @@ export function DetailModal({
               icon={<Wallet color={YB.ink} size={14} />}
               value={activity.price}
             />
-            {activity.transit && (
-              <MetaChip
-                icon={<span style={{ fontSize: 14 }}>🚗</span>}
-                value={activity.transit}
-              />
-            )}
           </div>
+
+          {(() => {
+            const coords = coordsFor(activity)
+            const tamarinValue =
+              activity.transit ||
+              (coords ? estimateDriveTime(coords, BASE_TAMARIN) : null)
+            const troubValue = coords
+              ? estimateDriveTime(coords, BASE_TROU_AUX_BICHES)
+              : null
+            if (!tamarinValue && !troubValue) return null
+            return (
+              <div
+                className="font-sans"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  marginBottom: 26,
+                  padding: '12px 14px',
+                  background: YB.bgSoft,
+                  borderRadius: 12,
+                }}
+                aria-label="Trajets depuis les villas"
+              >
+                {tamarinValue && (
+                  <div
+                    className="flex items-center"
+                    style={{ gap: 10, fontSize: 14, color: YB.ink }}
+                  >
+                    <span style={{ fontSize: 14 }} aria-hidden>
+                      🚗
+                    </span>
+                    <span style={{ fontWeight: 600 }}>{BASE_TAMARIN.label}</span>
+                    <span style={{ color: YB.ink2 }}>·</span>
+                    <span>{tamarinValue}</span>
+                  </div>
+                )}
+                {troubValue && (
+                  <div
+                    className="flex items-center"
+                    style={{ gap: 10, fontSize: 14, color: YB.ink2 }}
+                  >
+                    <span style={{ width: 14 }} aria-hidden />
+                    <span style={{ fontWeight: 600 }}>
+                      {BASE_TROU_AUX_BICHES.label}
+                    </span>
+                    <span>·</span>
+                    <span style={{ fontStyle: 'italic' }}>{troubValue}</span>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           <p
             className="font-sans"

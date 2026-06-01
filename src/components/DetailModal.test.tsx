@@ -131,6 +131,46 @@ describe('DetailModal', () => {
     vi.useRealTimers()
   })
 
+  it('renders the trajet block with Tamarin (curated) and Trou aux Biches (computed)', () => {
+    render(
+      <DetailModal
+        activity={{
+          ...fixture,
+          id: 'a001',
+          coords: { lat: -20.044, lng: 57.537 },
+          transit: '~1h',
+        }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const block = screen.getByLabelText('Trajets depuis les villas')
+    expect(block).toBeInTheDocument()
+    expect(block).toHaveTextContent('Tamarin')
+    expect(block).toHaveTextContent('~1h')
+    expect(block).toHaveTextContent('Trou aux Biches')
+    expect(block).toHaveTextContent(/~\d/)
+  })
+
+  it('omits the Trou aux Biches line when no coords exist', () => {
+    render(
+      <DetailModal
+        activity={{
+          ...fixture,
+          id: 'unknown-id-no-coords',
+          transit: '~1h',
+        }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const block = screen.getByLabelText('Trajets depuis les villas')
+    expect(block).toHaveTextContent('Tamarin')
+    expect(block).not.toHaveTextContent('Trou aux Biches')
+  })
+
   it('renders the "Sur la carte" section heading', () => {
     render(
       <DetailModal
@@ -141,6 +181,79 @@ describe('DetailModal', () => {
       />,
     )
     expect(screen.getByText('Sur la carte')).toBeInTheDocument()
+  })
+
+  it('shows the difficulty warning banner for "Difficile" activities', () => {
+    render(
+      <DetailModal
+        activity={{
+          ...fixture,
+          difficulty: {
+            dot: '#FF8A00',
+            label: 'Difficile',
+            detail: 'rappels, sauts, bonne condition physique requise',
+          },
+        }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(
+      screen.getByLabelText(/Avertissement difficulté: Difficile/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Rappels, sauts, bonne condition physique requise/),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the warning banner for "Très difficile" without a detail, with a fallback message', () => {
+    render(
+      <DetailModal
+        activity={{
+          ...fixture,
+          difficulty: { dot: '#FF4757', label: 'Très difficile' },
+        }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(
+      screen.getByLabelText(/Avertissement difficulté: Très difficile/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Bonne condition physique requise.'),
+    ).toBeInTheDocument()
+  })
+
+  it('does NOT show the warning banner for Facile or Modérée activities', () => {
+    const { rerender } = render(
+      <DetailModal
+        activity={fixture}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(
+      screen.queryByLabelText(/Avertissement difficulté/),
+    ).not.toBeInTheDocument()
+
+    rerender(
+      <DetailModal
+        activity={{
+          ...fixture,
+          difficulty: { dot: '#FFB627', label: 'Modérée' },
+        }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    expect(
+      screen.queryByLabelText(/Avertissement difficulté/),
+    ).not.toBeInTheDocument()
   })
 
   it('calls onOpenMap with single mode when the mini-map is tapped', async () => {
