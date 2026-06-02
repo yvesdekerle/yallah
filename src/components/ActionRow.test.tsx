@@ -62,4 +62,29 @@ describe('ActionRow', () => {
     await user.click(screen.getByLabelText('fermer le détail'))
     expect(onToggleDetail).toHaveBeenCalledTimes(1)
   })
+
+  it('omits the filter button when onOpenFilter is not provided', () => {
+    setup()
+    expect(
+      screen.queryByLabelText('filtrer par catégorie'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders the filter button and forwards clicks', async () => {
+    const user = userEvent.setup()
+    const onOpenFilter = vi.fn()
+    setup({ onOpenFilter })
+    await user.click(screen.getByLabelText('filtrer par catégorie'))
+    expect(onOpenFilter).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the active filter count as a badge', () => {
+    setup({ onOpenFilter: vi.fn(), activeFilterCount: 3 })
+    expect(screen.getByTestId('filter-badge')).toHaveTextContent('3')
+  })
+
+  it('hides the filter badge when no filter is active', () => {
+    setup({ onOpenFilter: vi.fn(), activeFilterCount: 0 })
+    expect(screen.queryByTestId('filter-badge')).not.toBeInTheDocument()
+  })
 })

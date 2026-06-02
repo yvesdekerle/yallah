@@ -26,6 +26,9 @@ import { AppConfirmModals } from './components/AppConfirmModals.tsx'
 import { IdentityPicker } from './components/IdentityPicker.tsx'
 import { AddActivityScreen } from './components/AddActivityScreen.tsx'
 import { SettingsModal } from './components/SettingsModal.tsx'
+import { TagFilterSheet } from './components/TagFilterSheet.tsx'
+import { TAG_LABELS } from './utils/tags.ts'
+import { filteredDeck } from './utils/deck.ts'
 import { APP_VERSION } from './constants/version.ts'
 import {
   useUserActivities,
@@ -55,6 +58,13 @@ export default function App() {
   const [reviewMode, setReviewMode] = useState(false)
   const [activeTab, setActiveTab] = useState<TabIndex>(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Tag-facet filter (persisted): when non-empty, the swipe deck only serves
+  // not-yet-voted activities carrying at least one of the selected tags (OR).
+  const [selectedTags, setSelectedTags] = useLocalStorage<string[]>(
+    STORAGE_KEYS.tagFilter,
+    [],
+  )
+  const [filterOpen, setFilterOpen] = useState(false)
   const deckRef = useRef<SwipeDeckHandle>(null)
 
   const { toast, showToast, dismissToast } = useToast()
@@ -81,6 +91,17 @@ export default function App() {
     () => [...ACTIVITIES, ...userActivities],
     [userActivities],
   )
+
+  // Distinct tags present in the deck (+ how many activities carry each),
+  // ordered by the canonical TAG_LABELS order with any unknowns appended.
+  const { availableTags, tagCounts } = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const a of allActivities)
+      for (const t of a.tags) counts[t] = (counts[t] ?? 0) + 1
+    const known = Object.keys(TAG_LABELS).filter((t) => counts[t])
+    const extras = Object.keys(counts).filter((t) => !(t in TAG_LABELS))
+    return { availableTags: [...known, ...extras], tagCounts: counts }
+  }, [allActivities])
 
   const {
     history,
@@ -112,6 +133,20 @@ export default function App() {
   } = useModalOverlays()
 
   const { likedPins, singleMapPin } = useMapPins(history, allActivities)
+
+  // Apply the tag filter to the forward-swipe deck only (never in review /
+  // done passes — those re-walk the full history). To keep SwipeDeck's
+  // positional model intact (it shows `activities[history.length]`), we serve
+  // the voted activities first, then the not-yet-voted ones matching the
+  // filter — so the next card up is always the first unvoted match.
+  const filterActive = selectedTags.length > 0
+  const { deckActivities, filteredEmpty } = useMemo(() => {
+    // Review / done passes re-walk the full history — never filter there.
+    if (reviewMode || done) {
+      return { deckActivities: allActivities, filteredEmpty: false }
+    }
+    return filteredDeck(allActivities, history, selectedTags)
+  }, [reviewMode, done, allActivities, history, selectedTags])
 
   const needsOnboarding = userId === null
   const showPicker = needsOnboarding || changingIdentity
@@ -328,19 +363,62 @@ export default function App() {
                 prompt instead of an empty screen. */}
             <SwipeDeck
               ref={deckRef}
-              activities={allActivities}
+              activities={deckActivities}
               history={history}
               superRemaining={superRemaining}
               reviewMode={reviewMode || done}
               onVerdict={handleVerdict}
-              onComplete={() => window.setTimeout(() => setDone(true), EXIT_MS)}
+              onComplete={() => {
+                // Exhausting a *filtered* subset doesn't mean every activity
+                // is voted — don't trigger the global "Revoir les votes ?".
+                if (filterActive) return
+                window.setTimeout(() => setDone(true), EXIT_MS)
+              }}
               onOpenDetail={(a) => setDetail({ activity: a, source: 'swipe' })}
             />
+            {filteredEmpty && (
+              <div
+                className="absolute inset-0 z-[5] flex flex-col items-center justify-center text-center font-sans"
+                style={{ padding: '0 32px', gap: 14 }}
+              >
+                <span aria-hidden style={{ fontSize: 40 }}>
+                  🔍
+                </span>
+                <p
+                  className="m-0"
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: YB.ink,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Aucune activité à voter pour ces catégories.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setFilterOpen(true)}
+                  className="font-sans cursor-pointer border-0"
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: 99,
+                    background: YB.coral,
+                    color: '#fff',
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                  }}
+                >
+                  Modifier les filtres
+                </button>
+              </div>
+            )}
           </div>
           {!done && (
             <ActionRow
               onAct={handleAction}
               superRemaining={superRemaining}
+              onOpenFilter={() => setFilterOpen(true)}
+              activeFilterCount={selectedTags.length}
               onToggleDetail={() => {
                 if (detail) {
                   setDetail(null)
@@ -350,7 +428,7 @@ export default function App() {
                   // right activity instead of the next-to-vote one.
                   const current =
                     deckRef.current?.getCurrent() ??
-                    allActivities[history.length]
+                    deckActivities[history.length]
                   if (current)
                     setDetail({
                       activity: current,
@@ -503,6 +581,16 @@ export default function App() {
           <SettingsModal
             version={APP_VERSION}
             onClose={() => setSettingsOpen(false)}
+          />
+        )}
+
+        {filterOpen && (
+          <TagFilterSheet
+            tags={availableTags}
+            tagCounts={tagCounts}
+            selected={selectedTags}
+            onApply={setSelectedTags}
+            onClose={() => setFilterOpen(false)}
           />
         )}
       </div>

@@ -27,4 +27,5 @@ export const VERDICT_META: Record<Verdict, VerdictMeta> = {
 export const STORAGE_KEYS = {
   history: 'yallah.history.v1',
   userId: 'yallah.userId.v1',
+  tagFilter: 'yallah.tagFilter.v1',
 } as const

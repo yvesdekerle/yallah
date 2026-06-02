@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   WhyNotChevron,
+  Filter,
 } from '../icons/index.tsx'
 
 interface ActionRowProps {
@@ -18,6 +19,10 @@ interface ActionRowProps {
   onToggleDetail: () => void
   /** True when the detail view is currently open (renders the eye-off icon). */
   detailOpen: boolean
+  /** Opens the tag-filter sheet (far-left funnel button). */
+  onOpenFilter?: () => void
+  /** Number of active tag filters — shown as a badge on the funnel button. */
+  activeFilterCount?: number
   /** Whether the row is absolutely-positioned over the deck. */
   absolute?: boolean
 }
@@ -106,6 +111,8 @@ export function ActionRow({
   superRemaining,
   onToggleDetail,
   detailOpen,
+  onOpenFilter,
+  activeFilterCount = 0,
   absolute = true,
 }: ActionRowProps) {
   const noSuper = superRemaining <= 0
@@ -123,6 +130,54 @@ export function ActionRow({
       className="z-[7] flex items-center justify-center"
       style={{ ...positionStyle, gap: 8 }}
     >
+      {onOpenFilter && (
+        <div className="relative inline-block">
+          <button
+            type="button"
+            onClick={onOpenFilter}
+            aria-label="filtrer par catégorie"
+            className="flex items-center justify-center border-0 p-0 transition-transform"
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 99,
+              background: activeFilterCount > 0 ? YB.coral : '#fff',
+              color: activeFilterCount > 0 ? '#fff' : YB.ink,
+              boxShadow:
+                '0 8px 18px -6px rgba(20,30,50,0.22), 0 1px 0 rgba(20,30,50,0.04)',
+              cursor: 'pointer',
+            }}
+          >
+            <Filter
+              color={activeFilterCount > 0 ? '#fff' : YB.ink}
+              size={22}
+            />
+          </button>
+          {activeFilterCount > 0 && (
+            <span
+              data-testid="filter-badge"
+              className="absolute inline-flex items-center justify-center font-sans"
+              style={{
+                top: -3,
+                right: -3,
+                minWidth: 19,
+                height: 19,
+                padding: '0 5px',
+                borderRadius: 99,
+                background: YB.ink,
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: 11,
+                border: '2px solid #fff',
+                lineHeight: 1,
+                boxShadow: '0 2px 4px -1px rgba(20,30,50,0.15)',
+              }}
+            >
+              {activeFilterCount}
+            </span>
+          )}
+        </div>
+      )}
       <ActionButton
         color={YB.non}
         verdict="non"

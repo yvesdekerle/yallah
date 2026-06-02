@@ -295,3 +295,18 @@ export function Equal(p: IconProps = {}) {
   )
 }
 
+/** Funnel — opens the tag filter sheet from the action row. */
+export function Filter(p: IconProps = {}) {
+  return (
+    <svg {...base(p, 22)}>
+      <path
+        d="M4 5h16l-6.4 7.6V19l-3.2-2v-4.4L4 5z"
+        stroke={p.color ?? 'currentColor'}
+        strokeWidth={2.2}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
