@@ -42,3 +42,6 @@ preview-photos.html
 
 # Design handoff bundle (kept locally, not in the repo)
 claude-design/
+
+# Coverage reports
+coverage/
