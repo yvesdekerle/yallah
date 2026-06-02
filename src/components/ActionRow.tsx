@@ -56,18 +56,13 @@ function ActionButton({
         }}
         disabled={disabled}
         aria-label={ariaLabel}
-        className="flex items-center justify-center border-0 p-0 transition-transform"
+        className="yallah-action-btn transition-transform"
         style={{
-          width: 52,
-          height: 52,
-          borderRadius: 99,
           background: disabled ? 'rgba(255,255,255,0.55)' : '#fff',
           color,
-          boxShadow: disabled
-            ? 'none'
-            : '0 8px 18px -6px rgba(20,30,50,0.22), 0 1px 0 rgba(20,30,50,0.04)',
           cursor: disabled ? 'not-allowed' : 'pointer',
-          opacity: disabled ? 0.55 : 1,
+          // Disabled: drop the shared shadow + dim. Enabled keeps both defaults.
+          ...(disabled ? { boxShadow: 'none', opacity: 0.55 } : {}),
         }}
       >
         {icon}
@@ -75,22 +70,8 @@ function ActionButton({
       {badge != null && (
         <span
           data-testid="super-badge"
-          className="absolute inline-flex items-center justify-center font-sans"
-          style={{
-            top: -3,
-            right: -3,
-            minWidth: 19,
-            height: 19,
-            padding: '0 5px',
-            borderRadius: 99,
-            background: badge > 0 ? color : '#9A93A6',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: 11,
-            border: '2px solid #fff',
-            lineHeight: 1,
-            boxShadow: '0 2px 4px -1px rgba(20,30,50,0.15)',
-          }}
+          className="yallah-action-badge"
+          style={{ background: badge > 0 ? color : '#9A93A6' }}
         >
           {badge}
         </span>
@@ -136,15 +117,10 @@ export function ActionRow({
             type="button"
             onClick={onOpenFilter}
             aria-label="filtrer par catégorie"
-            className="flex items-center justify-center border-0 p-0 transition-transform"
+            className="yallah-action-btn transition-transform"
             style={{
-              width: 52,
-              height: 52,
-              borderRadius: 99,
               background: activeFilterCount > 0 ? YB.coral : '#fff',
               color: activeFilterCount > 0 ? '#fff' : YB.ink,
-              boxShadow:
-                '0 8px 18px -6px rgba(20,30,50,0.22), 0 1px 0 rgba(20,30,50,0.04)',
               cursor: 'pointer',
             }}
           >
@@ -156,22 +132,8 @@ export function ActionRow({
           {activeFilterCount > 0 && (
             <span
               data-testid="filter-badge"
-              className="absolute inline-flex items-center justify-center font-sans"
-              style={{
-                top: -3,
-                right: -3,
-                minWidth: 19,
-                height: 19,
-                padding: '0 5px',
-                borderRadius: 99,
-                background: YB.ink,
-                color: '#fff',
-                fontWeight: 800,
-                fontSize: 11,
-                border: '2px solid #fff',
-                lineHeight: 1,
-                boxShadow: '0 2px 4px -1px rgba(20,30,50,0.15)',
-              }}
+              className="yallah-action-badge"
+              style={{ background: YB.ink }}
             >
               {activeFilterCount}
             </span>
@@ -218,15 +180,10 @@ export function ActionRow({
         type="button"
         onClick={onToggleDetail}
         aria-label={detailOpen ? 'fermer le détail' : 'voir le détail'}
-        className="flex items-center justify-center border-0 p-0 transition-all"
+        className="yallah-action-btn transition-all"
         style={{
-          width: 52,
-          height: 52,
-          borderRadius: 99,
           background: detailOpen ? YB.ink : '#fff',
           color: detailOpen ? '#fff' : YB.ink,
-          boxShadow:
-            '0 8px 18px -6px rgba(20,30,50,0.22), 0 1px 0 rgba(20,30,50,0.04)',
           cursor: 'pointer',
         }}
       >

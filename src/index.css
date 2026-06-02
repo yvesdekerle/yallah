@@ -81,6 +81,40 @@ body {
   /* background set via CSSOM (verdict ring) */
 }
 
+@layer components {
+  /* Round 52px action button — shared by the swipe action row's verdict
+     buttons and the eye / filter toggles. Geometry + drop shadow are identical
+     across all of them; only the background / foreground colour is
+     state-driven, so those stay inline. (A `disabled` button overrides
+     box-shadow:none inline.) */
+  .yallah-action-btn {
+    @apply flex items-center justify-center border-0 p-0;
+    width: 52px;
+    height: 52px;
+    border-radius: 99px;
+    box-shadow:
+      0 8px 18px -6px rgba(20, 30, 50, 0.22),
+      0 1px 0 rgba(20, 30, 50, 0.04);
+  }
+  /* Count badge pinned to an action button's top-right corner (super-like
+     quota, active-filter count). Only the background colour varies. */
+  .yallah-action-badge {
+    @apply absolute inline-flex items-center justify-center font-sans;
+    top: -3px;
+    right: -3px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 99px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 11px;
+    border: 2px solid #fff;
+    line-height: 1;
+    box-shadow: 0 2px 4px -1px rgba(20, 30, 50, 0.15);
+  }
+}
+
 @media (max-width: 460px) {
   #root {
     max-width: 100vw;
