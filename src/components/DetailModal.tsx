@@ -95,6 +95,9 @@ export function DetailModal({
         transition: 'background 0.25s',
       }}
     >
+      {/* Inner slide-up sheet panel. The outer element is the labelled dialog
+          (aria-modal + aria-label); this panel has no natural ARIA role of its
+          own, so tests keep a data-testid to scope within(sheet) queries. */}
       <div
         onClick={(e) => e.stopPropagation()}
         data-testid="detail-sheet"

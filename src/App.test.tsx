@@ -2,6 +2,12 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, act, within } from '@testing-library/react'
 import App from './App.tsx'
 
+// Locate a verdict-count tile on the Résultats screen by its visible label, so
+// count assertions read the user-facing label/number pair rather than a
+// data-testid. All tabs stay mounted, so the tile is always queryable.
+const verdictTile = (label: string) =>
+  within(screen.getByText(label).parentElement as HTMLElement)
+
 describe('App (integration)', () => {
   beforeEach(() => {
     window.localStorage.clear()
@@ -111,15 +117,17 @@ describe('App (integration)', () => {
     expect(
       screen.getByText('1 / 198 activités swipées.'),
     ).toBeInTheDocument()
-    expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
+    expect(verdictTile('♥ like').getByText('1')).toBeInTheDocument()
   })
 
   it('switches to the groupe tab and lists the 9 participants', () => {
     render(<App />)
     fireEvent.click(screen.getByLabelText('groupe'))
     expect(screen.getByText('Le groupe')).toBeInTheDocument()
-    expect(screen.getByTestId('participant-yves')).toBeInTheDocument()
-    expect(screen.getByTestId('participant-ade')).toBeInTheDocument()
+    // Participant rows render their visible names — assert those rather than a
+    // data-testid. (GroupScreen.test still covers row internals by id.)
+    expect(screen.getByText('Yves')).toBeInTheDocument()
+    expect(screen.getByText('Adé')).toBeInTheDocument()
   })
 
   it('reset from résultats clears history after confirmation', () => {
@@ -151,9 +159,11 @@ describe('App (integration)', () => {
     )
     render(<App />)
     fireEvent.click(screen.getByLabelText('résultats'))
-    expect(screen.getByTestId('results-whynot')).toHaveTextContent('1')
-    expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
-    expect(screen.queryByTestId('results-neutre')).not.toBeInTheDocument()
+    expect(verdictTile('↓ why not').getByText('1')).toBeInTheDocument()
+    expect(verdictTile('♥ like').getByText('1')).toBeInTheDocument()
+    // The legacy verdict folds into the whynot bucket — no separate "neutre"
+    // tile ever renders.
+    expect(screen.queryByText(/neutre/i)).toBeNull()
   })
 
   it('migrates an all-legacy "neutre" history without crashing', () => {
@@ -166,7 +176,7 @@ describe('App (integration)', () => {
     )
     render(<App />)
     fireEvent.click(screen.getByLabelText('résultats'))
-    expect(screen.getByTestId('results-whynot')).toHaveTextContent('2')
+    expect(verdictTile('↓ why not').getByText('2')).toBeInTheDocument()
   })
 
   it('random-fill generates 2–3 super-likes and completes the deck', () => {
@@ -179,7 +189,9 @@ describe('App (integration)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remplir' }))
     expect(screen.getByText('198 / 198 activités swipées.')).toBeInTheDocument()
     // Guaranteed 2–3 super-likes (capped by the quota of 5 and the pool size).
-    const supers = Number(screen.getByTestId('results-top').textContent)
+    const supers = Number(
+      verdictTile('★ super like').getByText(/^\d+$/).textContent,
+    )
     expect(supers).toBeGreaterThanOrEqual(2)
     expect(supers).toBeLessThanOrEqual(3)
   })

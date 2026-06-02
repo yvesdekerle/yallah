@@ -191,7 +191,6 @@ export function ResultsScreen({
                   color: VERDICT_META[key].color,
                   marginTop: 2,
                 }}
-                data-testid={`results-${key}`}
               >
                 {counts[key]}
               </div>
@@ -295,7 +294,6 @@ export function ResultsScreen({
                       ? (e) => (e.currentTarget.style.transform = 'scale(1)')
                       : undefined
                   }
-                  data-testid={`vote-row-${activity.id}`}
                 >
                   <VerdictBadge verdict={verdict} number={activity.number} />
                   <span

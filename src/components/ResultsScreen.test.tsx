@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ResultsScreen } from './ResultsScreen.tsx'
 import type { Activity } from '../types/activity.ts'
@@ -52,10 +52,14 @@ describe('ResultsScreen', () => {
         onRequestReset={() => {}}
       />,
     )
-    expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
-    expect(screen.getByTestId('results-top')).toHaveTextContent('1')
-    expect(screen.getByTestId('results-whynot')).toHaveTextContent('1')
-    expect(screen.getByTestId('results-non')).toHaveTextContent('2')
+    // Each stat tile pairs a visible label with its count — locate the tile
+    // by the label the user reads, then assert the count shown inside it.
+    const tile = (label: string) =>
+      within(screen.getByText(label).parentElement as HTMLElement)
+    expect(tile('♥ like').getByText('1')).toBeInTheDocument()
+    expect(tile('★ super like').getByText('1')).toBeInTheDocument()
+    expect(tile('↓ why not').getByText('1')).toBeInTheDocument()
+    expect(tile('✕ non').getByText('2')).toBeInTheDocument()
   })
 
   it('lists every voted activity in a single flat list sorted by number', () => {
@@ -71,15 +75,13 @@ describe('ResultsScreen', () => {
         onRequestReset={() => {}}
       />,
     )
-    // All voted activities visible, in number order.
-    expect(screen.getByText('Activity 1')).toBeInTheDocument()
-    expect(screen.getByText('Activity 2')).toBeInTheDocument()
-    expect(screen.getByText('Activity 3')).toBeInTheDocument()
-    // The DOM order matters — rows should appear by activity number.
-    const rows = screen.getAllByTestId(/^vote-row-/)
-    expect(rows[0]).toHaveAttribute('data-testid', 'vote-row-a001')
-    expect(rows[1]).toHaveAttribute('data-testid', 'vote-row-a002')
-    expect(rows[2]).toHaveAttribute('data-testid', 'vote-row-a003')
+    // All voted activities visible, in activity-number order. getAllByText
+    // returns matches in DOM order, so the visible titles double as the
+    // ordering assertion — no positional data-testid needed.
+    const titles = screen
+      .getAllByText(/^Activity \d+$/)
+      .map((el) => el.textContent)
+    expect(titles).toEqual(['Activity 1', 'Activity 2', 'Activity 3'])
   })
 
   it('rows are clickable when onSelectActivity is provided', async () => {
@@ -94,7 +96,11 @@ describe('ResultsScreen', () => {
         onSelectActivity={onSelectActivity}
       />,
     )
-    await user.click(screen.getByTestId('vote-row-a001'))
+    // Clickable rows expose an accessible name, so target the row the way a
+    // screen-reader user would instead of by data-testid.
+    await user.click(
+      screen.getByRole('button', { name: 'Voir le détail de Activity 1' }),
+    )
     expect(onSelectActivity).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'a001' }),
     )
