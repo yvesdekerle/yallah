@@ -37,7 +37,7 @@ describe('ResultsScreen', () => {
     ).toBeInTheDocument()
   })
 
-  it('reports counts per verdict (now including skip)', () => {
+  it('reports counts per verdict', () => {
     const history: VoteEntry[] = [
       { id: 'a001', verdict: 'oui' },
       { id: 'a002', verdict: 'top' },
@@ -56,7 +56,6 @@ describe('ResultsScreen', () => {
     expect(screen.getByTestId('results-top')).toHaveTextContent('1')
     expect(screen.getByTestId('results-whynot')).toHaveTextContent('1')
     expect(screen.getByTestId('results-non')).toHaveTextContent('2')
-    expect(screen.getByTestId('results-skip')).toHaveTextContent('0')
   })
 
   it('lists every voted activity in a single flat list sorted by number', () => {

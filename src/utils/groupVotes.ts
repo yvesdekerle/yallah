@@ -5,7 +5,6 @@ const VERDICT_WEIGHTS: { v: Verdict; w: number }[] = [
   { v: 'top', w: 15 },
   { v: 'whynot', w: 25 },
   { v: 'non', w: 15 },
-  { v: 'skip', w: 10 },
 ]
 const TOTAL_WEIGHT = VERDICT_WEIGHTS.reduce((sum, w) => sum + w.w, 0)
 

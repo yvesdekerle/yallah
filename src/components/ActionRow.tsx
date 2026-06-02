@@ -8,7 +8,6 @@ import {
   Eye,
   EyeOff,
   WhyNotChevron,
-  Skip,
 } from '../icons/index.tsx'
 
 interface ActionRowProps {
@@ -96,8 +95,8 @@ function ActionButton({
 }
 
 /**
- * Floating row of action buttons: ✕ NON · ↑ WHY NOT · ♥ OUI · ★ SUPER LIKE
- * (with quota badge) · 👁 detail toggle.
+ * Floating row of action buttons: ✕ NON · ↓ WHY NOT · ★ SUPER LIKE
+ * (with quota badge) · ♥ OUI · 👁 detail toggle.
  *
  * Designed to be reused between the swipe screen (`absolute=true`, floating
  * over the card) and the detail modal (`absolute=false`, sticky bottom bar).
@@ -124,13 +123,6 @@ export function ActionRow({
       className="z-[7] flex items-center justify-center"
       style={{ ...positionStyle, gap: 8 }}
     >
-      <ActionButton
-        color="#9A93A6"
-        verdict="skip"
-        onAct={onAct}
-        icon={<Skip color="#9A93A6" size={22} />}
-        ariaLabel="skip"
-      />
       <ActionButton
         color={YB.non}
         verdict="non"

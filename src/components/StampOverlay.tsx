@@ -11,7 +11,6 @@ const ROTATION: Record<Verdict, number> = {
   oui: -10,
   non: 10,
   whynot: -4,
-  skip: 0,
   top: 0,
 }
 

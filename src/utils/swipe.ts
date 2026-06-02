@@ -46,10 +46,6 @@ export function exitOffset(verdict: Verdict): ExitOffset {
       return { x: 0, y: EXIT_DIST, r: 0 }
     case 'top':
       return { x: 0, y: -EXIT_DIST, r: 0 }
-    case 'skip':
-      // Skipped cards slide off to the right, slightly different angle
-      // so they look distinct from a "oui" exit.
-      return { x: EXIT_DIST, y: 0, r: 0 }
   }
 }
 

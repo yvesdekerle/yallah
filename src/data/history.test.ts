@@ -25,6 +25,18 @@ describe('migrateHistory', () => {
     ])
   })
 
+  it('drops removed "skip" (plus tard) verdicts', () => {
+    const legacy: LegacyVoteEntry[] = [
+      { id: 'a001', verdict: 'oui' },
+      { id: 'a002', verdict: 'skip' },
+      { id: 'a003', verdict: 'whynot' },
+    ]
+    expect(migrateHistory(legacy)).toEqual([
+      { id: 'a001', verdict: 'oui' },
+      { id: 'a003', verdict: 'whynot' },
+    ])
+  })
+
   it('returns an empty array for empty history', () => {
     expect(migrateHistory([])).toEqual([])
   })

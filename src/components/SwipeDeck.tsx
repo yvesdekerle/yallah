@@ -39,8 +39,8 @@ interface SwipeDeckProps {
   /**
    * When true, the deck restarts from index 0 (regardless of history),
    * shows the previous vote as a banner on each card, and the action-row
-   * "=" path (via `commit('skip')` on the previous verdict) keeps the
-   * vote unchanged. Used by the "Revoir mes votes" flow.
+   * "=" path (via `commit(prevVerdict)`) keeps the vote unchanged. Used by
+   * the "Revoir mes votes" flow.
    */
   reviewMode?: boolean
 }

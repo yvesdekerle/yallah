@@ -94,7 +94,7 @@ export function useVoteHistory(allActivities: Activity[]) {
       superPool.slice(0, actualSupers).map((a) => a.id),
     )
 
-    const passive: Verdict[] = ['oui', 'non', 'whynot', 'skip']
+    const passive: Verdict[] = ['oui', 'non', 'whynot']
     const additions: VoteEntry[] = missing.map((a) => ({
       id: a.id,
       verdict: superLikeIds.has(a.id)

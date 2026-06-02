@@ -31,8 +31,7 @@ interface ResultsScreenProps {
 const SUMMARY: { key: Verdict; label: string }[] = [
   { key: 'oui', label: '♥ like' },
   { key: 'top', label: '★ super like' },
-  { key: 'whynot', label: '↑ why not' },
-  { key: 'skip', label: '⊘ plus tard' },
+  { key: 'whynot', label: '↓ why not' },
   { key: 'non', label: '✕ non' },
 ]
 
@@ -74,7 +73,6 @@ export function ResultsScreen({
       non: 0,
       whynot: 0,
       top: 0,
-      skip: 0,
     }
     for (const h of history) c[h.verdict] += 1
     return c

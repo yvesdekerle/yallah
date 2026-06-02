@@ -1,4 +1,4 @@
-export type Verdict = 'oui' | 'non' | 'whynot' | 'top' | 'skip'
+export type Verdict = 'oui' | 'non' | 'whynot' | 'top'
 
 export interface VoteEntry {
   /** Activity id (e.g. "a001"). */

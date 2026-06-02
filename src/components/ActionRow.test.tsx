@@ -19,9 +19,8 @@ function setup(overrides: Partial<Parameters<typeof ActionRow>[0]> = {}) {
 }
 
 describe('ActionRow', () => {
-  it('renders all six buttons', () => {
+  it('renders the five buttons', () => {
     setup()
-    expect(screen.getByLabelText('skip')).toBeInTheDocument()
     expect(screen.getByLabelText('non')).toBeInTheDocument()
     expect(screen.getByLabelText('why not')).toBeInTheDocument()
     expect(screen.getByLabelText('super like')).toBeInTheDocument()
@@ -32,16 +31,14 @@ describe('ActionRow', () => {
   it('calls onAct with the correct verdict for each verdict button', async () => {
     const user = userEvent.setup()
     const { onAct } = setup()
-    await user.click(screen.getByLabelText('skip'))
     await user.click(screen.getByLabelText('non'))
     await user.click(screen.getByLabelText('why not'))
     await user.click(screen.getByLabelText('super like'))
     await user.click(screen.getByLabelText('like'))
-    expect(onAct).toHaveBeenNthCalledWith(1, 'skip')
-    expect(onAct).toHaveBeenNthCalledWith(2, 'non')
-    expect(onAct).toHaveBeenNthCalledWith(3, 'whynot')
-    expect(onAct).toHaveBeenNthCalledWith(4, 'top')
-    expect(onAct).toHaveBeenNthCalledWith(5, 'oui')
+    expect(onAct).toHaveBeenNthCalledWith(1, 'non')
+    expect(onAct).toHaveBeenNthCalledWith(2, 'whynot')
+    expect(onAct).toHaveBeenNthCalledWith(3, 'top')
+    expect(onAct).toHaveBeenNthCalledWith(4, 'oui')
   })
 
   it('shows the super-like quota as a badge', () => {

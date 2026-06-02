@@ -17,8 +17,8 @@ describe('fakeVote', () => {
     expect(seen.size).toBeGreaterThan(1)
   })
 
-  it('returns one of the five known verdicts', () => {
-    const valid = new Set(['oui', 'non', 'whynot', 'top', 'skip'])
+  it('returns one of the four known verdicts', () => {
+    const valid = new Set(['oui', 'non', 'whynot', 'top'])
     for (let i = 0; i < 50; i++) {
       expect(valid.has(fakeVote(`p${i}`, 'a042'))).toBe(true)
     }

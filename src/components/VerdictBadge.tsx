@@ -12,7 +12,7 @@ interface VerdictBadgeProps {
  *
  * - `oui` → heart shape (pink)
  * - `top` → star shape (gold)
- * - `non` / `whynot` / `skip` → coloured circle
+ * - `non` / `whynot` → coloured circle
  *
  * The activity number is laid out as white text in the centre of the
  * shape. Used in the results list to communicate "what did I vote on this
@@ -75,7 +75,6 @@ function ShapeFor({ verdict, fill }: ShapeProps) {
       )
     case 'non':
     case 'whynot':
-    case 'skip':
     default:
       return <circle cx={24} cy={24} r={20} fill={fill} />
   }
