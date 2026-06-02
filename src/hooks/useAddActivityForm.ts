@@ -88,6 +88,7 @@ export function useAddActivityForm({
   const [tagInput, setTagInput] = useState('')
   const [urlInput, setUrlInput] = useState('')
   const [urlError, setUrlError] = useState('')
+  const [submitError, setSubmitError] = useState('')
   const [saving, setSaving] = useState(false)
 
   // Object URLs created for picked-file previews, revoked on reset/unmount.
@@ -115,6 +116,7 @@ export function useAddActivityForm({
     setCoords(null)
     setTagInput('')
     setUrlInput('')
+    setSubmitError('')
   }
 
   const startEdit = (record: StoredUserActivity) => {
@@ -235,6 +237,7 @@ export function useAddActivityForm({
   const submit = async () => {
     if (!canSubmit) return
     setSaving(true)
+    setSubmitError('')
     const resolvedCategory =
       categoryMode === 'other' ? categoryOther.trim() || 'Autre' : category
     // 💎 / 🗝️ come exclusively from the toggles: strip any stale ones from the
@@ -265,6 +268,13 @@ export function useAddActivityForm({
       if (editingId) await onUpdate(editingId, input)
       else await onAdd(input)
       resetForm()
+    } catch {
+      // Most likely a photo that couldn't be decoded/resized (e.g. an HEIC
+      // file on a browser without HEIC support). Keep the form so the user
+      // can retry or remove the offending photo, and tell them why.
+      setSubmitError(
+        'Échec de l’enregistrement — une photo n’a peut-être pas pu être traitée. Réessaie ou retire-la.',
+      )
     } finally {
       setSaving(false)
     }
@@ -289,6 +299,7 @@ export function useAddActivityForm({
     urlInput,
     urlError,
     onUrlInputChange,
+    submitError,
     saving,
     categories,
     tagPalette,

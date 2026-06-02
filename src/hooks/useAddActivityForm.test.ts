@@ -43,6 +43,24 @@ describe('useAddActivityForm — pépite / secret as the single source for 💎 
     expect(input.secret).toBe(true)
   })
 
+  it('surfaces an error and keeps the form when submit fails (e.g. photo decode)', async () => {
+    const onAdd = vi.fn().mockRejectedValue(new Error('decode failed'))
+    const onUpdate = vi.fn().mockResolvedValue(undefined)
+    const { result } = renderHook(() =>
+      useAddActivityForm({ userActivities: [], onAdd, onUpdate }),
+    )
+    act(() => {
+      result.current.setFields((s) => ({ ...s, title: 'Test' }))
+    })
+    await act(async () => {
+      await result.current.submit()
+    })
+    expect(result.current.submitError).not.toBe('')
+    // The form is kept (not reset) so the user can retry / remove a photo.
+    expect(result.current.fields.title).toBe('Test')
+    expect(result.current.saving).toBe(false)
+  })
+
   it('strips a stale 💎 from tags when the pépite toggle is off', async () => {
     const { result, onAdd } = setup()
     act(() => {

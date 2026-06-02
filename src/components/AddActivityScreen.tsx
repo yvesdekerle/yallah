@@ -275,6 +275,16 @@ export function AddActivityScreen({
               {f.saving ? 'Enregistrement…' : f.editingId ? 'Enregistrer' : 'Ajouter'}
             </button>
           </div>
+
+          {f.submitError && (
+            <p
+              role="alert"
+              className="font-sans"
+              style={{ margin: '4px 2px 0', fontSize: 13, color: YB.coralDeep }}
+            >
+              {f.submitError}
+            </p>
+          )}
         </div>
 
         {stored.length > 0 && (
