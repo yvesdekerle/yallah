@@ -22,20 +22,32 @@ const fixture: Activity = {
 }
 
 describe('Card', () => {
-  it('renders title, location, transit, price, rating', () => {
+  it('renders title, location, price, rating', () => {
     render(<Card activity={fixture} />)
     expect(
       screen.getByText('Snorkeling à Blue Bay Marine Park'),
     ).toBeInTheDocument()
     // formatLocation: trailing "(sud-est)" becomes " · sud-est"
     expect(screen.getByText('Blue Bay · sud-est')).toBeInTheDocument()
-    expect(
-      screen.getByText('~1h–1h15 depuis Tamarin'),
-    ).toBeInTheDocument()
     // shortPrice strips "/pers en excursion organisée" from the chip.
     expect(screen.getByText('25–35 €')).toBeInTheDocument()
     // Integer ratings drop the .0 on the Card pill.
     expect(screen.getByText('5')).toBeInTheDocument()
+  })
+
+  it('shows a computed "depuis Tamarin" drive time when the activity has coords', () => {
+    render(
+      <Card activity={{ ...fixture, coords: { lat: -20.33, lng: 57.38 } }} />,
+    )
+    const line = screen.getByText(/depuis Tamarin/)
+    // Computed estimate (~Xmin), never the curated free-text.
+    expect(line.textContent).toMatch(/~\d.*depuis Tamarin/)
+    expect(screen.queryByText('~1h–1h15 depuis Tamarin')).toBeNull()
+  })
+
+  it('hides the drive-time line when the activity has no coords', () => {
+    render(<Card activity={{ ...fixture, id: 'no-coords-xyz' }} />)
+    expect(screen.queryByText(/depuis Tamarin/)).toBeNull()
   })
 
   it('renders the activity number as a zero-padded chip', () => {

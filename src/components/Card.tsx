@@ -11,6 +11,8 @@ import {
   formatRating,
 } from '../utils/format.ts'
 import { labelForTag } from '../utils/tags.ts'
+import { coordsFor } from '../utils/coords.ts'
+import { BASE_TAMARIN, estimateDriveTime } from '../utils/distance.ts'
 
 interface CardProps {
   activity: Activity
@@ -189,14 +191,21 @@ export function Card({ activity }: CardProps) {
             <Pin color="rgba(255,255,255,0.9)" size={13} />
             {formatLocation(activity.location)}
           </span>
-          {activity.transit && (
-            <>
-              <span style={{ opacity: 0.4 }}>·</span>
-              <span style={{ fontSize: 12 }}>
-                {activity.transit} depuis Tamarin
-              </span>
-            </>
-          )}
+          {(() => {
+            // Approximate drive time from Tamarin, computed from the activity's
+            // coordinates. Hidden when no coords — the curated `transit` text is
+            // never shown here (it can be a multi-base composite).
+            const coords = coordsFor(activity)
+            if (!coords) return null
+            return (
+              <>
+                <span style={{ opacity: 0.4 }}>·</span>
+                <span style={{ fontSize: 12 }}>
+                  {estimateDriveTime(coords, BASE_TAMARIN)} depuis Tamarin
+                </span>
+              </>
+            )
+          })()}
         </div>
 
         <p

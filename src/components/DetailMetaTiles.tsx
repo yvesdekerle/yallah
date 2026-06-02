@@ -222,14 +222,14 @@ export function DetailMetaTiles({ activity }: { activity: Activity }) {
       })()}
 
       {(() => {
+        // Both legs are drive-time approximations computed from the activity's
+        // coordinates. Without coords neither leg can be computed, so the whole
+        // block is hidden rather than shown half-empty (temporary — recovering
+        // the missing coords for ~78 activities is tracked in the backlog).
         const coords = coordsFor(activity)
-        const tamarinValue =
-          activity.transit ||
-          (coords ? estimateDriveTime(coords, BASE_TAMARIN) : null)
-        const troubValue = coords
-          ? estimateDriveTime(coords, BASE_TROU_AUX_BICHES)
-          : null
-        if (!tamarinValue && !troubValue) return null
+        if (!coords) return null
+        const tamarinValue = estimateDriveTime(coords, BASE_TAMARIN)
+        const troubValue = estimateDriveTime(coords, BASE_TROU_AUX_BICHES)
         return (
           <div
             className="font-sans"
@@ -247,41 +247,33 @@ export function DetailMetaTiles({ activity }: { activity: Activity }) {
             }}
             aria-label="Trajets depuis les villas"
           >
-            {tamarinValue && (
-              <>
-                <span
-                  className="inline-flex items-center justify-center"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 99,
-                    background: '#fff',
-                    fontSize: 16,
-                    lineHeight: 1,
-                  }}
-                  aria-hidden
-                >
-                  🚗
-                </span>
-                <div style={{ color: YB.ink }}>
-                  <span style={{ fontWeight: 700 }}>{BASE_TAMARIN.label}</span>
-                  {' : '}
-                  {tamarinValue}
-                </div>
-              </>
-            )}
-            {troubValue && (
-              <>
-                <span aria-hidden />
-                <div style={{ color: YB.ink2 }}>
-                  <span style={{ fontWeight: 700 }}>
-                    {BASE_TROU_AUX_BICHES.label}
-                  </span>
-                  {' : '}
-                  {troubValue}
-                </div>
-              </>
-            )}
+            <span
+              className="inline-flex items-center justify-center"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 99,
+                background: '#fff',
+                fontSize: 16,
+                lineHeight: 1,
+              }}
+              aria-hidden
+            >
+              🚗
+            </span>
+            <div style={{ color: YB.ink }}>
+              <span style={{ fontWeight: 700 }}>{BASE_TAMARIN.label}</span>
+              {' : '}
+              {tamarinValue}
+            </div>
+            <span aria-hidden />
+            <div style={{ color: YB.ink2 }}>
+              <span style={{ fontWeight: 700 }}>
+                {BASE_TROU_AUX_BICHES.label}
+              </span>
+              {' : '}
+              {troubValue}
+            </div>
           </div>
         )
       })()}

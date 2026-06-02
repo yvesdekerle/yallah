@@ -135,14 +135,14 @@ describe('DetailModal', () => {
     vi.useRealTimers()
   })
 
-  it('renders the trajet block with Tamarin (curated) and Trou aux Biches (computed)', () => {
+  it('renders both drive-time lines computed from coords, ignoring curated transit text', () => {
     render(
       <DetailModal
         activity={{
           ...fixture,
           id: 'a001',
-          coords: { lat: -20.044, lng: 57.537 },
-          transit: '~1h',
+          coords: { lat: -20.33, lng: 57.38 },
+          transit: 'CURATED-TRANSIT-TEXT',
         }}
         onClose={() => {}}
         onVerdict={() => {}}
@@ -152,12 +152,35 @@ describe('DetailModal', () => {
     const block = screen.getByLabelText('Trajets depuis les villas')
     expect(block).toBeInTheDocument()
     expect(block).toHaveTextContent('Tamarin')
-    expect(block).toHaveTextContent('~1h')
     expect(block).toHaveTextContent('Trou aux Biches')
-    expect(block).toHaveTextContent(/~\d/)
+    // The curated free-text is never the source — both lines are computed.
+    expect(block).not.toHaveTextContent('CURATED-TRANSIT-TEXT')
+    const estimates = block.textContent?.match(/~\d/g) ?? []
+    expect(estimates.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('omits the Trou aux Biches line when no coords exist', () => {
+  it('never leaks a composite curated transit onto the Tamarin line', () => {
+    render(
+      <DetailModal
+        activity={{
+          ...fixture,
+          id: 'a005',
+          coords: { lat: -20.33, lng: 57.38 },
+          transit: '~5 min (Tamarin/Black River) ou ~55 min (Trou aux Biches)',
+        }}
+        onClose={() => {}}
+        onVerdict={() => {}}
+        superRemaining={5}
+      />,
+    )
+    const block = screen.getByLabelText('Trajets depuis les villas')
+    // The composite curated string must not reach the rendered block.
+    expect(block).not.toHaveTextContent('Black River')
+    // Trou aux Biches still shows — but only as the second line's base label.
+    expect(block).toHaveTextContent('Trou aux Biches')
+  })
+
+  it('hides the trajet block entirely when the activity has no coords', () => {
     render(
       <DetailModal
         activity={{
@@ -170,9 +193,7 @@ describe('DetailModal', () => {
         superRemaining={5}
       />,
     )
-    const block = screen.getByLabelText('Trajets depuis les villas')
-    expect(block).toHaveTextContent('Tamarin')
-    expect(block).not.toHaveTextContent('Trou aux Biches')
+    expect(screen.queryByLabelText('Trajets depuis les villas')).toBeNull()
   })
 
   it('does not surface the journée flag in DetailModal (badge removed pending decision)', () => {

@@ -127,3 +127,15 @@ Mémoire d'avancement (source de vérité). Mise à jour à chaque transition d'
 
 **CHECKPOINT** (tip branch `chore/perf-03-bundle-budget` = 12 commits chaînés, testable en local). Reprise: relire ce fichier → 1ère case non cochée = **ARCH-02**.
 - **ARCH-02 déjà exploré** (DetailModal.tsx, 918 l.) : split présentiel en `DetailHero` (photo+close+tag chips/legend+title), `DetailMetaTiles` (warning difficulté + grid 4 tuiles + ratingComment + bloc Trajets), `DetailBody` (description+anecdote+links+carousel photos), `DetailMap` (SectionHeading+ActivityMiniMap), `DetailGroupVotes` (panel meDone/placeholder). `MetaTile` (l.43-99) déjà extrait. État local (open/lightboxIdx/legendOpen/armed) + close/handleAction restent dans DetailModal. Risque faible (présentiel). Garde-fou: e2e detail.spec/map.spec + 16 tests App. → plan + reviewer puis implémenter.
+
+---
+
+## Hors-audit — Fix « Trajets » (juin 2026)
+
+**Demande Yves** : bloc « Trajets » du DetailModal pas propre — sur certaines fiches (ex. n°5) la ligne Tamarin contenait une référence à Trou aux Biches. Cause : le champ curé `transit` est **composite** sur ~9/198 fiches (`"~5 min (Tamarin/Black River) ou ~55 min (Trou aux Biches)"`) et était affiché brut sur la ligne Tamarin. Exigence : 2 lignes séparées, chacune ne parlant que de son propre départ, + « avoir les 2 à chaque fois ».
+
+**Décision Yves** : temps de trajet = **approximation calculée depuis les coords** (`estimateDriveTime` + `coordsFor`) pour les 2 bases ; **sans coords → masquer le bloc** (idem la ligne « depuis Tamarin » de la Card). Le `transit` curé n'est plus affiché (c'était la source de la contamination).
+
+**Implémenté (TDD)** : `DetailMetaTiles.tsx` (bloc → 2 lignes calculées, `return null` sans coords) + `Card.tsx` (ligne « depuis Tamarin » calculée, masquée sans coords). 3 tests DetailModal + 2 tests Card (RED→GREEN). **279 unit / 25 e2e ✓**, build + lint OK.
+
+**⚠️ BACKLOG (plus tard, avec le hors-ligne)** : **~78/198 activités sans coords** → leur bloc Trajets est masqué (temporaire). Récupérer les coords manquantes (`npm run geocode:activities` + `coords-overrides.json`) pour réafficher les trajets partout. Cf. mémoire deferred-work item 3.
