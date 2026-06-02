@@ -14,12 +14,10 @@ import { Phone } from './components/Phone.tsx'
 import { StatusBar } from './components/StatusBar.tsx'
 import { TopBar } from './components/TopBar.tsx'
 import { BottomNav, type TabIndex } from './components/BottomNav.tsx'
-import { UndoButton } from './components/UndoButton.tsx'
-import { ActionRow } from './components/ActionRow.tsx'
 import { Toast } from './components/Toast.tsx'
 import { DetailModal } from './components/DetailModal.tsx'
-import { ReviewPrompt } from './components/ReviewPrompt.tsx'
-import { SwipeDeck, type SwipeDeckHandle } from './components/SwipeDeck.tsx'
+import type { SwipeDeckHandle } from './components/SwipeDeck.tsx'
+import { SwipeScreen } from './components/SwipeScreen.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
 import { AppConfirmModals } from './components/AppConfirmModals.tsx'
@@ -290,6 +288,33 @@ export default function App() {
     [detail, upsertVote, showToast],
   )
 
+  // Deck exhausted. Exhausting a *filtered* subset doesn't mean every activity
+  // is voted — don't trigger the global "Revoir les votes ?" in that case.
+  const handleComplete = useCallback(() => {
+    if (filterActive) return
+    window.setTimeout(() => setDone(true), EXIT_MS)
+  }, [filterActive])
+
+  const handleOpenDetailFromSwipe = useCallback(
+    (a: Activity) => setDetail({ activity: a, source: 'swipe' }),
+    [setDetail],
+  )
+
+  // Eye-toggle: open the detail modal for the current card, or close it.
+  const handleToggleDetail = useCallback(() => {
+    if (detail) {
+      setDetail(null)
+      return
+    }
+    // Use the deck's notion of the current card so review mode (topIdx
+    // independent of history.length) opens the right activity instead of the
+    // next-to-vote one.
+    const current =
+      deckRef.current?.getCurrent() ?? deckActivities[history.length]
+    if (current)
+      setDetail({ activity: current, source: reviewMode ? 'review' : 'swipe' })
+  }, [detail, setDetail, deckActivities, history.length, reviewMode])
+
   const onSwipeTab = activeTab === 0
 
   return (
@@ -308,138 +333,26 @@ export default function App() {
           style={{ display: onSwipeTab ? 'contents' : 'none' }}
           aria-hidden={!onSwipeTab}
         >
-          <UndoButton
-            enabled={history.length > 0 && !done}
-            onClick={handleUndo}
+          <SwipeScreen
+            deckRef={deckRef}
+            deckActivities={deckActivities}
+            history={history}
+            superRemaining={superRemaining}
+            reviewMode={reviewMode}
+            done={done}
+            filteredEmpty={filteredEmpty}
+            activeFilterCount={selectedTags.length}
+            detailOpen={detail !== null}
+            onVerdict={handleVerdict}
+            onUndo={handleUndo}
+            onExitReview={handleExitReview}
+            onAction={handleAction}
+            onReview={handleReview}
+            onComplete={handleComplete}
+            onOpenFilter={() => setFilterOpen(true)}
+            onOpenDetail={handleOpenDetailFromSwipe}
+            onToggleDetail={handleToggleDetail}
           />
-          {reviewMode && (
-            <button
-              type="button"
-              onClick={handleExitReview}
-              aria-label="quitter le mode révision"
-              className="absolute z-[9] inline-flex items-center font-sans cursor-pointer border-0"
-              style={{
-                top: 46,
-                right: 18,
-                height: 36,
-                padding: '0 12px 0 14px',
-                borderRadius: 99,
-                background: YB.coral,
-                color: '#fff',
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: 0.2,
-                gap: 8,
-                boxShadow: '0 4px 12px -2px rgba(255,107,71,0.35)',
-              }}
-            >
-              <span>Mode révision</span>
-              <span
-                aria-hidden
-                style={{ fontSize: 16, lineHeight: 1, opacity: 0.9 }}
-              >
-                ✕
-              </span>
-            </button>
-          )}
-          <div
-            className="phone-card-area absolute"
-            style={{
-              top: 76,
-              left: 10,
-              right: 10,
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 70px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              // Trap SwipeDeck's internal z-indices (exiting card z 10,
-              // drag stamps z 9) inside this stacking context so they
-              // can't paint over the ActionRow (z 7) sitting outside.
-              isolation: 'isolate',
-            }}
-          >
-            {/* When everything's voted we keep the cards on screen (in
-                review layout) and gate them behind the "Revoir les votes ?"
-                prompt instead of an empty screen. */}
-            <SwipeDeck
-              ref={deckRef}
-              activities={deckActivities}
-              history={history}
-              superRemaining={superRemaining}
-              reviewMode={reviewMode || done}
-              onVerdict={handleVerdict}
-              onComplete={() => {
-                // Exhausting a *filtered* subset doesn't mean every activity
-                // is voted — don't trigger the global "Revoir les votes ?".
-                if (filterActive) return
-                window.setTimeout(() => setDone(true), EXIT_MS)
-              }}
-              onOpenDetail={(a) => setDetail({ activity: a, source: 'swipe' })}
-            />
-            {filteredEmpty && (
-              <div
-                className="absolute inset-0 z-[5] flex flex-col items-center justify-center text-center font-sans"
-                style={{ padding: '0 32px', gap: 14 }}
-              >
-                <span aria-hidden style={{ fontSize: 40 }}>
-                  🔍
-                </span>
-                <p
-                  className="m-0"
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: YB.ink,
-                    lineHeight: 1.4,
-                  }}
-                >
-                  Aucune activité à voter pour ces catégories.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setFilterOpen(true)}
-                  className="font-sans cursor-pointer border-0"
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: 99,
-                    background: YB.coral,
-                    color: '#fff',
-                    fontSize: 13.5,
-                    fontWeight: 700,
-                  }}
-                >
-                  Modifier les filtres
-                </button>
-              </div>
-            )}
-          </div>
-          {!done && (
-            <ActionRow
-              onAct={handleAction}
-              superRemaining={superRemaining}
-              onOpenFilter={() => setFilterOpen(true)}
-              activeFilterCount={selectedTags.length}
-              onToggleDetail={() => {
-                if (detail) {
-                  setDetail(null)
-                } else {
-                  // Use the deck's notion of the current card so review
-                  // mode (topIdx independent of history.length) opens the
-                  // right activity instead of the next-to-vote one.
-                  const current =
-                    deckRef.current?.getCurrent() ??
-                    deckActivities[history.length]
-                  if (current)
-                    setDetail({
-                      activity: current,
-                      source: reviewMode ? 'review' : 'swipe',
-                    })
-                }
-              }}
-              detailOpen={detail !== null}
-            />
-          )}
-          {done && <ReviewPrompt onConfirm={handleReview} />}
         </div>
 
         <div
