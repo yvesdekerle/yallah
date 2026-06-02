@@ -32,7 +32,7 @@ function renderScreen(props: Partial<Parameters<typeof AddActivityScreen>[0]> = 
   const onAdd = vi.fn().mockResolvedValue(undefined)
   const onUpdate = vi.fn().mockResolvedValue(undefined)
   const onRequestDelete = vi.fn()
-  render(
+  const result = render(
     <AddActivityScreen
       userActivities={[]}
       stored={[]}
@@ -43,7 +43,7 @@ function renderScreen(props: Partial<Parameters<typeof AddActivityScreen>[0]> = 
       {...props}
     />,
   )
-  return { onAdd, onUpdate, onRequestDelete }
+  return { onAdd, onUpdate, onRequestDelete, ...result }
 }
 
 describe('AddActivityScreen', () => {
@@ -116,5 +116,100 @@ describe('AddActivityScreen', () => {
     )
     expect(screen.queryByLabelText('photo principale')).not.toBeInTheDocument()
     expect(screen.getByRole('alert')).toBeInTheDocument()
+  })
+
+  it('revokes a picked-file preview URL when its photo is removed', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-pick')
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    renderScreen()
+    await user.upload(
+      screen.getByLabelText('ajouter des photos depuis la galerie'),
+      new File(['x'], 'p.jpg', { type: 'image/jpeg' }),
+    )
+    expect(screen.getByLabelText('photo principale')).toBeInTheDocument()
+    await user.click(screen.getByLabelText('supprimer la photo 1'))
+    expect(revoke).toHaveBeenCalledWith('blob:mock-pick')
+    expect(screen.queryByLabelText('photo principale')).not.toBeInTheDocument()
+    vi.restoreAllMocks()
+  })
+
+  it('revokes created preview URLs on unmount', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-unmount')
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    const { unmount } = renderScreen()
+    await user.upload(
+      screen.getByLabelText('ajouter des photos depuis la galerie'),
+      new File(['x'], 'p.jpg', { type: 'image/jpeg' }),
+    )
+    unmount()
+    expect(revoke).toHaveBeenCalledWith('blob:mock-unmount')
+    vi.restoreAllMocks()
+  })
+
+  it('clears the form after a successful add', async () => {
+    const user = userEvent.setup()
+    const { onAdd } = renderScreen()
+    await user.type(screen.getByLabelText('Titre'), 'Spot test')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    await waitFor(() => expect(onAdd).toHaveBeenCalledTimes(1))
+    expect(screen.getByLabelText('Titre')).toHaveValue('')
+    expect(screen.getByRole('button', { name: SUBMIT })).toBeDisabled()
+  })
+
+  it('submits a custom "Autre…" category', async () => {
+    const user = userEvent.setup()
+    const { onAdd } = renderScreen()
+    await user.type(screen.getByLabelText('Titre'), 'Spot')
+    await user.selectOptions(screen.getByLabelText('catégorie'), '__other__')
+    await user.type(screen.getByLabelText('autre catégorie'), 'Spéléo')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    await waitFor(() =>
+      expect(onAdd).toHaveBeenCalledWith(
+        expect.objectContaining({ category: 'Spéléo' }),
+      ),
+    )
+  })
+
+  it('falls back to "Autre" when the custom category is left empty', async () => {
+    const user = userEvent.setup()
+    const { onAdd } = renderScreen()
+    await user.type(screen.getByLabelText('Titre'), 'Spot')
+    await user.selectOptions(screen.getByLabelText('catégorie'), '__other__')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    await waitFor(() =>
+      expect(onAdd).toHaveBeenCalledWith(
+        expect.objectContaining({ category: 'Autre' }),
+      ),
+    )
+  })
+
+  it('loads every field when editing (category/difficulty/rating/photo)', async () => {
+    const user = userEvent.setup()
+    renderScreen({
+      stored: [
+        record({
+          title: 'À éditer',
+          category: 'Catégorie Perso',
+          rating: 4,
+          difficulty: { dot: '🟠', label: 'Difficile' },
+          photoRefs: [{ kind: 'url', url: 'https://x/p.jpg' }],
+        }),
+      ],
+    })
+    await user.click(screen.getByLabelText('modifier À éditer'))
+    expect(screen.getByLabelText('Titre')).toHaveValue('À éditer')
+    // Non-preset category → the "Autre" free-text input carries it.
+    expect(screen.getByLabelText('autre catégorie')).toHaveValue('Catégorie Perso')
+    expect(screen.getByLabelText('note 4 sur 5')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Difficile' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByLabelText('photo principale')).toBeInTheDocument()
   })
 })
