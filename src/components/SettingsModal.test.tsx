@@ -14,4 +14,15 @@ describe('SettingsModal', () => {
     fireEvent.click(screen.getByLabelText('fermer les réglages'))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
+
+  it('links to the shared spreadsheet, opening safely in a new tab', () => {
+    render(<SettingsModal version="1.0.0" onClose={() => {}} />)
+    const link = screen.getByRole('link', { name: /Tableur des activités/ })
+    expect(link).toHaveAttribute(
+      'href',
+      'https://docs.google.com/spreadsheets/d/1kPmZExsNV8C05CuWg8tyiRA1l4Jm7CftUSMxPohm1w4/edit?usp=sharing',
+    )
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
 })

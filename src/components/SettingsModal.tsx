@@ -67,6 +67,37 @@ export function SettingsModal({
           </span>
           <span style={{ fontSize: 15, fontWeight: 800 }}>v{version}</span>
         </div>
+
+        <a
+          href="https://docs.google.com/spreadsheets/d/1kPmZExsNV8C05CuWg8tyiRA1l4Jm7CftUSMxPohm1w4/edit?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center no-underline"
+          style={{
+            justifyContent: 'space-between',
+            marginTop: 12,
+            padding: '14px 16px',
+            background: '#fff',
+            borderRadius: 14,
+            boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
+            color: 'inherit',
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 600, color: YB.ink2 }}>
+            Tableur des activités
+          </span>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 800,
+              color: YB.coral,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Ouvrir ↗
+          </span>
+        </a>
       </div>
     </div>
   )
