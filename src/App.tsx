@@ -14,17 +14,12 @@ import { StatusBar } from './components/StatusBar.tsx'
 import { TopBar } from './components/TopBar.tsx'
 import { BottomNav, type TabIndex } from './components/BottomNav.tsx'
 import { Toast } from './components/Toast.tsx'
-import { DetailModal } from './components/DetailModal.tsx'
 import type { SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { SwipeScreen } from './components/SwipeScreen.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
-import { AppConfirmModals } from './components/AppConfirmModals.tsx'
-import { IdentityPicker } from './components/IdentityPicker.tsx'
 import { AddActivityScreen } from './components/AddActivityScreen.tsx'
-import { SettingsModal } from './components/SettingsModal.tsx'
-import { TagFilterSheet } from './components/TagFilterSheet.tsx'
-import { MapOverlay } from './components/MapOverlay.tsx'
+import { AppOverlays } from './components/AppOverlays.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
 import { APP_VERSION } from './constants/version.ts'
@@ -32,6 +27,7 @@ import {
   useUserActivities,
   type UserActivityInput,
 } from './hooks/useUserActivities.ts'
+
 interface AppProps {
   /** Curated activities, loaded + code-split in `main.tsx` and injected here so
       App stays a synchronous function of its data (and trivially testable). */
@@ -408,86 +404,50 @@ export default function App({ activities }: AppProps) {
 
         <BottomNav active={activeTab} onChange={setActiveTab} />
 
-        {detail && (
-          <DetailModal
-            activity={detail.activity}
-            onClose={() => setDetail(null)}
-            superRemaining={superRemaining}
-            onVerdict={handleDetailVerdict}
-            onOpenMap={openMapAboveDetail}
-            meDone={history.length >= allActivities.length}
-            userId={userId}
-            myVerdict={
-              history.find((h) => h.id === detail.activity.id)?.verdict ?? null
-            }
-          />
-        )}
-
-        <AppConfirmModals
+        <AppOverlays
+          history={history}
+          activities={allActivities}
+          userId={userId}
+          superRemaining={superRemaining}
+          detail={detail}
+          onDetailClose={() => setDetail(null)}
+          onDetailVerdict={handleDetailVerdict}
+          onOpenMapAboveDetail={openMapAboveDetail}
+          mapView={mapView}
+          mapAboveDetail={mapAboveDetail}
+          onCloseMap={closeMap}
+          onMapSelectActivity={(a) => {
+            // Keep the map mounted underneath so closing the DetailModal
+            // returns the user to it instead of the swipe deck. Opened from
+            // outside (Results/swipe) → drop it below the modal we're opening.
+            setDetail({ activity: a, source: 'review' })
+            setMapAboveDetail(false)
+          }}
           confirmingReset={confirmingReset}
-          onConfirmReset={() => {
-            handleReset()
-            setConfirmingReset(false)
-          }}
-          onCancelReset={() => setConfirmingReset(false)}
+          onReset={handleReset}
+          onCloseReset={() => setConfirmingReset(false)}
           confirmingRandomFill={confirmingRandomFill}
-          randomFillCount={allActivities.length - history.length}
-          onConfirmRandomFill={() => {
-            handleRandomFill()
-            setConfirmingRandomFill(false)
-          }}
-          onCancelRandomFill={() => setConfirmingRandomFill(false)}
+          onRandomFill={handleRandomFill}
+          onCloseRandomFill={() => setConfirmingRandomFill(false)}
           confirmingDeleteActivity={confirmingDeleteActivity !== null}
           onConfirmDeleteActivity={() => {
             void handleConfirmDeleteActivity()
           }}
-          onCancelDeleteActivity={() => setConfirmingDeleteActivity(null)}
+          onCloseDeleteActivity={() => setConfirmingDeleteActivity(null)}
+          showPicker={showPicker}
+          changingIdentity={changingIdentity}
+          onPickIdentity={handlePickIdentity}
+          onExitChangeIdentity={() => setChangingIdentity(false)}
+          settingsOpen={settingsOpen}
+          appVersion={APP_VERSION}
+          onCloseSettings={() => setSettingsOpen(false)}
+          filterOpen={filterOpen}
+          availableTags={availableTags}
+          tagCounts={tagCounts}
+          selectedTags={selectedTags}
+          onApplyTags={setSelectedTags}
+          onCloseFilter={() => setFilterOpen(false)}
         />
-
-        {showPicker && (
-          <IdentityPicker
-            currentUserId={userId}
-            onPick={handlePickIdentity}
-            onClose={
-              changingIdentity ? () => setChangingIdentity(false) : undefined
-            }
-          />
-        )}
-
-        {mapView && (
-          <MapOverlay
-            view={mapView}
-            history={history}
-            activities={allActivities}
-            aboveDetail={mapAboveDetail}
-            onClose={closeMap}
-            onSelectActivity={(a) => {
-              // Keep the map mounted underneath so closing the DetailModal
-              // returns the user to it instead of dumping them back to the
-              // swipe deck. The map was opened from outside (Results or swipe),
-              // so drop it below the modal we're about to open.
-              setDetail({ activity: a, source: 'review' })
-              setMapAboveDetail(false)
-            }}
-          />
-        )}
-
-        {settingsOpen && (
-          <SettingsModal
-            version={APP_VERSION}
-            onClose={() => setSettingsOpen(false)}
-          />
-        )}
-
-        {filterOpen && (
-          <TagFilterSheet
-            tags={availableTags}
-            tagCounts={tagCounts}
-            selected={selectedTags}
-            onApply={setSelectedTags}
-            onClose={() => setFilterOpen(false)}
-          />
-        )}
       </div>
     </Phone>
   )
