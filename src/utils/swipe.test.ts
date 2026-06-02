@@ -32,20 +32,20 @@ describe('dragVerdict', () => {
     expect(dragVerdict(-60, 0)).toBe('non')
     expect(dragVerdict(-150, -20)).toBe('non')
   })
-  it('returns "whynot" on strong up drag', () => {
-    expect(dragVerdict(0, -60)).toBe('whynot')
-    expect(dragVerdict(20, -120)).toBe('whynot')
+  it('returns "top" (super-like) on strong up drag', () => {
+    expect(dragVerdict(0, -60)).toBe('top')
+    expect(dragVerdict(20, -120)).toBe('top')
   })
-  it('returns "top" on strong down drag', () => {
-    expect(dragVerdict(0, 60)).toBe('top')
+  it('returns "whynot" on strong down drag', () => {
+    expect(dragVerdict(0, 60)).toBe('whynot')
   })
   it('favours horizontal over vertical when |x| > |y| * 0.7', () => {
     // x = 60, y = -50, |x| > |y| * 0.7 → horizontal wins → "oui"
     expect(dragVerdict(60, -50)).toBe('oui')
   })
   it('favours vertical when horizontal is small', () => {
-    // x = 10, y = -60 → vertical wins → "whynot"
-    expect(dragVerdict(10, -60)).toBe('whynot')
+    // x = 10, y = -60 → vertical wins → up → "top"
+    expect(dragVerdict(10, -60)).toBe('top')
   })
 })
 
@@ -61,12 +61,12 @@ describe('exitOffset', () => {
     expect(o.x).toBeLessThan(0)
     expect(o.r).toBeLessThan(0)
   })
-  it('moves straight up for "whynot"', () => {
+  it('moves straight down for "whynot"', () => {
     expect(exitOffset('whynot')).toEqual({ x: 0, y: expect.any(Number), r: 0 })
-    expect(exitOffset('whynot').y).toBeLessThan(0)
+    expect(exitOffset('whynot').y).toBeGreaterThan(0)
   })
-  it('moves straight down for "top"', () => {
-    expect(exitOffset('top').y).toBeGreaterThan(0)
+  it('moves straight up for "top" (super-like)', () => {
+    expect(exitOffset('top').y).toBeLessThan(0)
     expect(exitOffset('top').x).toBe(0)
   })
 })

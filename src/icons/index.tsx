@@ -257,7 +257,7 @@ export function WhyNotChevron(p: IconProps = {}) {
   return (
     <svg {...base(p, 22)}>
       <path
-        d="M5 15l7-7 7 7"
+        d="M5 9l7 7 7-7"
         stroke={p.color ?? 'currentColor'}
         strokeWidth={2.6}
         strokeLinecap="round"

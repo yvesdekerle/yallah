@@ -18,8 +18,8 @@ export function dragVerdict(x: number, y: number): Verdict | null {
     if (x > SWIPE_H * 0.4) return 'oui'
     if (x < -SWIPE_H * 0.4) return 'non'
   } else {
-    if (y < -SWIPE_V * 0.4) return 'whynot'
-    if (y > SWIPE_V * 0.4) return 'top'
+    if (y < -SWIPE_V * 0.4) return 'top'
+    if (y > SWIPE_V * 0.4) return 'whynot'
   }
   return null
 }
@@ -33,7 +33,8 @@ export interface ExitOffset {
 /**
  * Off-screen target position used to animate the exiting card. Slight upward
  * lift + rotation makes horizontal exits feel natural; vertical exits stay
- * centred.
+ * centred. `top` (super-like) flies up, `whynot` drops down — matching the
+ * swipe gestures.
  */
 export function exitOffset(verdict: Verdict): ExitOffset {
   switch (verdict) {
@@ -42,9 +43,9 @@ export function exitOffset(verdict: Verdict): ExitOffset {
     case 'non':
       return { x: -EXIT_DIST, y: -40, r: -22 }
     case 'whynot':
-      return { x: 0, y: -EXIT_DIST, r: 0 }
-    case 'top':
       return { x: 0, y: EXIT_DIST, r: 0 }
+    case 'top':
+      return { x: 0, y: -EXIT_DIST, r: 0 }
     case 'skip':
       // Skipped cards slide off to the right, slightly different angle
       // so they look distinct from a "oui" exit.

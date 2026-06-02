@@ -20,7 +20,7 @@ export interface VerdictMeta {
 export const VERDICT_META: Record<Verdict, VerdictMeta> = {
   oui: { color: YB.oui, emoji: '♥', label: 'LIKE' },
   non: { color: YB.non, emoji: '✕', label: 'NON' },
-  whynot: { color: YB.neutre, emoji: '↑', label: 'WHY NOT' },
+  whynot: { color: YB.neutre, emoji: '↓', label: 'WHY NOT' },
   top: { color: YB.top, emoji: '★', label: 'SUPER LIKE' },
   skip: { color: '#9A93A6', emoji: '⊘', label: 'PLUS TARD' },
 }
