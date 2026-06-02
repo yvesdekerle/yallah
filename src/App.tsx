@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
 import type { Verdict } from './types/verdict.ts'
 import { PARTICIPANTS } from './data/participants.ts'
@@ -24,6 +24,7 @@ import { IdentityPicker } from './components/IdentityPicker.tsx'
 import { AddActivityScreen } from './components/AddActivityScreen.tsx'
 import { SettingsModal } from './components/SettingsModal.tsx'
 import { TagFilterSheet } from './components/TagFilterSheet.tsx'
+import { MapOverlay } from './components/MapOverlay.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
 import { APP_VERSION } from './constants/version.ts'
@@ -31,14 +32,6 @@ import {
   useUserActivities,
   type UserActivityInput,
 } from './hooks/useUserActivities.ts'
-import { useMapPins } from './hooks/useMapPins.ts'
-
-const FullscreenMap = lazy(() =>
-  import('./components/FullscreenMap.tsx').then((m) => ({
-    default: m.FullscreenMap,
-  })),
-)
-
 interface AppProps {
   /** Curated activities, loaded + code-split in `main.tsx` and injected here so
       App stays a synchronous function of its data (and trivially testable). */
@@ -134,8 +127,6 @@ export default function App({ activities }: AppProps) {
     confirmingDeleteActivity,
     setConfirmingDeleteActivity,
   } = useModalOverlays()
-
-  const { likedPins, singleMapPin } = useMapPins(history, allActivities)
 
   // Apply the tag filter to the forward-swipe deck only (never in review /
   // done passes — those re-walk the full history). To keep SwipeDeck's
@@ -464,36 +455,21 @@ export default function App({ activities }: AppProps) {
         )}
 
         {mapView && (
-          <Suspense
-            fallback={
-              <div
-                className="absolute inset-0 z-[40]"
-                style={{ background: YB.bgSoft }}
-              />
-            }
-          >
-            <FullscreenMap
-              pins={
-                mapView.mode === 'single' ? singleMapPin(mapView.activityId) : likedPins
-              }
-              initialCenter={
-                mapView.mode === 'single'
-                  ? (singleMapPin(mapView.activityId)[0]?.coords ?? undefined)
-                  : undefined
-              }
-              onClose={closeMap}
-              onSelectActivity={(a) => {
-                // Keep the map mounted underneath so closing the DetailModal
-                // returns the user to it instead of dumping them back to the
-                // swipe deck.
-                setDetail({ activity: a, source: 'review' })
-                // Map was opened from outside (Results or swipe), keep it
-                // below the modal we're about to open.
-                setMapAboveDetail(false)
-              }}
-              zIndex={mapAboveDetail ? 60 : 40}
-            />
-          </Suspense>
+          <MapOverlay
+            view={mapView}
+            history={history}
+            activities={allActivities}
+            aboveDetail={mapAboveDetail}
+            onClose={closeMap}
+            onSelectActivity={(a) => {
+              // Keep the map mounted underneath so closing the DetailModal
+              // returns the user to it instead of dumping them back to the
+              // swipe deck. The map was opened from outside (Results or swipe),
+              // so drop it below the modal we're about to open.
+              setDetail({ activity: a, source: 'review' })
+              setMapAboveDetail(false)
+            }}
+          />
         )}
 
         {settingsOpen && (
