@@ -24,10 +24,11 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'json-summary'],
       include: ['src/**/*.{ts,tsx}'],
-      // Integer floors just below the measured baseline. Ratchet: any
-      // regression below these fails `vitest run --coverage` (enforced in CI).
-      // Raise over time; do NOT "tidy" these up to the exact measured %.
-      thresholds: { lines: 66, functions: 59, branches: 67, statements: 63 },
+      // Integer floors ~1-2 pts below the measured run (re-pinned 2026-06-03:
+      // L85.4 / F78.9 / B81.4 / S83.2). Ratchet: any regression below these
+      // fails `vitest run --coverage` (enforced in CI). Raise over time; do
+      // NOT "tidy" these up to the exact measured %.
+      thresholds: { lines: 84, functions: 77, branches: 80, statements: 82 },
       exclude: [
         'src/main.tsx',
         'src/vite-env.d.ts',
