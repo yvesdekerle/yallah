@@ -152,4 +152,14 @@ Mémoire d'avancement (source de vérité). Mise à jour à chaque transition d'
 4. **Activité ajoutée #6** — **pas de bug** : déjà appendue en fin de deck (choix Yves « à la fin », futur multi-user) → atteignable après le deck curé, dans Résultats une fois votée. Ajout : lignes « Mes activités ajoutées » cliquables → ouvrent le détail (source review) pour prévisualiser/voter tout de suite. `AddActivityScreen.tsx` + `App.tsx`. `ff82d85`.
 5. **Photo #3** — `resizeImage` lève sur format non décodable (HEIC sur navigateurs sans support) ; `submit` avalait l'erreur → maintenant catch + message d'alerte, formulaire conservé. `useAddActivityForm.ts`. `57305b8`.
 
-Suites : **288 unit / 25 e2e ✓**, build + lint + budget OK. Non mergé sur main (à tester en local).
+Suites : **288 unit / 25 e2e ✓**, build + lint + budget OK. **Mergé + poussé sur main** (`37e66c0`→ déployé). Puis 2 raffinements étoiles (contour → pastille blanche + N/5) `2788514`/`0c96c34`, mergés/poussés.
+
+---
+
+## Hors-audit — Versioning + Réglages cachés (juin 2026)
+
+- **Versioning (moitié locale)** — `package.json` 1.0.0 → `__APP_VERSION__` (vite define) → `src/constants/version.ts`. `useAppVersionCheck` compare à `localStorage` (`yallah.appVersion.v1`) au chargement → toast « Mis à jour en vX » si changement. `4c69ed0`. **Reste backlog** : prompt « nouvelle version → recharger » en direct (version.json statique, sans backend) avant la v1.1.0. Cf. mémoire deferred-work item 1.
+- **Page Réglages cachée** — `SettingsModal` (plein écran, fermable) ouverte UNIQUEMENT par **5 taps consécutifs** (≤800 ms entre chaque) sur le wordmark `TopBar`. Affiche la version (seul contenu pour l'instant ; futur home du mode tuto). Version retirée de l'onglet Groupe. `a8a9627`.
+- **Étoiles** — agrandies (34 px / cibles 48 px) + `pointer-events:none` sur le glyphe → toute l'étoile cliquable. `428354c`.
+
+Suites : **297 unit / 25 e2e ✓**, build + lint + budget OK. **3 commits sur `main` en local, non poussés** (en attente du test local + OK push).
