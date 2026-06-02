@@ -24,12 +24,7 @@
     "noUncheckedSideEffectImports": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "noImplicitReturns": true
   },
   "include": ["src"]
 }
