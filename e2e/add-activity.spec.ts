@@ -31,9 +31,13 @@ test('adds an activity (URL photo) and shows it in the list + résultats', async
   await page.getByRole('button', { name: 'résultats', exact: true }).click()
   await page.getByLabel('remplir aléatoirement les activités restantes').click()
   await page.getByRole('button', { name: 'Remplir', exact: true }).click()
-  await expect(page.locator('[data-testid^="vote-row-u-"]')).toContainText(
-    'Pique-nique secret au Morne',
-  )
+  // The voted row exposes the activity via its accessible name (the vote-row-*
+  // testid was dropped in d56aa3c in favour of role/name queries).
+  await expect(
+    page.getByRole('button', {
+      name: 'Voir le détail de Pique-nique secret au Morne',
+    }),
+  ).toBeVisible()
 })
 
 test('edits and deletes an added activity', async ({ page }) => {
