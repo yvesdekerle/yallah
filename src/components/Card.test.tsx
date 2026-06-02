@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Card } from './Card.tsx'
+import * as photos from '../utils/photos.ts'
 import type { Activity } from '../types/activity.ts'
 
 const fixture: Activity = {
@@ -106,5 +107,23 @@ describe('Card', () => {
     expect(
       screen.getByText('Photo : Snorkeling à Blue Bay Marine Park'),
     ).toBeInTheDocument()
+  })
+
+  // PERF-05: SwipeDeck re-renders on every pointermove during a drag. Card is
+  // memoized so those renders skip its (heavy) body while the activity is
+  // unchanged, and still re-render when a new card slides in. `heroPhotoUrl`
+  // runs once per actual Card render, so it's a faithful proxy for "did the
+  // body re-render?".
+  it('is memoized: re-rendering with the same activity skips the body', () => {
+    const spy = vi.spyOn(photos, 'heroPhotoUrl')
+    const { rerender } = render(<Card activity={fixture} />)
+    expect(spy).toHaveBeenCalledTimes(1)
+
+    rerender(<Card activity={fixture} />) // same reference → memo short-circuits
+    expect(spy).toHaveBeenCalledTimes(1)
+
+    rerender(<Card activity={{ ...fixture, id: 'a999' }} />) // new card → renders
+    expect(spy).toHaveBeenCalledTimes(2)
+    spy.mockRestore()
   })
 })

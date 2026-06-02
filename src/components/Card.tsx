@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { memo, useState, type ReactNode } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -29,8 +29,15 @@ interface CardProps {
  * tags, and a metadata strip (rating · duration · price). The card has no
  * onClick / pointer handler of its own — pointer events are handled by the
  * parent `SwipeDeck`.
+ *
+ * Memoized (PERF-05): `SwipeDeck` calls `setState` on every `pointermove`, so
+ * it re-renders on each drag frame. The active card's `activity` is a stable
+ * reference for the whole drag, so memo lets those high-frequency renders skip
+ * this heavy subtree (photo + meta + tags); only the wrapper transform and the
+ * lightweight drag stamps reconcile. Internal `legendOpen` state and new-card
+ * swaps (a different `activity`) still render normally.
  */
-export function Card({ activity }: CardProps) {
+export const Card = memo(function Card({ activity }: CardProps) {
   const [legendOpen, setLegendOpen] = useState(false)
   return (
     <div
@@ -257,7 +264,7 @@ export function Card({ activity }: CardProps) {
       </div>
     </div>
   )
-}
+})
 
 /**
  * A metadata pill in the card's bottom strip: a small coloured icon badge
