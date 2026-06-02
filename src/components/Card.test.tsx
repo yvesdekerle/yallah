@@ -85,4 +85,11 @@ describe('Card', () => {
     fireEvent.click(chip)
     expect(screen.queryByLabelText('Légende des tags')).not.toBeInTheDocument()
   })
+
+  it('exposes the hero photo as a text alternative for screen readers', () => {
+    render(<Card activity={fixture} />)
+    expect(
+      screen.getByText('Photo : Snorkeling à Blue Bay Marine Park'),
+    ).toBeInTheDocument()
+  })
 })

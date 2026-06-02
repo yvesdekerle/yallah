@@ -40,6 +40,10 @@ export function Card({ activity }: CardProps) {
           '0 30px 60px -30px rgba(20,30,50,0.45), 0 0 0 1px rgba(20,30,50,0.06)',
       }}
     >
+      {/* The hero photo is a CSS background; expose a text alternative for
+          screen readers (WCAG 1.1.1). Not role="img" on the card itself — that
+          would hide the title/meta children from assistive tech. */}
+      <span className="sr-only">Photo : {activity.title}</span>
       {/* N° chip — top-left */}
       <div
         className="absolute flex items-center font-sans"
