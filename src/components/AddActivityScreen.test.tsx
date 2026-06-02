@@ -212,4 +212,37 @@ describe('AddActivityScreen', () => {
     )
     expect(screen.getByLabelText('photo principale')).toBeInTheDocument()
   })
+
+  it('sets the rating to the tapped star and never toggles off on re-tap', async () => {
+    const user = userEvent.setup()
+    renderScreen()
+    await user.click(screen.getByLabelText('note 5 sur 5'))
+    for (const n of [1, 2, 3, 4, 5]) {
+      expect(screen.getByLabelText(`note ${n} sur 5`)).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    }
+    // Re-tapping the same star must keep the rating, not clear it.
+    await user.click(screen.getByLabelText('note 5 sur 5'))
+    expect(screen.getByLabelText('note 5 sur 5')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('clears the rating only via the dedicated Effacer button', async () => {
+    const user = userEvent.setup()
+    renderScreen()
+    await user.click(screen.getByLabelText('note 3 sur 5'))
+    expect(screen.getByLabelText('note 3 sur 5')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(screen.getByLabelText('effacer la note'))
+    expect(screen.getByLabelText('note 3 sur 5')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
 })

@@ -130,29 +130,52 @@ export function AddActivityScreen({
           </Field>
 
           <Field label="Note">
-            <div className="flex items-center" style={{ gap: 6 }}>
+            <div className="flex items-center" style={{ gap: 2 }}>
               {[1, 2, 3, 4, 5].map((n) => {
                 const on = n <= f.fields.rating
                 return (
                   <button
                     key={n}
                     type="button"
-                    onClick={() =>
-                      f.setFields((s) => ({ ...s, rating: s.rating === n ? 0 : n }))
-                    }
+                    // Tap = set to n (no toggle-off — that caused accidental
+                    // clears on a re-tap). 44px hit area for reliable touch.
+                    onClick={() => f.setFields((s) => ({ ...s, rating: n }))}
                     aria-label={`note ${n} sur 5`}
                     aria-pressed={on}
-                    className="border-0 cursor-pointer"
-                    style={{ background: 'transparent', padding: 2 }}
+                    className="inline-flex items-center justify-center border-0 cursor-pointer"
+                    style={{
+                      background: 'transparent',
+                      width: 44,
+                      height: 44,
+                      padding: 0,
+                    }}
                   >
                     {on ? (
-                      <StarFilled color={YB.top} size={26} />
+                      <StarFilled color={YB.top} size={28} />
                     ) : (
-                      <Star color={YB.muted} size={26} />
+                      <Star color={YB.muted} size={28} />
                     )}
                   </button>
                 )
               })}
+              {f.fields.rating > 0 && (
+                <button
+                  type="button"
+                  onClick={() => f.setFields((s) => ({ ...s, rating: 0 }))}
+                  aria-label="effacer la note"
+                  className="font-sans cursor-pointer border-0"
+                  style={{
+                    background: 'transparent',
+                    color: YB.muted,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    marginLeft: 8,
+                    padding: 8,
+                  }}
+                >
+                  Effacer
+                </button>
+              )}
             </div>
           </Field>
 
