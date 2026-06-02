@@ -13,6 +13,7 @@ import type { PhotoDraft, UserActivityInput } from '../hooks/useUserActivities.t
 import { ACTIVITIES } from '../data/activities.ts'
 import { YB } from '../utils/theme.ts'
 import { Plus, X, StarFilled, Star } from '../icons/index.tsx'
+import { isSafePhotoUrl } from '../utils/photoUrl.ts'
 
 const LocationPicker = lazy(() =>
   import('./LocationPicker.tsx').then((m) => ({ default: m.LocationPicker })),
@@ -92,6 +93,7 @@ export function AddActivityScreen({
   const [coords, setCoords] = useState<LatLng | null>(null)
   const [tagInput, setTagInput] = useState('')
   const [urlInput, setUrlInput] = useState('')
+  const [urlError, setUrlError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -176,9 +178,14 @@ export function AddActivityScreen({
   const addUrlPhoto = () => {
     const url = urlInput.trim()
     if (!url) return
+    if (!isSafePhotoUrl(url)) {
+      setUrlError('URL d’image invalide (https, http ou blob uniquement).')
+      return
+    }
     const ref: PhotoRef = { kind: 'url', url }
     setPhotos((p) => [...p, { draft: { kind: 'ref', ref }, preview: url, createdUrl: false }])
     setUrlInput('')
+    setUrlError('')
   }
 
   const removePhoto = (idx: number) => {
@@ -523,7 +530,10 @@ export function AddActivityScreen({
               <input
                 type="url"
                 value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
+                onChange={(e) => {
+                  setUrlInput(e.target.value)
+                  if (urlError) setUrlError('')
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
@@ -536,6 +546,11 @@ export function AddActivityScreen({
               />
               <SmallButton onClick={addUrlPhoto} label="Ajouter" />
             </div>
+            {urlError && (
+              <p role="alert" style={{ color: YB.coralDeep, fontSize: 12, marginTop: 6 }}>
+                {urlError}
+              </p>
+            )}
           </Field>
 
           <Field label="Position">

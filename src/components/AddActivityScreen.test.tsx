@@ -95,4 +95,26 @@ describe('AddActivityScreen', () => {
       screen.getByRole('button', { name: 'enregistrer les modifications' }),
     ).toBeInTheDocument()
   })
+
+  it('rejects an unsafe pasted URL: no photo added and an error is shown', async () => {
+    const user = userEvent.setup()
+    renderScreen()
+    await user.type(
+      screen.getByLabelText('coller une url d’image'),
+      "https://evil.com/a.jpg');alert(1){Enter}",
+    )
+    expect(screen.queryByLabelText('photo principale')).not.toBeInTheDocument()
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+  })
+
+  it('rejects a data: URL (scheme not whitelisted)', async () => {
+    const user = userEvent.setup()
+    renderScreen()
+    await user.type(
+      screen.getByLabelText('coller une url d’image'),
+      'data:image/png;base64,AAAA{Enter}',
+    )
+    expect(screen.queryByLabelText('photo principale')).not.toBeInTheDocument()
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+  })
 })

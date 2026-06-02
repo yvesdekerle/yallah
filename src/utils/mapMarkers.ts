@@ -1,4 +1,5 @@
 import L from 'leaflet'
+import { cssUrlValue } from './photoUrl.ts'
 
 interface PhotoPinOptions {
   /** Hero photo URL shown inside the circle. */
@@ -29,11 +30,13 @@ export function photoPinIcon({
         text-align:center;border:2px solid #fff;
       ">${badge}</span>`
     : ''
+  // `photo` can be an untrusted user-pasted URL — escape it for the url('…')
+  // CSS-string context so it cannot break out into this divIcon's innerHTML.
   const html = `
     <div style="position:relative;width:${size}px;height:${size}px;">
       <div style="
         width:${size}px;height:${size}px;border-radius:50%;
-        background-image:url('${photo}');background-size:cover;background-position:center;
+        background-image:url('${cssUrlValue(photo)}');background-size:cover;background-position:center;
         border:3px solid ${ring};box-shadow:0 2px 6px rgba(20,30,50,0.4);
       "></div>
       ${badgeHtml}
