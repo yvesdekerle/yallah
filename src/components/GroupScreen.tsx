@@ -1,5 +1,6 @@
 import { PARTICIPANTS } from '../data/participants.ts'
 import { YB } from '../utils/theme.ts'
+import { APP_VERSION } from '../constants/version.ts'
 
 interface GroupScreenProps {
   /** Id of the participant the local user identifies as. Null while
@@ -224,6 +225,19 @@ export function GroupScreen({
         >
           Changer d'identité
         </button>
+
+        <p
+          className="font-sans"
+          style={{
+            marginTop: 18,
+            textAlign: 'center',
+            fontSize: 12,
+            fontWeight: 600,
+            color: YB.muted,
+          }}
+        >
+          Yallah v{APP_VERSION}
+        </p>
       </div>
     </div>
   )

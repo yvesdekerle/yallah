@@ -5,6 +5,7 @@ import { ACTIVITIES } from './data/activities.ts'
 import { PARTICIPANTS } from './data/participants.ts'
 import { useLocalStorage } from './hooks/useLocalStorage.ts'
 import { useToast } from './hooks/useToast.ts'
+import { useAppVersionCheck } from './hooks/useAppVersionCheck.ts'
 import { useVoteHistory } from './hooks/useVoteHistory.ts'
 import { useModalOverlays } from './hooks/useModalOverlays.ts'
 import { EXIT_MS, STORAGE_KEYS } from './constants/swipe.ts'
@@ -54,6 +55,13 @@ export default function App() {
   const deckRef = useRef<SwipeDeckHandle>(null)
 
   const { toast, showToast, dismissToast } = useToast()
+
+  // Detect when this device has loaded a newer build than it last ran.
+  const onVersionUpgrade = useCallback(
+    (version: string) => showToast(`Mis à jour en v${version}`, '✨'),
+    [showToast],
+  )
+  useAppVersionCheck(onVersionUpgrade)
 
   const {
     userActivities,
