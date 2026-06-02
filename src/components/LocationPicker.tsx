@@ -53,6 +53,25 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState<LatLng | null>(null)
 
+  // Manual lat/lng entry. Typing only updates local text; we commit on
+  // blur/Enter so a partial value ("-20.") isn't normalised mid-keystroke.
+  // When `value` changes from outside (map tap / address search) we resync
+  // the fields via the React 19 setState-during-render pattern.
+  const [latText, setLatText] = useState(value ? String(value.lat) : '')
+  const [lngText, setLngText] = useState(value ? String(value.lng) : '')
+  const [syncedValue, setSyncedValue] = useState(value)
+  if (syncedValue !== value) {
+    setLatText(value ? String(value.lat) : '')
+    setLngText(value ? String(value.lng) : '')
+    setSyncedValue(value)
+  }
+
+  const commitCoords = () => {
+    const lat = parseFloat(latText)
+    const lng = parseFloat(lngText)
+    if (Number.isFinite(lat) && Number.isFinite(lng)) onChange({ lat, lng })
+  }
+
   const runSearch = async () => {
     const q = query.trim()
     if (!q || searching) return
@@ -130,6 +149,43 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       {error && (
         <p style={{ margin: '0 0 8px', fontSize: 12, color: YB.coralDeep }}>{error}</p>
       )}
+
+      <div className="flex" style={{ gap: 8, marginBottom: 8 }}>
+        <input
+          type="number"
+          inputMode="decimal"
+          step="any"
+          value={latText}
+          onChange={(e) => setLatText(e.target.value)}
+          onBlur={commitCoords}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              commitCoords()
+            }
+          }}
+          placeholder="Latitude"
+          aria-label="latitude"
+          style={{ ...inputStyle, height: 48 }}
+        />
+        <input
+          type="number"
+          inputMode="decimal"
+          step="any"
+          value={lngText}
+          onChange={(e) => setLngText(e.target.value)}
+          onBlur={commitCoords}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              commitCoords()
+            }
+          }}
+          placeholder="Longitude"
+          aria-label="longitude"
+          style={{ ...inputStyle, height: 48 }}
+        />
+      </div>
 
       <div
         style={{
