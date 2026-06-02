@@ -9,14 +9,30 @@ import type { StoredUserActivity } from '../types/userActivity.ts'
 
 export const USER_ACTIVITIES_KEY = 'yallah.userActivities.v1'
 
+/**
+ * Light shape check for a persisted record. Guards the localStorage trust
+ * boundary: hand-edited or corrupt entries are dropped rather than trusted
+ * (replaces a blind `as StoredUserActivity[]` cast).
+ */
+function isStoredUserActivity(x: unknown): x is StoredUserActivity {
+  if (typeof x !== 'object' || x === null) return false
+  const r = x as Record<string, unknown>
+  return (
+    typeof r.id === 'string' &&
+    r.userAdded === true &&
+    Array.isArray(r.photoRefs) &&
+    typeof r.createdAt === 'number'
+  )
+}
+
 /** Read the persisted user activities. Returns `[]` on miss or corrupt JSON. */
 export function loadUserActivities(): StoredUserActivity[] {
   if (typeof window === 'undefined') return []
   try {
     const raw = window.localStorage.getItem(USER_ACTIVITIES_KEY)
     if (raw === null) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as StoredUserActivity[]) : []
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter(isStoredUserActivity) : []
   } catch {
     return []
   }

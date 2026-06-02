@@ -7,14 +7,16 @@ export interface Coords {
   lng: number
 }
 
+// `source` ('nominatim') is recorded in coords.json for provenance but never
+// read at runtime, so it's intentionally absent here — the extra JSON field is
+// ignored by structural assignment.
 interface CoordEntry {
   lat: number
   lng: number
-  source: 'nominatim'
 }
 
-const coords = coordsData as Record<string, CoordEntry | null>
-const overrides = overridesData as Record<string, Coords>
+const coords: Record<string, CoordEntry | null> = coordsData
+const overrides: Record<string, Coords> = overridesData
 
 /**
  * Look up the geographic coordinates for an activity.

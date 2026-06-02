@@ -52,6 +52,21 @@ describe('userActivities store', () => {
     expect(loadUserActivities()).toEqual([])
   })
 
+  it('drops entries that fail the shape guard, keeping the valid ones', () => {
+    const valid = sample('u-1')
+    window.localStorage.setItem(
+      USER_ACTIVITIES_KEY,
+      JSON.stringify([
+        valid,
+        null,
+        { id: 'no-flag', photoRefs: [], createdAt: 1 }, // missing userAdded
+        { id: 42, userAdded: true, photoRefs: [], createdAt: 1 }, // id not a string
+        'garbage',
+      ]),
+    )
+    expect(loadUserActivities()).toEqual([valid])
+  })
+
   it('makeUserId is prefixed and unique', () => {
     const a = makeUserId()
     const b = makeUserId()

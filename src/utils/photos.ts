@@ -6,7 +6,7 @@ import photosData from '../data/photos.json'
  * `npm run fetch:photos` (which queries the Pexels API). Empty by default;
  * the bundled placeholder kicks in for any activity without entries.
  */
-const PHOTOS = photosData as Record<string, string[]>
+const PHOTOS: Record<string, string[]> = photosData
 
 /** Local fallback when an activity has no Pexels photos yet. */
 const PLACEHOLDER = '/photos/hero.jpg'

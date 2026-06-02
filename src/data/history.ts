@@ -12,12 +12,12 @@ export interface LegacyVoteEntry extends Omit<VoteEntry, 'verdict'> {
   verdict: VoteEntry['verdict'] | 'neutre' | 'skip'
 }
 
-export function migrateHistory(
-  raw: VoteEntry[] | LegacyVoteEntry[],
-): VoteEntry[] {
-  return (raw as LegacyVoteEntry[])
-    .filter((e) => e.verdict !== 'skip')
-    .map((e) =>
-      e.verdict === 'neutre' ? { ...e, verdict: 'whynot' } : (e as VoteEntry),
-    )
+export function migrateHistory(raw: LegacyVoteEntry[]): VoteEntry[] {
+  // `continue`/early-return narrows `e.verdict` per branch, so the result is
+  // a VoteEntry without any `as` cast: 'skip' is dropped, 'neutre' is rewritten
+  // to 'whynot', everything else passes through.
+  return raw.flatMap((e): VoteEntry[] => {
+    if (e.verdict === 'skip') return []
+    return [{ ...e, verdict: e.verdict === 'neutre' ? 'whynot' : e.verdict }]
+  })
 }

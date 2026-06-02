@@ -10,7 +10,7 @@ export interface ActivityLink {
   coords?: Coords
 }
 
-const links = linksData as Record<string, ActivityLink[] | undefined>
+const links: Record<string, ActivityLink[] | undefined> = linksData
 
 /**
  * Curated external links for an activity. Hand-edited in

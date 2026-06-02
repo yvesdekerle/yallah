@@ -61,14 +61,18 @@ async function materializePhotos(photos: PhotoDraft[]): Promise<PhotoRef[]> {
   return refs
 }
 
+/** Narrows a PhotoRef to the upload variant — lets `.filter` carry the type
+    through so the `.id` access needs no cast. */
+const isUpload = (r: PhotoRef): r is Extract<PhotoRef, { kind: 'upload' }> =>
+  r.kind === 'upload'
+
 /** Upload-ref ids in `refs` that aren't in `keep` — safe to delete from IDB. */
 function orphanedUploadIds(refs: PhotoRef[], keep: PhotoRef[]): string[] {
-  const kept = new Set(
-    keep.filter((r) => r.kind === 'upload').map((r) => (r as { id: string }).id),
-  )
+  const kept = new Set(keep.filter(isUpload).map((r) => r.id))
   return refs
-    .filter((r) => r.kind === 'upload' && !kept.has(r.id))
-    .map((r) => (r as { id: string }).id)
+    .filter(isUpload)
+    .filter((r) => !kept.has(r.id))
+    .map((r) => r.id)
 }
 
 function buildRecord(

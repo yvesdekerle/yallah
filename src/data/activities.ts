@@ -6,4 +6,6 @@ import raw from './activities.json'
  * `activites-maurice.md` at the repo root and is parsed into
  * `activities.json` via `npm run parse:activities`.
  */
-export const ACTIVITIES: Activity[] = raw as Activity[]
+// Typed annotation (not `as`) so the build validates the generated JSON
+// against the Activity shape instead of blindly trusting it.
+export const ACTIVITIES: Activity[] = raw

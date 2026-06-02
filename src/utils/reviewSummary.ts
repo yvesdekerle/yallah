@@ -1,6 +1,6 @@
 import summariesData from '../data/reviewSummaries.json'
 
-const summaries = summariesData as Record<string, string | null | undefined>
+const summaries: Record<string, string | null | undefined> = summariesData
 
 /**
  * Per-activity review summary aggregated from real visitor feedback
