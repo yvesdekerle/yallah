@@ -9,7 +9,7 @@ interface IdentityPickerProps {
    * When undefined the picker is blocking: no close button, Escape and
    * backdrop tap do nothing. Used during onboarding.
    */
-  onClose?: () => void
+  onClose?: (() => void) | undefined
 }
 
 export function IdentityPicker({

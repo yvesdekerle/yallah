@@ -58,7 +58,8 @@ describe('Card', () => {
   })
 
   it('omits the duration block when no duration is set', () => {
-    const noDuration: Activity = { ...fixture, duration: undefined }
+    const noDuration: Activity = { ...fixture }
+    delete noDuration.duration
     render(<Card activity={noDuration} />)
     expect(screen.queryByText('~3–4h')).not.toBeInTheDocument()
   })

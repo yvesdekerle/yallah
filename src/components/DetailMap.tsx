@@ -22,7 +22,7 @@ export function DetailMap({
   onOpenMap,
 }: {
   activity: Activity
-  onOpenMap?: (view: MapView) => void
+  onOpenMap?: ((view: MapView) => void) | undefined
 }) {
   return (
     <>

@@ -9,7 +9,7 @@ interface ActivityMiniMapProps {
   pinColor: string
   /** Hero photo for the circular marker. Falls back to a plain dot when absent. */
   photo?: string
-  onExpand?: () => void
+  onExpand?: (() => void) | undefined
 }
 
 function makeDotIcon(color: string): L.DivIcon {

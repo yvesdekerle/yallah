@@ -22,7 +22,7 @@ export interface MapPin {
 
 interface FullscreenMapProps {
   pins: MapPin[]
-  initialCenter?: Coords
+  initialCenter?: Coords | undefined
   onClose: () => void
   onSelectActivity: (a: Activity) => void
   /** Stacking order. 40 by default; bumped to 60 when the map needs to
@@ -48,7 +48,7 @@ function BoundsFitter({
   initialCenter,
 }: {
   pins: MapPin[]
-  initialCenter?: Coords
+  initialCenter?: Coords | undefined
 }) {
   const map = useMap()
   useEffect(() => {

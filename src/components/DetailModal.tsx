@@ -109,7 +109,11 @@ export function DetailModal({
           color: YB.ink,
         }}
       >
-        <DetailHero activity={activity} heroPhoto={photos[0]} onClose={close} />
+        <DetailHero
+          activity={activity}
+          heroPhoto={photos[0] ?? '/photos/hero.jpg'}
+          onClose={close}
+        />
 
         {/* Body */}
         <div style={{ padding: '22px 22px 200px' }}>

@@ -3,7 +3,7 @@ import { YB } from '../utils/theme.ts'
 
 interface ToastProps {
   text: string
-  emoji?: string
+  emoji?: string | undefined
   /** Auto-dismiss delay in ms. Defaults to 2400. Set 0 to disable. */
   duration?: number
   onDone: () => void

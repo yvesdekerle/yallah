@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 export interface ToastState {
   id: number
   text: string
-  emoji?: string
+  emoji?: string | undefined
 }
 
 /**

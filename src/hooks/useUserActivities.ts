@@ -21,14 +21,14 @@ export interface UserActivityInput {
   location: string
   transit: string
   description: string
-  duration?: string
-  difficulty?: Difficulty
+  duration?: string | undefined
+  difficulty?: Difficulty | undefined
   price: string
   rating: number
   pepite: boolean
   secret: boolean
-  insolite?: string
-  coords?: { lat: number; lng: number }
+  insolite?: string | undefined
+  coords?: { lat: number; lng: number } | undefined
   photos: PhotoDraft[]
 }
 

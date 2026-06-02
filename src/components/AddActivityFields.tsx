@@ -8,9 +8,9 @@ export function Field({
   children,
   required,
 }: {
-  label?: string
+  label?: string | undefined
   children: ReactNode
-  required?: boolean
+  required?: boolean | undefined
 }) {
   return (
     <label className="flex flex-col" style={{ gap: 6 }}>
