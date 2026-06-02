@@ -3,7 +3,7 @@ import type { Activity } from '../types/activity.ts'
 import type { StoredUserActivity } from '../types/userActivity.ts'
 import type { UserActivityInput } from '../hooks/useUserActivities.ts'
 import { YB } from '../utils/theme.ts'
-import { StarFilled, Star } from '../icons/index.tsx'
+import { Star } from '../icons/index.tsx'
 import { useAddActivityForm, DIFFICULTIES } from '../hooks/useAddActivityForm.ts'
 import { Field, FieldText, FieldArea, Chip, Toggle } from './AddActivityFields.tsx'
 import { CategoryPicker } from './CategoryPicker.tsx'
@@ -153,11 +153,13 @@ export function AddActivityScreen({
                       padding: 0,
                     }}
                   >
-                    {on ? (
-                      <StarFilled color={YB.top} size={28} />
-                    ) : (
-                      <Star color={YB.muted} size={28} />
-                    )}
+                    {/* Outlined star (thin dark stroke) so filled (gold) vs
+                        empty reads clearly on the yellow background. */}
+                    <Star
+                      color={YB.ink}
+                      fill={on ? YB.top : 'none'}
+                      size={28}
+                    />
                   </button>
                 )
               })}
@@ -185,9 +187,6 @@ export function AddActivityScreen({
           <TagPickerPanel
             tagPalette={f.tagPalette}
             selectedTags={f.fields.tags}
-            tagInput={f.tagInput}
-            onTagInputChange={f.setTagInput}
-            onAddTag={f.addTag}
             onToggleTag={f.toggleTag}
           />
 

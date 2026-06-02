@@ -85,7 +85,6 @@ export function useAddActivityForm({
   const [difficultyIdx, setDifficultyIdx] = useState(-1)
   const [photos, setPhotos] = useState<PhotoItem[]>([])
   const [coords, setCoords] = useState<LatLng | null>(null)
-  const [tagInput, setTagInput] = useState('')
   const [urlInput, setUrlInput] = useState('')
   const [urlError, setUrlError] = useState('')
   const [submitError, setSubmitError] = useState('')
@@ -114,7 +113,6 @@ export function useAddActivityForm({
     setDifficultyIdx(-1)
     setPhotos([])
     setCoords(null)
-    setTagInput('')
     setUrlInput('')
     setSubmitError('')
   }
@@ -191,13 +189,6 @@ export function useAddActivityForm({
       }
       return p.filter((_, i) => i !== idx)
     })
-  }
-
-  const addTag = () => {
-    const t = tagInput.trim()
-    if (!t) return
-    setFields((f) => (f.tags.includes(t) ? f : { ...f, tags: [...f.tags, t] }))
-    setTagInput('')
   }
 
   const toggleTag = (tag: string) =>
@@ -294,8 +285,6 @@ export function useAddActivityForm({
     photos,
     coords,
     setCoords,
-    tagInput,
-    setTagInput,
     urlInput,
     urlError,
     onUrlInputChange,
@@ -309,7 +298,6 @@ export function useAddActivityForm({
     addFiles,
     addUrlPhoto,
     removePhoto,
-    addTag,
     toggleTag,
     submit,
   }

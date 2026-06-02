@@ -1,26 +1,19 @@
 import { YB } from '../utils/theme.ts'
 import { Field } from './AddActivityFields.tsx'
-import { inputStyle } from './addActivityStyles.ts'
 
-/** Emoji-tag palette (toggle) + a custom-tag text input. Pure presentational. */
+/** Emoji-tag palette (toggle). Pure presentational. */
 export function TagPickerPanel({
   tagPalette,
   selectedTags,
-  tagInput,
-  onTagInputChange,
-  onAddTag,
   onToggleTag,
 }: {
   tagPalette: string[]
   selectedTags: string[]
-  tagInput: string
-  onTagInputChange: (v: string) => void
-  onAddTag: () => void
   onToggleTag: (tag: string) => void
 }) {
   return (
     <Field label="Tags (emojis)">
-      <div className="flex flex-wrap items-center" style={{ gap: 6, marginBottom: 10 }}>
+      <div className="flex flex-wrap items-center" style={{ gap: 6 }}>
         {tagPalette.map((tag) => {
           const on = selectedTags.includes(tag)
           return (
@@ -48,21 +41,6 @@ export function TagPickerPanel({
           )
         })}
       </div>
-      <input
-        type="text"
-        value={tagInput}
-        onChange={(e) => onTagInputChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault()
-            onAddTag()
-          }
-        }}
-        onBlur={onAddTag}
-        placeholder="Autre emoji, puis Entrée"
-        aria-label="ajouter un tag personnalisé"
-        style={{ ...inputStyle, width: '100%' }}
-      />
     </Field>
   )
 }
