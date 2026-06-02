@@ -31,6 +31,23 @@ body {
   position: relative;
 }
 
+/* WCAG 2.3.3 — honour the OS "reduce motion" setting. Near-zero DURATION
+   (not `animation: none`) so the forwards-fill FX (sparkles, halo, flash,
+   badge) still run to completion and land on their opacity-0 end-state —
+   vanishing — instead of being stuck visible at their base opacity. Blast
+   radius intentionally covers inline `animation:` (deck exit, sparkles), the
+   animate-yallah* utilities, and Leaflet pan/zoom transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @media (max-width: 460px) {
   #root {
     max-width: 100vw;
