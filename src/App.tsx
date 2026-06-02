@@ -1,14 +1,13 @@
 import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
-import type { Verdict, VoteEntry } from './types/verdict.ts'
+import type { Verdict } from './types/verdict.ts'
 import { ACTIVITIES } from './data/activities.ts'
 import { PARTICIPANTS } from './data/participants.ts'
 import { useLocalStorage } from './hooks/useLocalStorage.ts'
-import {
-  EXIT_MS,
-  STORAGE_KEYS,
-  SUPER_MAX,
-} from './constants/swipe.ts'
+import { useToast } from './hooks/useToast.ts'
+import { useVoteHistory } from './hooks/useVoteHistory.ts'
+import { useModalOverlays } from './hooks/useModalOverlays.ts'
+import { EXIT_MS, STORAGE_KEYS } from './constants/swipe.ts'
 import { YB } from './utils/theme.ts'
 import { Phone } from './components/Phone.tsx'
 import { StatusBar } from './components/StatusBar.tsx'
@@ -22,16 +21,14 @@ import { ReviewPrompt } from './components/ReviewPrompt.tsx'
 import { SwipeDeck, type SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
-import { ConfirmModal } from './components/ConfirmModal.tsx'
+import { AppConfirmModals } from './components/AppConfirmModals.tsx'
 import { IdentityPicker } from './components/IdentityPicker.tsx'
 import { AddActivityScreen } from './components/AddActivityScreen.tsx'
 import {
   useUserActivities,
   type UserActivityInput,
 } from './hooks/useUserActivities.ts'
-import { coordsFor } from './utils/coords.ts'
-import type { MapPin } from './components/FullscreenMap.tsx'
-import type { MapView } from './types/map.ts'
+import { useMapPins } from './hooks/useMapPins.ts'
 
 const FullscreenMap = lazy(() =>
   import('./components/FullscreenMap.tsx').then((m) => ({
@@ -39,43 +36,12 @@ const FullscreenMap = lazy(() =>
   })),
 )
 
-interface ToastState {
-  id: number
-  text: string
-  emoji?: string
-}
-
-// Legacy verdict-id migration: the "neutre" id was renamed to "whynot".
-// Anyone with an existing local history needs their entries rewritten so
-// they keep counting against the right bucket.
-interface LegacyVoteEntry extends Omit<VoteEntry, 'verdict'> {
-  verdict: VoteEntry['verdict'] | 'neutre'
-}
-function migrateHistory(raw: VoteEntry[] | LegacyVoteEntry[]): VoteEntry[] {
-  return (raw as LegacyVoteEntry[]).map((e) =>
-    e.verdict === 'neutre' ? { ...e, verdict: 'whynot' } : (e as VoteEntry),
-  )
-}
-
 export default function App() {
-  const [rawHistory, setHistory] = useLocalStorage<VoteEntry[]>(
-    STORAGE_KEYS.history,
-    [],
-  )
   const [userId, setUserId] = useLocalStorage<string | null>(
     STORAGE_KEYS.userId,
     null,
   )
   const [changingIdentity, setChangingIdentity] = useState(false)
-  const [mapView, setMapView] = useState<MapView | null>(null)
-  // When true the FullscreenMap renders ABOVE a still-open DetailModal.
-  // Set when the user opens the map from the DetailModal mini-map so
-  // closing the map returns them to the modal instead of the deck.
-  const [mapAboveDetail, setMapAboveDetail] = useState(false)
-  // useMemo so callers don't see a fresh array on every render unless the
-  // underlying storage changed.
-  const history = useMemo(() => migrateHistory(rawHistory), [rawHistory])
-  const [toast, setToast] = useState<ToastState | null>(null)
   const [done, setDone] = useState(false)
   /**
    * Review-mode = "re-balayer le deck": after finishing the initial swipe
@@ -84,24 +50,10 @@ export default function App() {
    * verdict handler UPSERTS by activity id instead of appending.
    */
   const [reviewMode, setReviewMode] = useState(false)
-  // Lifted up from ResultsScreen so the modal renders at App level
-  // (positioned relative to the Phone frame, not the scrollable list).
-  // Avoids the "modal stuck at the top of the scroll content" bug.
-  const [confirmingReset, setConfirmingReset] = useState(false)
-  const [confirmingRandomFill, setConfirmingRandomFill] = useState(false)
-  // `detail` carries both the activity AND how the modal was opened.
-  // From the swipe screen, voting buttons trigger the deck commit (advance
-  // to next card). From the results screen, voting buttons UPDATE the
-  // previous vote in place — no deck navigation.
-  const [detail, setDetail] = useState<
-    | { activity: Activity; source: 'swipe' | 'review' }
-    | null
-  >(null)
   const [activeTab, setActiveTab] = useState<TabIndex>(0)
-  const [confirmingDeleteActivity, setConfirmingDeleteActivity] = useState<
-    string | null
-  >(null)
   const deckRef = useRef<SwipeDeckHandle>(null)
+
+  const { toast, showToast, dismissToast } = useToast()
 
   const {
     userActivities,
@@ -119,91 +71,66 @@ export default function App() {
     [userActivities],
   )
 
-  // True once every activity has a vote — drives the "Revoir les votes ?"
-  // prompt. Derived from history so it's correct regardless of how the votes
-  // were made (swipe, random fill, review-mode upserts).
-  const allVoted = useMemo(() => {
-    if (allActivities.length === 0) return false
-    const voted = new Set(history.map((h) => h.id))
-    return allActivities.every((a) => voted.has(a.id))
-  }, [history, allActivities])
+  const {
+    history,
+    superRemaining,
+    allVoted,
+    appendVote,
+    upsertVote,
+    undoVote,
+    randomFillVotes,
+    clearHistory,
+    removeVotesFor,
+  } = useVoteHistory(allActivities)
 
-  const superRemaining = useMemo(() => {
-    const used = history.filter((h) => h.verdict === 'top' && !h.quotaHit).length
-    return Math.max(0, SUPER_MAX - used)
-  }, [history])
+  const {
+    detail,
+    setDetail,
+    mapView,
+    setMapView,
+    mapAboveDetail,
+    setMapAboveDetail,
+    openMapAboveDetail,
+    closeMap,
+    confirmingReset,
+    setConfirmingReset,
+    confirmingRandomFill,
+    setConfirmingRandomFill,
+    confirmingDeleteActivity,
+    setConfirmingDeleteActivity,
+  } = useModalOverlays()
 
-  const likedPins = useMemo<MapPin[]>(() => {
-    const out: MapPin[] = []
-    const seen = new Set<string>()
-    for (const h of history) {
-      if (h.verdict !== 'oui' && h.verdict !== 'top') continue
-      if (seen.has(h.id)) continue
-      seen.add(h.id)
-      const activity = allActivities.find((a) => a.id === h.id)
-      if (!activity) continue
-      const coords = coordsFor(activity)
-      if (!coords) continue
-      out.push({ activity, coords, verdict: h.verdict })
-    }
-    return out
-  }, [history, allActivities])
-
-  const singleMapPin = useCallback(
-    (activityId: string): MapPin[] => {
-      const activity = allActivities.find((a) => a.id === activityId)
-      if (!activity) return []
-      const coords = coordsFor(activity)
-      if (!coords) return []
-      const existing = history.find((h) => h.id === activityId)
-      const verdict =
-        existing && (existing.verdict === 'oui' || existing.verdict === 'top')
-          ? existing.verdict
-          : 'oui'
-      return [{ activity, coords, verdict }]
-    },
-    [history, allActivities],
-  )
+  const { likedPins, singleMapPin } = useMapPins(history, allActivities)
 
   const needsOnboarding = userId === null
   const showPicker = needsOnboarding || changingIdentity
 
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
-      const entry: VoteEntry = {
-        id: activity.id,
-        verdict,
-        ...(meta?.quotaHit ? { quotaHit: true } : {}),
-      }
-      setHistory((h) => {
-        if (reviewMode) {
-          // Upsert by activity id — in review mode we never want
-          // duplicates, the user is editing their vote.
-          const idx = h.findIndex((e) => e.id === activity.id)
-          if (idx < 0) return [...h, entry]
-          const next = [...h]
-          next[idx] = entry
-          return next
-        }
-        return [...h, entry]
-      })
-      if (meta?.quotaHit) {
-        setToast({
-          id: Date.now(),
-          text: 'Plus de super-likes — converti en like',
-          emoji: '⭐',
+      if (reviewMode) {
+        // Upsert by activity id — in review mode we never want duplicates,
+        // the user is editing their vote.
+        upsertVote(activity.id, verdict, meta)
+      } else {
+        appendVote({
+          id: activity.id,
+          verdict,
+          ...(meta?.quotaHit ? { quotaHit: true } : {}),
         })
       }
+      if (meta?.quotaHit) {
+        showToast('Plus de super-likes — converti en like', '⭐')
+      }
     },
-    [reviewMode, setHistory],
+    [reviewMode, upsertVote, appendVote, showToast],
   )
 
   const handleUndo = useCallback(() => {
     if (history.length === 0) return
-    setHistory((h) => h.slice(0, -1))
+    undoVote()
     setDone(false)
-    setToast({ id: Date.now(), text: 'Swipe annulé', emoji: '↩' })
-  }, [history.length, setHistory])
+    showToast('Swipe annulé', '↩')
+  }, [history.length, undoVote, showToast])
 
   const handleAction = useCallback((verdict: Verdict) => {
     deckRef.current?.commit(verdict)
@@ -212,76 +139,35 @@ export default function App() {
   const handleReset = useCallback(() => {
     // userId is cleared too → the blocking IdentityPicker re-appears and
     // covers the toast (z-[40] > toast z-[9]), so no toast here.
-    setHistory([])
+    clearHistory()
     setUserId(null)
     setDone(false)
     setReviewMode(false)
     setChangingIdentity(false)
-  }, [setHistory, setUserId])
+  }, [clearHistory, setUserId])
 
   const handleReview = useCallback(() => {
     setDone(false)
     setReviewMode(true)
     setActiveTab(0) // bring the user to the swipe screen
-    setToast({ id: Date.now(), text: 'Mode révision — utilise [=] pour garder', emoji: '↻' })
-  }, [])
+    showToast('Mode révision — utilise [=] pour garder', '↻')
+  }, [showToast])
 
   const handleExitReview = useCallback(() => {
     setReviewMode(false)
     // If everything's still voted, fall back to the "Revoir les votes ?"
     // prompt rather than an empty deck.
     setDone(allVoted)
-    setToast({ id: Date.now(), text: 'Mode révision terminé', emoji: '✓' })
-  }, [allVoted])
+    showToast('Mode révision terminé', '✓')
+  }, [allVoted, showToast])
 
-  /**
-   * Fill all activities that haven't been voted on yet with a random
-   * verdict. Guarantees at least 2 super-likes per fill (clamped to the
-   * remaining quota and the pool size) so the Résultats screen doesn't
-   * end up empty of "top" picks. Remaining slots draw from the four
-   * passive verdicts.
-   */
   const handleRandomFill = useCallback(() => {
-    const votedIds = new Set(history.map((h) => h.id))
-    const missing = allActivities.filter((a) => !votedIds.has(a.id))
-    if (missing.length === 0) return
-
-    const wantSupers = 2 + Math.floor(Math.random() * 2) // 2 or 3
-    const actualSupers = Math.min(
-      wantSupers,
-      superRemaining,
-      missing.length,
-    )
-    // Bias super-likes toward activities with coords so they actually
-    // show up as pins on the FullscreenMap.
-    const shuffle = <T,>(arr: T[]): T[] =>
-      [...arr]
-        .map((a) => ({ a, r: Math.random() }))
-        .sort((x, y) => x.r - y.r)
-        .map((x) => x.a)
-    const withCoords = shuffle(missing.filter((a) => coordsFor(a) !== null))
-    const withoutCoords = shuffle(missing.filter((a) => coordsFor(a) === null))
-    const superPool = [...withCoords, ...withoutCoords]
-    const superLikeIds = new Set(
-      superPool.slice(0, actualSupers).map((a) => a.id),
-    )
-
-    const passive: Verdict[] = ['oui', 'non', 'whynot', 'skip']
-    const additions: VoteEntry[] = missing.map((a) => ({
-      id: a.id,
-      verdict: superLikeIds.has(a.id)
-        ? 'top'
-        : passive[Math.floor(Math.random() * passive.length)]!,
-    }))
-    setHistory((h) => [...h, ...additions])
+    const added = randomFillVotes()
+    if (added.length === 0) return
     // Everything's now voted → land on the "Revoir les votes ?" prompt.
     setDone(true)
-    setToast({
-      id: Date.now(),
-      text: `${additions.length} votes générés aléatoirement`,
-      emoji: '🎲',
-    })
-  }, [history, allActivities, setHistory, superRemaining])
+    showToast(`${added.length} votes générés aléatoirement`, '🎲')
+  }, [randomFillVotes, showToast])
 
   const handleAddActivity = useCallback(
     async (input: UserActivityInput) => {
@@ -289,17 +175,17 @@ export default function App() {
       // A new card now exists past the curated deck — make it reachable even
       // if the user had already finished swiping everything else.
       setDone(false)
-      setToast({ id: Date.now(), text: 'Activité ajoutée', emoji: '➕' })
+      showToast('Activité ajoutée', '➕')
     },
-    [addUserActivity],
+    [addUserActivity, showToast],
   )
 
   const handleUpdateActivity = useCallback(
     async (id: string, input: UserActivityInput) => {
       await updateUserActivity(id, input)
-      setToast({ id: Date.now(), text: 'Activité mise à jour', emoji: '✏️' })
+      showToast('Activité mise à jour', '✏️')
     },
-    [updateUserActivity],
+    [updateUserActivity, showToast],
   )
 
   const handleConfirmDeleteActivity = useCallback(async () => {
@@ -307,10 +193,16 @@ export default function App() {
     if (!id) return
     await removeUserActivity(id)
     // Drop the vote that referenced this activity so it doesn't linger.
-    setHistory((h) => h.filter((e) => e.id !== id))
+    removeVotesFor(id)
     setConfirmingDeleteActivity(null)
-    setToast({ id: Date.now(), text: 'Activité supprimée', emoji: '🗑' })
-  }, [confirmingDeleteActivity, removeUserActivity, setHistory])
+    showToast('Activité supprimée', '🗑')
+  }, [
+    confirmingDeleteActivity,
+    removeUserActivity,
+    removeVotesFor,
+    setConfirmingDeleteActivity,
+    showToast,
+  ])
 
   const handlePickIdentity = useCallback(
     (id: string) => {
@@ -318,7 +210,7 @@ export default function App() {
       if (wasOnboarding) {
         // userId is null ⇒ user hasn't identified yet (first launch, or
         // post-reset). Start them fresh under their newly chosen name.
-        setHistory([])
+        clearHistory()
         setDone(false)
         setReviewMode(false)
       }
@@ -326,15 +218,12 @@ export default function App() {
       setChangingIdentity(false)
       const p = PARTICIPANTS.find((x) => x.id === id)
       const name = p?.name ?? id
-      setToast({
-        id: Date.now(),
-        text: wasOnboarding
-          ? `Salut ${name}`
-          : `Tu es maintenant ${name}`,
-        emoji: wasOnboarding ? '👋' : '✨',
-      })
+      showToast(
+        wasOnboarding ? `Salut ${name}` : `Tu es maintenant ${name}`,
+        wasOnboarding ? '👋' : '✨',
+      )
     },
-    [userId, setHistory, setUserId],
+    [userId, clearHistory, setUserId, showToast],
   )
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
@@ -349,23 +238,10 @@ export default function App() {
         deckRef.current?.commit(verdict)
         return
       }
-      const id = detail.activity.id
-      setHistory((h) => {
-        const idx = h.findIndex((e) => e.id === id)
-        if (idx < 0) {
-          return [...h, { id, verdict }]
-        }
-        const next = [...h]
-        next[idx] = { ...next[idx]!, verdict }
-        return next
-      })
-      setToast({
-        id: Date.now(),
-        text: 'Vote mis à jour',
-        emoji: '✏️',
-      })
+      upsertVote(detail.activity.id, verdict)
+      showToast('Vote mis à jour', '✏️')
     },
-    [detail, setHistory],
+    [detail, upsertVote, showToast],
   )
 
   const onSwipeTab = activeTab === 0
@@ -526,7 +402,7 @@ export default function App() {
             key={toast.id}
             text={toast.text}
             emoji={toast.emoji}
-            onDone={() => setToast(null)}
+            onDone={dismissToast}
           />
         )}
 
@@ -538,13 +414,7 @@ export default function App() {
             onClose={() => setDetail(null)}
             superRemaining={superRemaining}
             onVerdict={handleDetailVerdict}
-            onOpenMap={(view) => {
-              // Keep the DetailModal mounted underneath so closing the
-              // map returns the user to it. The map bumps to z 60 so it
-              // renders on top of the modal (z 50).
-              setMapView(view)
-              setMapAboveDetail(true)
-            }}
+            onOpenMap={openMapAboveDetail}
             meDone={history.length >= allActivities.length}
             userId={userId}
             myVerdict={
@@ -553,49 +423,26 @@ export default function App() {
           />
         )}
 
-        {confirmingReset && (
-          <ConfirmModal
-            title="Tout effacer ?"
-            message="Tes votes en cours et ton prénom seront supprimés. Cette action est irréversible."
-            confirmLabel="Tout effacer"
-            cancelLabel="Annuler"
-            variant="danger"
-            onConfirm={() => {
-              handleReset()
-              setConfirmingReset(false)
-            }}
-            onCancel={() => setConfirmingReset(false)}
-          />
-        )}
-
-        {confirmingRandomFill && (
-          <ConfirmModal
-            title="Remplir aléatoirement ?"
-            message={`${allActivities.length - history.length} activités non votées vont recevoir un verdict tiré au sort parmi : oui, non, why not, plus tard. Tu pourras toujours changer chaque vote ensuite.`}
-            confirmLabel="Remplir"
-            cancelLabel="Annuler"
-            variant="primary"
-            onConfirm={() => {
-              handleRandomFill()
-              setConfirmingRandomFill(false)
-            }}
-            onCancel={() => setConfirmingRandomFill(false)}
-          />
-        )}
-
-        {confirmingDeleteActivity && (
-          <ConfirmModal
-            title="Supprimer cette activité ?"
-            message="L’activité, ton vote associé et ses photos seront supprimés. Cette action est irréversible."
-            confirmLabel="Supprimer"
-            cancelLabel="Annuler"
-            variant="danger"
-            onConfirm={() => {
-              void handleConfirmDeleteActivity()
-            }}
-            onCancel={() => setConfirmingDeleteActivity(null)}
-          />
-        )}
+        <AppConfirmModals
+          confirmingReset={confirmingReset}
+          onConfirmReset={() => {
+            handleReset()
+            setConfirmingReset(false)
+          }}
+          onCancelReset={() => setConfirmingReset(false)}
+          confirmingRandomFill={confirmingRandomFill}
+          randomFillCount={allActivities.length - history.length}
+          onConfirmRandomFill={() => {
+            handleRandomFill()
+            setConfirmingRandomFill(false)
+          }}
+          onCancelRandomFill={() => setConfirmingRandomFill(false)}
+          confirmingDeleteActivity={confirmingDeleteActivity !== null}
+          onConfirmDeleteActivity={() => {
+            void handleConfirmDeleteActivity()
+          }}
+          onCancelDeleteActivity={() => setConfirmingDeleteActivity(null)}
+        />
 
         {showPicker && (
           <IdentityPicker
@@ -625,10 +472,7 @@ export default function App() {
                   ? (singleMapPin(mapView.activityId)[0]?.coords ?? undefined)
                   : undefined
               }
-              onClose={() => {
-                setMapView(null)
-                setMapAboveDetail(false)
-              }}
+              onClose={closeMap}
               onSelectActivity={(a) => {
                 // Keep the map mounted underneath so closing the DetailModal
                 // returns the user to it instead of dumping them back to the
