@@ -25,6 +25,7 @@ playwright-report/
 
 # Generated preview pages
 preview-photos.html
+preview-epaves.html
 
 # Editor / OS
 .vscode/*
