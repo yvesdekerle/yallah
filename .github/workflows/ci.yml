@@ -22,6 +22,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      # Fails the job if a chunk exceeds its gzip budget (regression ceiling).
+      - run: npm run check:bundle
       # Coverage thresholds in vite.config.ts make this the ratchet:
       # the job fails if coverage drops below the pinned floor.
       - run: npm test -- --coverage
