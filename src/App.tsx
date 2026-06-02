@@ -25,6 +25,8 @@ import { GroupScreen } from './components/GroupScreen.tsx'
 import { AppConfirmModals } from './components/AppConfirmModals.tsx'
 import { IdentityPicker } from './components/IdentityPicker.tsx'
 import { AddActivityScreen } from './components/AddActivityScreen.tsx'
+import { SettingsModal } from './components/SettingsModal.tsx'
+import { APP_VERSION } from './constants/version.ts'
 import {
   useUserActivities,
   type UserActivityInput,
@@ -52,6 +54,7 @@ export default function App() {
    */
   const [reviewMode, setReviewMode] = useState(false)
   const [activeTab, setActiveTab] = useState<TabIndex>(0)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const deckRef = useRef<SwipeDeckHandle>(null)
 
   const { toast, showToast, dismissToast } = useToast()
@@ -261,7 +264,7 @@ export default function App() {
         style={{ background: YB.bgSun }}
       >
         <StatusBar />
-        <TopBar />
+        <TopBar onSecretOpen={() => setSettingsOpen(true)} />
 
         {/* Tabs stay MOUNTED — switching just toggles visibility. Avoids
             the SwipeDeck remounting + photo reflashing every time the
@@ -494,6 +497,13 @@ export default function App() {
               zIndex={mapAboveDetail ? 60 : 40}
             />
           </Suspense>
+        )}
+
+        {settingsOpen && (
+          <SettingsModal
+            version={APP_VERSION}
+            onClose={() => setSettingsOpen(false)}
+          />
         )}
       </div>
     </Phone>

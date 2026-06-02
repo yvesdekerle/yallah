@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { YB } from '../utils/theme.ts'
 
 interface TopBarProps {
@@ -5,7 +6,13 @@ interface TopBarProps {
   dark?: boolean
   /** Background colour of the banner. Defaults to the sun yellow. */
   bg?: string
+  /** Hidden gesture: 5 consecutive taps on the wordmark fires this. */
+  onSecretOpen?: () => void
 }
+
+// Max gap between two taps for them to still count as "consecutive".
+const TAP_WINDOW_MS = 800
+const TAPS_TO_OPEN = 5
 
 /**
  * Centered `yallah` wordmark with a coral dot accent.
@@ -14,8 +21,28 @@ interface TopBarProps {
  * content scrolled within Résultats / Groupe disappears smoothly under
  * it instead of bleeding through. Height adapts to iOS safe-area-inset-top
  * in standalone mode.
+ *
+ * Tapping the wordmark 5 times in a row (each within TAP_WINDOW_MS of the
+ * previous) opens the hidden Réglages page — the only way in.
  */
-export function TopBar({ dark = false, bg = YB.bgSun }: TopBarProps) {
+export function TopBar({ dark = false, bg = YB.bgSun, onSecretOpen }: TopBarProps) {
+  const taps = useRef(0)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleTap = () => {
+    if (!onSecretOpen) return
+    taps.current += 1
+    if (timer.current) clearTimeout(timer.current)
+    if (taps.current >= TAPS_TO_OPEN) {
+      taps.current = 0
+      onSecretOpen()
+      return
+    }
+    timer.current = setTimeout(() => {
+      taps.current = 0
+    }, TAP_WINDOW_MS)
+  }
+
   return (
     <div
       className="phone-topbar absolute left-0 right-0 z-[8]"
@@ -26,7 +53,8 @@ export function TopBar({ dark = false, bg = YB.bgSun }: TopBarProps) {
       }}
     >
       <div
-        className="absolute left-1/2 -translate-x-1/2 inline-flex items-baseline gap-1 font-sans"
+        onClick={handleTap}
+        className="absolute left-1/2 -translate-x-1/2 inline-flex items-baseline gap-1 font-sans select-none"
         style={{
           // Pinned ~16px above the banner's bottom edge — lifts the
           // wordmark visually closer to the top of the screen so it
