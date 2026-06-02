@@ -97,6 +97,7 @@ public/
 - **`useLocalStorage` semantics** match `useState`: `defaultValue` is captured at mount, subsequent updates to the prop are ignored. Cross-tab sync via the `storage` event.
 - **State syncing during render** — when SwipeDeck needs to re-snap `topIdx` after a prop change, it uses the React 19 [setState-during-render](https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes) pattern instead of `useEffect`. Avoids visual flickers AND the new `react-hooks/set-state-in-effect` lint rule.
 - **Imperative deck API** — `SwipeDeck` exposes `commit(verdict)` via `forwardRef` + `useImperativeHandle` so buttons / detail modal can trigger swipes without lifting the active-card state into the parent.
+- **No `dangerouslySetInnerHTML`** — there is none in `src/` and it must stay that way. Prefer React JSX / `style={{}}` (auto-escaped). When a user-controlled string genuinely has to land in a hand-built HTML string — currently only the Leaflet `divIcon({ html })` markers in `utils/mapMarkers.ts` — escape it first with `cssUrlValue` / validate at the source with `isSafePhotoUrl` (`utils/photoUrl.ts`), and cover the escaping with a test (see NEW-03).
 
 ## Verdict model
 
