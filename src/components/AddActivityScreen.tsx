@@ -23,6 +23,8 @@ interface AddActivityScreenProps {
   onUpdate: (id: string, input: UserActivityInput) => Promise<void>
   /** Ask the parent to confirm + perform deletion (App-level ConfirmModal). */
   onRequestDelete: (id: string) => void
+  /** Open the detail modal for a saved activity (preview + vote from here). */
+  onPreview: (activity: Activity) => void
   /** True when this tab is visible — gates the (heavy) Leaflet map render. */
   active: boolean
 }
@@ -33,6 +35,7 @@ export function AddActivityScreen({
   onAdd,
   onUpdate,
   onRequestDelete,
+  onPreview,
   active,
 }: AddActivityScreenProps) {
   const f = useAddActivityForm({ userActivities, onAdd, onUpdate })
@@ -296,19 +299,34 @@ export function AddActivityScreen({
                     }}
                     data-testid={`user-activity-${record.id}`}
                   >
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => runtime && onPreview(runtime)}
+                      aria-label={`voir ${record.title}`}
+                      className="flex items-center cursor-pointer border-0"
                       style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 10,
-                        flexShrink: 0,
-                        background: `url(${preview}) center/cover, ${YB.bgSoft}`,
+                        flex: 1,
+                        minWidth: 0,
+                        gap: 12,
+                        background: 'transparent',
+                        padding: 0,
+                        textAlign: 'left',
                       }}
-                      aria-hidden
-                    />
-                    <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500 }}>
-                      {record.title}
-                    </span>
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 10,
+                          flexShrink: 0,
+                          background: `url(${preview}) center/cover, ${YB.bgSoft}`,
+                        }}
+                        aria-hidden
+                      />
+                      <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: YB.ink }}>
+                        {record.title}
+                      </span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => {

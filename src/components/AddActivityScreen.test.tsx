@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AddActivityScreen } from './AddActivityScreen.tsx'
 import type { StoredUserActivity } from '../types/userActivity.ts'
+import type { Activity } from '../types/activity.ts'
 
 const SUBMIT = 'ajouter l’activité'
 
@@ -32,6 +33,7 @@ function renderScreen(props: Partial<Parameters<typeof AddActivityScreen>[0]> = 
   const onAdd = vi.fn().mockResolvedValue(undefined)
   const onUpdate = vi.fn().mockResolvedValue(undefined)
   const onRequestDelete = vi.fn()
+  const onPreview = vi.fn()
   const result = render(
     <AddActivityScreen
       userActivities={[]}
@@ -39,11 +41,12 @@ function renderScreen(props: Partial<Parameters<typeof AddActivityScreen>[0]> = 
       onAdd={onAdd}
       onUpdate={onUpdate}
       onRequestDelete={onRequestDelete}
+      onPreview={onPreview}
       active={false}
       {...props}
     />,
   )
-  return { onAdd, onUpdate, onRequestDelete, ...result }
+  return { onAdd, onUpdate, onRequestDelete, onPreview, ...result }
 }
 
 describe('AddActivityScreen', () => {
@@ -84,6 +87,17 @@ describe('AddActivityScreen', () => {
     expect(screen.getByText('Mes activités ajoutées')).toBeInTheDocument()
     await user.click(screen.getByLabelText('supprimer Mon spot secret'))
     expect(onRequestDelete).toHaveBeenCalledWith('u-1')
+  })
+
+  it('previews a saved activity (runtime, with photos) when its row is tapped', async () => {
+    const user = userEvent.setup()
+    const stored = [record({ title: 'Mon spot' })]
+    const runtime = { ...stored[0], photoUrls: [] } as unknown as Activity
+    const { onPreview } = renderScreen({ stored, userActivities: [runtime] })
+    await user.click(screen.getByLabelText('voir Mon spot'))
+    expect(onPreview).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'u-1', photoUrls: [] }),
+    )
   })
 
   it('loads a record into the form when editing', async () => {

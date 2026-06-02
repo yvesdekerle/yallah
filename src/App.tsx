@@ -393,6 +393,7 @@ export default function App() {
             onAdd={handleAddActivity}
             onUpdate={handleUpdateActivity}
             onRequestDelete={(id) => setConfirmingDeleteActivity(id)}
+            onPreview={(a) => setDetail({ activity: a, source: 'review' })}
             active={activeTab === 3}
           />
         </div>
