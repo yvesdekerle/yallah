@@ -4,19 +4,7 @@ import type { Verdict, VoteEntry } from '../types/verdict.ts'
 import { useLocalStorage } from './useLocalStorage.ts'
 import { STORAGE_KEYS, SUPER_MAX } from '../constants/swipe.ts'
 import { coordsFor } from '../utils/coords.ts'
-
-// Legacy verdict-id migration: the "neutre" id was renamed to "whynot".
-// Anyone with an existing local history needs their entries rewritten so
-// they keep counting against the right bucket.
-// (Slated to move to src/data/history.ts in ARCH-05.)
-interface LegacyVoteEntry extends Omit<VoteEntry, 'verdict'> {
-  verdict: VoteEntry['verdict'] | 'neutre'
-}
-function migrateHistory(raw: VoteEntry[] | LegacyVoteEntry[]): VoteEntry[] {
-  return (raw as LegacyVoteEntry[]).map((e) =>
-    e.verdict === 'neutre' ? { ...e, verdict: 'whynot' } : (e as VoteEntry),
-  )
-}
+import { migrateHistory } from '../data/history.ts'
 
 /**
  * Owns the persisted vote history + everything derived from it (super-like
