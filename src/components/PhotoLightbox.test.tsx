@@ -92,4 +92,81 @@ describe('PhotoLightbox', () => {
     await user.click(screen.getByLabelText('fermer la photo'))
     expect(onClose).toHaveBeenCalledOnce()
   })
+
+  // The sliding filmstrip (the lightbox root's first child) carries the
+  // pointer-drag handlers.
+  const track = (): HTMLElement =>
+    screen.getByTestId('photo-lightbox').firstElementChild as HTMLElement
+
+  it('swiping left past the threshold advances to the next photo', () => {
+    const onIndex = vi.fn()
+    render(
+      <PhotoLightbox photos={PHOTOS} index={0} onIndex={onIndex} onClose={vi.fn()} />,
+    )
+    const t = track()
+    fireEvent.pointerDown(t, { clientX: 200, pointerId: 1 })
+    fireEvent.pointerMove(t, { clientX: 110, pointerId: 1 }) // dx = -90
+    fireEvent.pointerUp(t, { pointerId: 1 })
+    expect(onIndex).toHaveBeenCalledWith(1)
+  })
+
+  it('swiping right past the threshold rewinds to the previous photo', () => {
+    const onIndex = vi.fn()
+    render(
+      <PhotoLightbox photos={PHOTOS} index={1} onIndex={onIndex} onClose={vi.fn()} />,
+    )
+    const t = track()
+    fireEvent.pointerDown(t, { clientX: 100, pointerId: 1 })
+    fireEvent.pointerMove(t, { clientX: 200, pointerId: 1 }) // dx = +100
+    fireEvent.pointerUp(t, { pointerId: 1 })
+    expect(onIndex).toHaveBeenCalledWith(0)
+  })
+
+  it('a drag shorter than the threshold does not navigate', () => {
+    const onIndex = vi.fn()
+    render(
+      <PhotoLightbox photos={PHOTOS} index={1} onIndex={onIndex} onClose={vi.fn()} />,
+    )
+    const t = track()
+    fireEvent.pointerDown(t, { clientX: 200, pointerId: 1 })
+    fireEvent.pointerMove(t, { clientX: 175, pointerId: 1 }) // dx = -25
+    fireEvent.pointerUp(t, { pointerId: 1 })
+    expect(onIndex).not.toHaveBeenCalled()
+  })
+
+  it('does not advance past the last photo (rubber-band edge)', () => {
+    const onIndex = vi.fn()
+    render(
+      <PhotoLightbox photos={PHOTOS} index={2} onIndex={onIndex} onClose={vi.fn()} />,
+    )
+    const t = track()
+    fireEvent.pointerDown(t, { clientX: 200, pointerId: 1 })
+    fireEvent.pointerMove(t, { clientX: 80, pointerId: 1 }) // dx = -120, but already last
+    fireEvent.pointerUp(t, { pointerId: 1 })
+    expect(onIndex).not.toHaveBeenCalled()
+  })
+
+  it('a plain tap on the backdrop closes the viewer', () => {
+    const onClose = vi.fn()
+    render(
+      <PhotoLightbox photos={PHOTOS} index={0} onIndex={vi.fn()} onClose={onClose} />,
+    )
+    fireEvent.click(screen.getByTestId('photo-lightbox'))
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('the synthetic click after a real swipe does not also close', () => {
+    const onClose = vi.fn()
+    const onIndex = vi.fn()
+    render(
+      <PhotoLightbox photos={PHOTOS} index={0} onIndex={onIndex} onClose={onClose} />,
+    )
+    const t = track()
+    fireEvent.pointerDown(t, { clientX: 200, pointerId: 1 })
+    fireEvent.pointerMove(t, { clientX: 110, pointerId: 1 }) // moved + past threshold
+    fireEvent.pointerUp(t, { pointerId: 1 })
+    fireEvent.click(screen.getByTestId('photo-lightbox'))
+    expect(onIndex).toHaveBeenCalledWith(1)
+    expect(onClose).not.toHaveBeenCalled()
+  })
 })
