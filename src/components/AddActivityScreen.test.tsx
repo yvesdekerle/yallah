@@ -245,6 +245,14 @@ describe('AddActivityScreen', () => {
     )
   })
 
+  it('shows a numeric N/5 readout reflecting the rating', async () => {
+    const user = userEvent.setup()
+    renderScreen()
+    expect(screen.queryByText('3/5')).not.toBeInTheDocument()
+    await user.click(screen.getByLabelText('note 3 sur 5'))
+    expect(screen.getByText('3/5')).toBeInTheDocument()
+  })
+
   it('clears the rating only via the dedicated Effacer button', async () => {
     const user = userEvent.setup()
     renderScreen()

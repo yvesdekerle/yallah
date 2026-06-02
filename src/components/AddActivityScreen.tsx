@@ -3,7 +3,7 @@ import type { Activity } from '../types/activity.ts'
 import type { StoredUserActivity } from '../types/userActivity.ts'
 import type { UserActivityInput } from '../hooks/useUserActivities.ts'
 import { YB } from '../utils/theme.ts'
-import { Star } from '../icons/index.tsx'
+import { Star, StarFilled } from '../icons/index.tsx'
 import { useAddActivityForm, DIFFICULTIES } from '../hooks/useAddActivityForm.ts'
 import { Field, FieldText, FieldArea, Chip, Toggle } from './AddActivityFields.tsx'
 import { CategoryPicker } from './CategoryPicker.tsx'
@@ -133,53 +133,70 @@ export function AddActivityScreen({
           </Field>
 
           <Field label="Note">
-            <div className="flex items-center" style={{ gap: 2 }}>
-              {[1, 2, 3, 4, 5].map((n) => {
-                const on = n <= f.fields.rating
-                return (
+            <div className="flex items-center" style={{ gap: 10 }}>
+              {/* Stars sit on a white pill so solid-gold (selected) vs grey
+                  (empty) reads clearly — gold-on-yellow was invisible. */}
+              <div
+                className="flex items-center"
+                style={{
+                  background: '#fff',
+                  border: `1px solid ${YB.bgSoft}`,
+                  borderRadius: 14,
+                  padding: '4px 8px',
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const on = n <= f.fields.rating
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      // Tap = set to n (no toggle-off — that caused accidental
+                      // clears on a re-tap). 44px hit area for reliable touch.
+                      onClick={() => f.setFields((s) => ({ ...s, rating: n }))}
+                      aria-label={`note ${n} sur 5`}
+                      aria-pressed={on}
+                      className="inline-flex items-center justify-center border-0 cursor-pointer"
+                      style={{
+                        background: 'transparent',
+                        width: 44,
+                        height: 44,
+                        padding: 0,
+                      }}
+                    >
+                      {on ? (
+                        <StarFilled color={YB.top} size={28} />
+                      ) : (
+                        <Star color="#C9C4BA" size={28} />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              {f.fields.rating > 0 && (
+                <>
+                  <span
+                    className="font-sans"
+                    style={{ fontSize: 15, fontWeight: 800, color: YB.ink }}
+                  >
+                    {f.fields.rating}/5
+                  </span>
                   <button
-                    key={n}
                     type="button"
-                    // Tap = set to n (no toggle-off — that caused accidental
-                    // clears on a re-tap). 44px hit area for reliable touch.
-                    onClick={() => f.setFields((s) => ({ ...s, rating: n }))}
-                    aria-label={`note ${n} sur 5`}
-                    aria-pressed={on}
-                    className="inline-flex items-center justify-center border-0 cursor-pointer"
+                    onClick={() => f.setFields((s) => ({ ...s, rating: 0 }))}
+                    aria-label="effacer la note"
+                    className="font-sans cursor-pointer border-0"
                     style={{
                       background: 'transparent',
-                      width: 44,
-                      height: 44,
-                      padding: 0,
+                      color: YB.muted,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      padding: 8,
                     }}
                   >
-                    {/* Outlined star (thin dark stroke) so filled (gold) vs
-                        empty reads clearly on the yellow background. */}
-                    <Star
-                      color={YB.ink}
-                      fill={on ? YB.top : 'none'}
-                      size={28}
-                    />
+                    Effacer
                   </button>
-                )
-              })}
-              {f.fields.rating > 0 && (
-                <button
-                  type="button"
-                  onClick={() => f.setFields((s) => ({ ...s, rating: 0 }))}
-                  aria-label="effacer la note"
-                  className="font-sans cursor-pointer border-0"
-                  style={{
-                    background: 'transparent',
-                    color: YB.muted,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    marginLeft: 8,
-                    padding: 8,
-                  }}
-                >
-                  Effacer
-                </button>
+                </>
               )}
             </div>
           </Field>
