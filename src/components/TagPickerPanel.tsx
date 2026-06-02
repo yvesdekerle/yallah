@@ -1,5 +1,5 @@
 import { YB } from '../utils/theme.ts'
-import { Field, SmallButton } from './AddActivityFields.tsx'
+import { Field } from './AddActivityFields.tsx'
 import { inputStyle } from './addActivityStyles.ts'
 
 /** Emoji-tag palette (toggle) + a custom-tag text input. Pure presentational. */
@@ -48,23 +48,21 @@ export function TagPickerPanel({
           )
         })}
       </div>
-      <div className="flex" style={{ gap: 8 }}>
-        <input
-          type="text"
-          value={tagInput}
-          onChange={(e) => onTagInputChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              onAddTag()
-            }
-          }}
-          placeholder="Autre emoji, puis Entrée"
-          aria-label="ajouter un tag personnalisé"
-          style={{ ...inputStyle, flex: 1 }}
-        />
-        <SmallButton onClick={onAddTag} label="Ajouter" />
-      </div>
+      <input
+        type="text"
+        value={tagInput}
+        onChange={(e) => onTagInputChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            onAddTag()
+          }
+        }}
+        onBlur={onAddTag}
+        placeholder="Autre emoji, puis Entrée"
+        aria-label="ajouter un tag personnalisé"
+        style={{ ...inputStyle, width: '100%' }}
+      />
     </Field>
   )
 }

@@ -12,6 +12,13 @@ export const DIFFICULTIES: Difficulty[] = [
   { dot: '🔴', label: 'Très difficile' },
 ]
 
+// 💎 / 🗝️ are not free tags — they mirror the pépite / secret flags. The
+// dedicated toggles are the single source of truth, so we keep them out of
+// the emoji palette and re-derive them into `tags` at submit time.
+const PEPITE_TAG = '💎'
+const SECRET_TAG = '🗝️'
+const SPECIAL_TAGS = [PEPITE_TAG, SECRET_TAG]
+
 export interface PhotoItem {
   draft: PhotoDraft
   preview: string
@@ -60,9 +67,13 @@ export function useAddActivityForm({
     () => Array.from(new Set(ACTIVITIES.map((a) => a.category))),
     [],
   )
-  // Every emoji tag used across the curated activities, offered as a palette.
+  // Every emoji tag used across the curated activities, offered as a palette
+  // (minus 💎 / 🗝️, which the Pépite / Secret toggles own).
   const existingTags = useMemo(
-    () => Array.from(new Set(ACTIVITIES.flatMap((a) => a.tags))),
+    () =>
+      Array.from(new Set(ACTIVITIES.flatMap((a) => a.tags))).filter(
+        (t) => !SPECIAL_TAGS.includes(t),
+      ),
     [],
   )
 
@@ -214,7 +225,9 @@ export function useAddActivityForm({
   // and removable from the same place).
   const tagPalette = [
     ...existingTags,
-    ...fields.tags.filter((t) => !existingTags.includes(t)),
+    ...fields.tags.filter(
+      (t) => !existingTags.includes(t) && !SPECIAL_TAGS.includes(t),
+    ),
   ]
 
   const canSubmit = fields.title.trim() !== '' && !saving
@@ -224,9 +237,16 @@ export function useAddActivityForm({
     setSaving(true)
     const resolvedCategory =
       categoryMode === 'other' ? categoryOther.trim() || 'Autre' : category
+    // 💎 / 🗝️ come exclusively from the toggles: strip any stale ones from the
+    // free tags, then prepend so the Card's gold-ring case (first 3 tags) hits.
+    const syncedTags = [
+      ...(fields.pepite ? [PEPITE_TAG] : []),
+      ...(fields.secret ? [SECRET_TAG] : []),
+      ...fields.tags.filter((t) => !SPECIAL_TAGS.includes(t)),
+    ]
     const input: UserActivityInput = {
       title: fields.title.trim(),
-      tags: fields.tags,
+      tags: syncedTags,
       category: resolvedCategory,
       location: fields.location.trim(),
       transit: fields.transit.trim(),
