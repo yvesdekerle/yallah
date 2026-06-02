@@ -217,4 +217,24 @@ describe('App (integration)', () => {
       within(sheet).getByText('Snorkeling à Blue Bay Marine Park'),
     ).toBeInTheDocument()
   })
+
+  it('voting from a Résultats-row detail upserts the existing vote (no duplicate)', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('résultats'))
+    // Open the detail for the already-voted card from its Résultats row.
+    fireEvent.click(
+      screen.getByLabelText('Voir le détail de Snorkeling à Blue Bay Marine Park'),
+    )
+    // Change the verdict from inside the modal (source 'review' → upsert).
+    const sheet = screen.getByTestId('detail-sheet')
+    fireEvent.click(within(sheet).getByLabelText('non'))
+    // History is replaced in place, not appended — still one entry, new verdict.
+    const stored = JSON.parse(window.localStorage.getItem('yallah.history.v1')!)
+    expect(stored).toHaveLength(1)
+    expect(stored[0]).toMatchObject({ id: 'a001', verdict: 'non' })
+  })
 })

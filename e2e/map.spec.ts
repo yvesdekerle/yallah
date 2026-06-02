@@ -47,3 +47,22 @@ test('"Voir sur la carte" button in Résultats opens the FullscreenMap', async (
     page.getByRole('dialog', { name: 'Carte des activités' }),
   ).toHaveCount(0)
 })
+
+test('closing a map opened from the mini-map returns to the DetailModal', async ({
+  page,
+}) => {
+  await page.getByLabel('voir le détail').click()
+  const detail = page.getByRole('dialog', { name: /Détail de/ })
+  await expect(detail).toBeVisible()
+  const mini = detail.locator('[data-testid="mini-map-tap-target"]')
+  await expect(mini).toBeVisible({ timeout: 10000 })
+  await mini.click()
+  const map = page.getByRole('dialog', { name: 'Carte des activités' })
+  await expect(map).toBeVisible()
+  await page.waitForTimeout(450) // ghost-click guard
+  await page.getByLabel('fermer la carte').click()
+  await expect(map).toHaveCount(0)
+  // The map sat ABOVE the still-mounted DetailModal (mapAboveDetail); closing
+  // it must return the user to the detail, not the swipe deck.
+  await expect(detail).toBeVisible()
+})
