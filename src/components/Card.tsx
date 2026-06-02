@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -230,88 +230,75 @@ export function Card({ activity }: CardProps) {
             className="flex flex-wrap"
             style={{ gap: 8, fontWeight: 700, fontSize: 13.5 }}
           >
-            <span
-              className="inline-flex items-center"
-              style={{
-                gap: 7,
-                padding: '7px 13px 7px 9px',
-                borderRadius: 99,
-                background: 'rgba(20,30,50,0.42)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: '#fff',
-              }}
+            <MetaPill
+              icon={<StarFilled color={YB.ink} size={12} />}
+              iconBg="rgba(255,203,69,0.85)"
             >
-              <span
-                className="inline-flex items-center justify-center"
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 99,
-                  background: 'rgba(255,203,69,0.85)',
-                }}
-                aria-hidden
-              >
-                <StarFilled color={YB.ink} size={12} />
-              </span>
               {formatRating(activity.rating)}
-            </span>
+            </MetaPill>
 
             {activity.duration && (
-              <span
-                className="inline-flex items-center"
-                style={{
-                  gap: 7,
-                  padding: '7px 13px 7px 9px',
-                  borderRadius: 99,
-                  background: 'rgba(20,30,50,0.42)',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  color: '#fff',
-                }}
+              <MetaPill
+                icon={<Clock color="#fff" size={12} />}
+                iconBg="rgba(255,255,255,0.2)"
               >
-                <span
-                  className="inline-flex items-center justify-center"
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 99,
-                    background: 'rgba(255,255,255,0.2)',
-                  }}
-                  aria-hidden
-                >
-                  <Clock color="#fff" size={12} />
-                </span>
                 {shortDuration(activity.duration)}
-              </span>
+              </MetaPill>
             )}
 
-            <span
-              className="inline-flex items-center"
-              style={{
-                gap: 7,
-                padding: '7px 13px 7px 9px',
-                borderRadius: 99,
-                background: 'rgba(20,30,50,0.42)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: '#fff',
-              }}
+            <MetaPill
+              icon={<Wallet color="#fff" size={12} />}
+              iconBg="rgba(255,255,255,0.2)"
             >
-              <span
-                className="inline-flex items-center justify-center"
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 99,
-                  background: 'rgba(255,255,255,0.2)',
-                }}
-                aria-hidden
-              >
-                <Wallet color="#fff" size={12} />
-              </span>
               {shortPrice(activity.price)}
-            </span>
+            </MetaPill>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * A metadata pill in the card's bottom strip: a small coloured icon badge
+ * followed by a short value (rating · duration · price). The three pills share
+ * an identical outer shape (pill padding, dark translucent fill, hairline
+ * border); only the icon, its badge colour, and the value differ.
+ */
+function MetaPill({
+  icon,
+  iconBg,
+  children,
+}: {
+  icon: ReactNode
+  iconBg: string
+  children: ReactNode
+}) {
+  return (
+    <span
+      className="inline-flex items-center"
+      style={{
+        gap: 7,
+        padding: '7px 13px 7px 9px',
+        borderRadius: 99,
+        background: 'rgba(20,30,50,0.42)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        color: '#fff',
+      }}
+    >
+      <span
+        className="inline-flex items-center justify-center"
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: 99,
+          background: iconBg,
+        }}
+        aria-hidden
+      >
+        {icon}
+      </span>
+      {children}
+    </span>
   )
 }

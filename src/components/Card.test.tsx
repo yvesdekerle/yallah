@@ -22,7 +22,7 @@ const fixture: Activity = {
 }
 
 describe('Card', () => {
-  it('renders title, location, price, rating', () => {
+  it('renders title, location, and the three meta pills (rating · duration · price)', () => {
     render(<Card activity={fixture} />)
     expect(
       screen.getByText('Snorkeling à Blue Bay Marine Park'),
@@ -33,6 +33,8 @@ describe('Card', () => {
     expect(screen.getByText('25–35 €')).toBeInTheDocument()
     // Integer ratings drop the .0 on the Card pill.
     expect(screen.getByText('5')).toBeInTheDocument()
+    // Duration pill: no parenthetical to strip here, rendered verbatim.
+    expect(screen.getByText('~3–4h')).toBeInTheDocument()
   })
 
   it('shows a computed "depuis Tamarin" drive time when the activity has coords', () => {
