@@ -1,7 +1,6 @@
 import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
 import type { Verdict } from './types/verdict.ts'
-import { ACTIVITIES } from './data/activities.ts'
 import { PARTICIPANTS } from './data/participants.ts'
 import { useLocalStorage } from './hooks/useLocalStorage.ts'
 import { useToast } from './hooks/useToast.ts'
@@ -40,7 +39,13 @@ const FullscreenMap = lazy(() =>
   })),
 )
 
-export default function App() {
+interface AppProps {
+  /** Curated activities, loaded + code-split in `main.tsx` and injected here so
+      App stays a synchronous function of its data (and trivially testable). */
+  activities: Activity[]
+}
+
+export default function App({ activities }: AppProps) {
   const [userId, setUserId] = useLocalStorage<string | null>(
     STORAGE_KEYS.userId,
     null,
@@ -86,8 +91,8 @@ export default function App() {
   // freshly-added one surfaces at the tail of the deck — and immediately when
   // the curated deck was already finished).
   const allActivities = useMemo<Activity[]>(
-    () => [...ACTIVITIES, ...userActivities],
-    [userActivities],
+    () => [...activities, ...userActivities],
+    [activities, userActivities],
   )
 
   // Distinct tags present in the deck (+ how many activities carry each),
@@ -390,6 +395,7 @@ export default function App() {
           aria-hidden={activeTab !== 3}
         >
           <AddActivityScreen
+            curatedActivities={activities}
             userActivities={userActivities}
             stored={storedUserActivities}
             onAdd={handleAddActivity}

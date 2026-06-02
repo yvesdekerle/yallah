@@ -6,6 +6,11 @@ test.beforeEach(async ({ page }) => {
     window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
   })
   await page.goto('/')
+  // The deck is now code-split behind a loading splash — wait for the first
+  // card to mount before any test interacts with the action row.
+  await expect(
+    page.getByRole('heading', { name: 'Snorkeling à Blue Bay Marine Park' }),
+  ).toBeVisible()
 })
 
 test('renders the yallah wordmark and the first activity', async ({ page }) => {

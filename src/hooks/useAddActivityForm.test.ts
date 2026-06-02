@@ -1,12 +1,37 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import type { Activity } from '../types/activity.ts'
 import { useAddActivityForm } from './useAddActivityForm.ts'
+
+// Curated activities are injected (no longer a static import) — the category /
+// tag palettes derive from this fixture, so the 🌊 assertion is self-contained.
+const CURATED: Activity[] = [
+  {
+    id: 'a001',
+    number: 1,
+    title: 'Plage',
+    tags: ['🌊'],
+    category: 'Plage',
+    location: '',
+    transit: '',
+    description: '',
+    price: '',
+    rating: 0,
+    pepite: false,
+    secret: false,
+  },
+]
 
 function setup() {
   const onAdd = vi.fn().mockResolvedValue(undefined)
   const onUpdate = vi.fn().mockResolvedValue(undefined)
   const view = renderHook(() =>
-    useAddActivityForm({ userActivities: [], onAdd, onUpdate }),
+    useAddActivityForm({
+      curatedActivities: CURATED,
+      userActivities: [],
+      onAdd,
+      onUpdate,
+    }),
   )
   return { ...view, onAdd, onUpdate }
 }
@@ -47,7 +72,12 @@ describe('useAddActivityForm — pépite / secret as the single source for 💎 
     const onAdd = vi.fn().mockRejectedValue(new Error('decode failed'))
     const onUpdate = vi.fn().mockResolvedValue(undefined)
     const { result } = renderHook(() =>
-      useAddActivityForm({ userActivities: [], onAdd, onUpdate }),
+      useAddActivityForm({
+        curatedActivities: CURATED,
+        userActivities: [],
+        onAdd,
+        onUpdate,
+      }),
     )
     act(() => {
       result.current.setFields((s) => ({ ...s, title: 'Test' }))

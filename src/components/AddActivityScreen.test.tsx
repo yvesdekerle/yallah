@@ -28,6 +28,24 @@ function record(over: Partial<StoredUserActivity> = {}): StoredUserActivity {
   }
 }
 
+// Minimal curated set so the category/tag palettes have something to offer.
+const CURATED: Activity[] = [
+  {
+    id: 'a001',
+    number: 1,
+    title: 'Plage',
+    tags: ['🌊'],
+    category: 'Plage',
+    location: '',
+    transit: '',
+    description: '',
+    price: '',
+    rating: 0,
+    pepite: false,
+    secret: false,
+  },
+]
+
 // `active={false}` keeps the heavy Leaflet picker unmounted in jsdom.
 function renderScreen(props: Partial<Parameters<typeof AddActivityScreen>[0]> = {}) {
   const onAdd = vi.fn().mockResolvedValue(undefined)
@@ -36,6 +54,7 @@ function renderScreen(props: Partial<Parameters<typeof AddActivityScreen>[0]> = 
   const onPreview = vi.fn()
   const result = render(
     <AddActivityScreen
+      curatedActivities={CURATED}
       userActivities={[]}
       stored={[]}
       onAdd={onAdd}

@@ -15,6 +15,8 @@ const LocationPicker = lazy(() =>
 )
 
 interface AddActivityScreenProps {
+  /** Curated activities — source of the category / tag autocomplete palettes. */
+  curatedActivities: Activity[]
   /** Runtime user activities (carry resolved `photoUrls`) — for list previews. */
   userActivities: Activity[]
   /** Persisted records — for pre-filling the edit form (raw fields + photoRefs). */
@@ -30,6 +32,7 @@ interface AddActivityScreenProps {
 }
 
 export function AddActivityScreen({
+  curatedActivities,
   userActivities,
   stored,
   onAdd,
@@ -38,7 +41,7 @@ export function AddActivityScreen({
   onPreview,
   active,
 }: AddActivityScreenProps) {
-  const f = useAddActivityForm({ userActivities, onAdd, onUpdate })
+  const f = useAddActivityForm({ curatedActivities, userActivities, onAdd, onUpdate })
   // The scroll container lives here; startEdit scrolls it back to the top.
   const scrollRef = useRef<HTMLDivElement>(null)
 

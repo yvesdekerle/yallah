@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, act, within } from '@testing-library/react'
 import App from './App.tsx'
+import type { Activity } from './types/activity.ts'
+import activitiesJson from './data/activities.json'
+
+// Curated activities are code-split + loaded in main.tsx, then passed to <App>
+// as a prop. Inject the real list directly so these integration tests stay
+// synchronous (no dynamic-import / fake-timer interplay to await).
+const ACTIVITIES: Activity[] = activitiesJson
+const renderApp = () => render(<App activities={ACTIVITIES} />)
 
 // Locate a verdict-count tile on the Résultats screen by its visible label, so
 // count assertions read the user-facing label/number pair rather than a
@@ -22,7 +30,7 @@ describe('App (integration)', () => {
   })
 
   it('renders the wordmark and the first activity title', () => {
-    render(<App />)
+    renderApp()
     expect(screen.getByText('yallah')).toBeInTheDocument()
     // Heroic photo etc. don't load, but the first activity title from the
     // markdown should be visible inside the card.
@@ -32,12 +40,12 @@ describe('App (integration)', () => {
   })
 
   it('disables the undo button until a vote has been recorded', () => {
-    render(<App />)
+    renderApp()
     expect(screen.getByLabelText('annuler le dernier swipe')).toBeDisabled()
   })
 
   it('voting through the action row advances the deck', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     // After the exit animation a different activity is on top.
     act(() => {
@@ -56,7 +64,7 @@ describe('App (integration)', () => {
   })
 
   it('persists the vote history to localStorage', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('non'))
     act(() => {
       vi.advanceTimersByTime(800)
@@ -69,7 +77,7 @@ describe('App (integration)', () => {
   })
 
   it('undo removes the last vote and re-disables when empty', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
@@ -85,7 +93,7 @@ describe('App (integration)', () => {
   })
 
   it('after 5 super-likes the 6th attempt is converted with the toast', () => {
-    render(<App />)
+    renderApp()
     const superBtn = () => screen.getByLabelText('super like')
     for (let i = 0; i < 5; i++) {
       fireEvent.click(superBtn())
@@ -100,13 +108,13 @@ describe('App (integration)', () => {
   })
 
   it('opens the detail modal when the eye button is clicked', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('voir le détail'))
     expect(screen.getByTestId('detail-sheet')).toBeInTheDocument()
   })
 
   it('switches to the résultats tab and shows the current vote counts', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
@@ -121,7 +129,7 @@ describe('App (integration)', () => {
   })
 
   it('switches to the groupe tab and lists the 9 participants', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('groupe'))
     expect(screen.getByText('Le groupe')).toBeInTheDocument()
     // Participant rows render their visible names — assert those rather than a
@@ -131,7 +139,7 @@ describe('App (integration)', () => {
   })
 
   it('reset from résultats clears history after confirmation', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
@@ -157,7 +165,7 @@ describe('App (integration)', () => {
         { id: 'a002', verdict: 'oui' },
       ]),
     )
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('résultats'))
     expect(verdictTile('↓ why not').getByText('1')).toBeInTheDocument()
     expect(verdictTile('♥ like').getByText('1')).toBeInTheDocument()
@@ -174,13 +182,13 @@ describe('App (integration)', () => {
         { id: 'a002', verdict: 'neutre' },
       ]),
     )
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('résultats'))
     expect(verdictTile('↓ why not').getByText('2')).toBeInTheDocument()
   })
 
   it('random-fill generates 2–3 super-likes and completes the deck', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('résultats'))
     fireEvent.click(
       screen.getByLabelText('remplir aléatoirement les activités restantes'),
@@ -197,7 +205,7 @@ describe('App (integration)', () => {
   })
 
   it('review mode re-walks the deck from card 1 and shows the review affordances', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
@@ -215,7 +223,7 @@ describe('App (integration)', () => {
   })
 
   it('the eye in review mode opens the current card, not allActivities[history.length]', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)
@@ -231,7 +239,7 @@ describe('App (integration)', () => {
   })
 
   it('voting from a Résultats-row detail upserts the existing vote (no duplicate)', () => {
-    render(<App />)
+    renderApp()
     fireEvent.click(screen.getByLabelText('like'))
     act(() => {
       vi.advanceTimersByTime(800)

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Activity, Difficulty } from '../types/activity.ts'
 import type { PhotoRef, StoredUserActivity } from '../types/userActivity.ts'
 import type { PhotoDraft, UserActivityInput } from './useUserActivities.ts'
-import { ACTIVITIES } from '../data/activities.ts'
 import { isSafePhotoUrl } from '../utils/photoUrl.ts'
 
 export const DIFFICULTIES: Difficulty[] = [
@@ -46,6 +45,8 @@ const EMPTY = {
 }
 
 interface UseAddActivityFormArgs {
+  /** Curated activities — the source of the category / tag suggestion palettes. */
+  curatedActivities: Activity[]
   userActivities: Activity[]
   onAdd: (input: UserActivityInput) => Promise<void>
   onUpdate: (id: string, input: UserActivityInput) => Promise<void>
@@ -59,22 +60,23 @@ interface UseAddActivityFormArgs {
  * photo list — splitting would just draw a boundary through that coupling.
  */
 export function useAddActivityForm({
+  curatedActivities,
   userActivities,
   onAdd,
   onUpdate,
 }: UseAddActivityFormArgs) {
   const categories = useMemo(
-    () => Array.from(new Set(ACTIVITIES.map((a) => a.category))),
-    [],
+    () => Array.from(new Set(curatedActivities.map((a) => a.category))),
+    [curatedActivities],
   )
   // Every emoji tag used across the curated activities, offered as a palette
   // (minus 💎 / 🗝️, which the Pépite / Secret toggles own).
   const existingTags = useMemo(
     () =>
-      Array.from(new Set(ACTIVITIES.flatMap((a) => a.tags))).filter(
+      Array.from(new Set(curatedActivities.flatMap((a) => a.tags))).filter(
         (t) => !SPECIAL_TAGS.includes(t),
       ),
-    [],
+    [curatedActivities],
   )
 
   const [editingId, setEditingId] = useState<string | null>(null)

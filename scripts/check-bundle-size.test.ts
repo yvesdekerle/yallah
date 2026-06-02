@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { evaluateBundle, auditLeaflet, type Budgets } from './check-bundle-size.ts'
 
-const B: Budgets = { mainKB: 135, lazyKB: 15 }
+const B: Budgets = { mainKB: 135, lazyKB: 15, dataKB: 40 }
 
 describe('evaluateBundle', () => {
   it('flags the main entry chunk over budget', () => {
@@ -18,6 +18,16 @@ describe('evaluateBundle', () => {
 
   it('excludes the Leaflet (TileLayer) vendor chunk even when large', () => {
     expect(evaluateBundle([{ name: 'TileLayer-x.js', gzipKB: 90 }], B)).toEqual([])
+  })
+
+  it('judges the activities data chunk against the larger data budget', () => {
+    // Within the data budget (would bust the 15 kB lazy budget) → no violation.
+    expect(evaluateBundle([{ name: 'activities-x.js', gzipKB: 30 }], B)).toEqual([])
+    // Over the data budget → flagged as 'data', not 'lazy'.
+    const v = evaluateBundle([{ name: 'activities-x.js', gzipKB: 50 }], B)
+    expect(v).toHaveLength(1)
+    expect(v[0]!.kind).toBe('data')
+    expect(v[0]!.budgetKB).toBe(40)
   })
 
   it('passes when every chunk is within budget', () => {

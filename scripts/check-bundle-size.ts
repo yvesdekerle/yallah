@@ -10,17 +10,19 @@ export interface Chunk {
 export interface Budgets {
   mainKB: number
   lazyKB: number
+  dataKB: number
 }
 export interface Violation extends Chunk {
   budgetKB: number
-  kind: 'main' | 'lazy'
+  kind: 'main' | 'lazy' | 'data'
 }
 
 // Classify chunks by Vite's DEFAULT naming (vite.config.ts sets no
 // `manualChunks`/`chunkFileNames`): the entry is `index-[hash].js`;
 // `TileLayer-[hash].js` is the Leaflet vendor chunk — a fixed third-party cost
-// that's lazy-loaded, so it's EXCLUDED from the budget; everything else is a
-// lazy route/feature chunk.
+// that's lazy-loaded, so it's EXCLUDED from the budget; `activities-[hash].js`
+// is the code-split curated dataset, judged against its own (larger) data
+// budget; everything else is a lazy route/feature chunk.
 export function evaluateBundle(chunks: Chunk[], budgets: Budgets): Violation[] {
   const violations: Violation[] = []
   for (const c of chunks) {
@@ -28,6 +30,12 @@ export function evaluateBundle(chunks: Chunk[], budgets: Budgets): Violation[] {
     if (c.name.startsWith('index-')) {
       if (c.gzipKB > budgets.mainKB) {
         violations.push({ ...c, budgetKB: budgets.mainKB, kind: 'main' })
+      }
+    } else if (c.name.startsWith('activities-')) {
+      // Code-split curated dataset (lazy, loaded behind the splash). It's a
+      // data payload, not a route/feature code chunk — hence its own budget.
+      if (c.gzipKB > budgets.dataKB) {
+        violations.push({ ...c, budgetKB: budgets.dataKB, kind: 'data' })
       }
     } else if (c.gzipKB > budgets.lazyKB) {
       violations.push({ ...c, budgetKB: budgets.lazyKB, kind: 'lazy' })
@@ -70,12 +78,17 @@ export function auditLeaflet(chunks: NamedCode[]): LeafletAudit {
 // Budgets are measured against this script's `gzipSync(level 9)` output, which
 // runs ~4 kB below Vite's build-log gzip number (different compressor effort).
 // THIS number is the source of truth — ignore the Vite log for the budget.
-const BUDGETS: Budgets = { mainKB: 135, lazyKB: 15 }
+// `mainKB` lowered from 135 → 105 after code-splitting activities.json out of
+// the entry (measured ~98 kB gzip here); locks the ~28 kB gain. `dataKB` (40)
+// gives the curated dataset (~28 kB gzip / 198 activities) room to grow before
+// it needs paginating.
+const BUDGETS: Budgets = { mainKB: 105, lazyKB: 15, dataKB: 40 }
 const ASSETS_DIR = 'dist/assets'
 
 function kindOf(name: string): string {
   if (name.startsWith('TileLayer-')) return 'leaflet(skip)'
   if (name.startsWith('index-')) return 'main'
+  if (name.startsWith('activities-')) return 'data'
   return 'lazy'
 }
 
@@ -132,8 +145,8 @@ function main(): void {
     process.exit(1)
   }
   console.log(
-    `\n✓ bundle within budget (main ≤ ${BUDGETS.mainKB} kB, lazy ≤ ${BUDGETS.lazyKB} kB gzip; ` +
-      'Leaflet excluded) — and Leaflet confined to its lazy vendor chunk',
+    `\n✓ bundle within budget (main ≤ ${BUDGETS.mainKB} kB, lazy ≤ ${BUDGETS.lazyKB} kB, ` +
+      `data ≤ ${BUDGETS.dataKB} kB gzip; Leaflet excluded) — and Leaflet confined to its lazy vendor chunk`,
   )
 }
 
