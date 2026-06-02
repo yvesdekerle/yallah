@@ -48,6 +48,39 @@ body {
   }
 }
 
+/* Leaflet photo-pin markers (built by src/utils/mapMarkers.ts). Static styling
+   lives here so the marker DOM carries only CSS classes — the dynamic ring
+   colour, photo and badge glyph are applied via the CSSOM (element.style.*),
+   which keeps the markers out of the CSP `style-src 'unsafe-inline'` surface. */
+.yallah-photo-pin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.yallah-photo-pin__circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid; /* colour set via CSSOM (verdict ring) */
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 6px rgba(20, 30, 50, 0.4);
+}
+.yallah-photo-pin__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  /* background set via CSSOM (verdict ring) */
+}
+
 @media (max-width: 460px) {
   #root {
     max-width: 100vw;

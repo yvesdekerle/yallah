@@ -15,6 +15,18 @@ interface PhotoPinOptions {
 /**
  * Circular hero-photo Leaflet marker. Shared by the aggregated FullscreenMap
  * and the DetailModal mini-map so a pin reads the same everywhere.
+ *
+ * The marker DOM is built with the DOM API and handed to Leaflet as an
+ * `Element` (Leaflet `appendChild`s it instead of assigning innerHTML). Static
+ * styling lives in the `.yallah-photo-pin*` classes (src/index.css); the
+ * dynamic ring colour, photo and badge glyph are applied via the CSSOM
+ * (`element.style.*`) and `textContent`. Two payoffs:
+ *  - **CSP**: no declarative `style="…"` attribute is ever produced, so the
+ *    markers don't depend on `style-src 'unsafe-inline'`.
+ *  - **XSS**: the untrusted photo URL only reaches `element.style.backgroundImage`
+ *    (a CSSOM write — it cannot create DOM) and the badge only reaches
+ *    `textContent`, so injection is structurally impossible. `cssUrlValue`
+ *    additionally keeps the URL from breaking the `url('…')` CSS string.
  */
 export function photoPinIcon({
   photo,
@@ -22,28 +34,25 @@ export function photoPinIcon({
   badge,
   size = 44,
 }: PhotoPinOptions): L.DivIcon {
-  const badgeHtml = badge
-    ? `<span style="
-        position:absolute;right:-2px;bottom:-2px;
-        width:18px;height:18px;border-radius:50%;
-        background:${ring};color:#fff;font-size:11px;line-height:18px;
-        text-align:center;border:2px solid #fff;
-      ">${badge}</span>`
-    : ''
-  // `photo` can be an untrusted user-pasted URL — escape it for the url('…')
-  // CSS-string context so it cannot break out into this divIcon's innerHTML.
-  const html = `
-    <div style="position:relative;width:${size}px;height:${size}px;">
-      <div style="
-        width:${size}px;height:${size}px;border-radius:50%;
-        background-image:url('${cssUrlValue(photo)}');background-size:cover;background-position:center;
-        border:3px solid ${ring};box-shadow:0 2px 6px rgba(20,30,50,0.4);
-      "></div>
-      ${badgeHtml}
-    </div>
-  `
+  const root = document.createElement('div')
+  root.className = 'yallah-photo-pin'
+
+  const circle = document.createElement('div')
+  circle.className = 'yallah-photo-pin__circle'
+  circle.style.borderColor = ring
+  circle.style.backgroundImage = `url('${cssUrlValue(photo)}')`
+  root.appendChild(circle)
+
+  if (badge) {
+    const badgeEl = document.createElement('span')
+    badgeEl.className = 'yallah-photo-pin__badge'
+    badgeEl.style.background = ring
+    badgeEl.textContent = badge
+    root.appendChild(badgeEl)
+  }
+
   return L.divIcon({
-    html,
+    html: root,
     className: '',
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],

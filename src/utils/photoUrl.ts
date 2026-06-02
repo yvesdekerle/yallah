@@ -1,6 +1,9 @@
 // Safety helpers for photo URLs that originate from untrusted user input
-// (pasted into the "Add activity" form). Such a URL can flow into a Leaflet
-// `divIcon({ html })` sink — an innerHTML assignment — via mapMarkers.ts.
+// (pasted into the "Add activity" form). Such a URL flows into a Leaflet
+// photo-pin marker via mapMarkers.ts, where it is applied as a CSSOM
+// `element.style.backgroundImage = url('…')` value. `isSafePhotoUrl` rejects
+// dangerous URLs at paste time; `cssUrlValue` escapes whatever still reaches
+// that `url('…')` CSS-string context (e.g. values restored from localStorage).
 
 const SAFE_SCHEMES = new Set(['http:', 'https:', 'blob:'])
 
@@ -26,9 +29,10 @@ export function isSafePhotoUrl(raw: string): boolean {
 }
 
 /**
- * Escape a URL for safe embedding inside `url('…')` within an innerHTML string.
- * Backslash-hex-escapes only the characters dangerous in that context
- * (`' " < > \` and line terminators) as CSS string escapes (`\27 ` etc.),
+ * Escape a URL for safe embedding inside a `url('…')` CSS value (assigned via
+ * the CSSOM as `element.style.backgroundImage`). Backslash-hex-escapes the
+ * characters that could break the url() string (`' " \` and line terminators,
+ * plus `< >` for belt-and-suspenders) as CSS string escapes (`\27 ` etc.),
  * leaving `%`, parens, `&` and spaces untouched so already percent-encoded
  * URLs are not double-encoded (which would make the image 404).
  */
