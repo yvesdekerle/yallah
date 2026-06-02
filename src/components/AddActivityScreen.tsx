@@ -159,15 +159,25 @@ export function AddActivityScreen({
                       className="inline-flex items-center justify-center border-0 cursor-pointer"
                       style={{
                         background: 'transparent',
-                        width: 44,
-                        height: 44,
+                        width: 48,
+                        height: 48,
                         padding: 0,
                       }}
                     >
+                      {/* pointer-events:none → the whole 48px button captures
+                          the tap, not just the painted star shape. */}
                       {on ? (
-                        <StarFilled color={YB.top} size={28} />
+                        <StarFilled
+                          color={YB.top}
+                          size={34}
+                          style={{ pointerEvents: 'none' }}
+                        />
                       ) : (
-                        <Star color="#C9C4BA" size={28} />
+                        <Star
+                          color="#C9C4BA"
+                          size={34}
+                          style={{ pointerEvents: 'none' }}
+                        />
                       )}
                     </button>
                   )
