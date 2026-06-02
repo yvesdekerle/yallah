@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, within } from '@testing-library/react'
 import App from './App.tsx'
 
 describe('App (integration)', () => {
@@ -167,5 +167,54 @@ describe('App (integration)', () => {
     render(<App />)
     fireEvent.click(screen.getByLabelText('résultats'))
     expect(screen.getByTestId('results-whynot')).toHaveTextContent('2')
+  })
+
+  it('random-fill generates 2–3 super-likes and completes the deck', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('résultats'))
+    fireEvent.click(
+      screen.getByLabelText('remplir aléatoirement les activités restantes'),
+    )
+    expect(screen.getByText('Remplir aléatoirement ?')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Remplir' }))
+    expect(screen.getByText('198 / 198 activités swipées.')).toBeInTheDocument()
+    // Guaranteed 2–3 super-likes (capped by the quota of 5 and the pool size).
+    const supers = Number(screen.getByTestId('results-top').textContent)
+    expect(supers).toBeGreaterThanOrEqual(2)
+    expect(supers).toBeLessThanOrEqual(3)
+  })
+
+  it('review mode re-walks the deck from card 1 and shows the review affordances', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('résultats'))
+    fireEvent.click(screen.getByText('Revoir mes votes'))
+    // App-level exit pill.
+    expect(screen.getByText('Mode révision')).toBeInTheDocument()
+    // topIdx reset to 0 → card 1 is active again despite history.length === 1.
+    expect(
+      screen.getByRole('heading', { name: 'Snorkeling à Blue Bay Marine Park' }),
+    ).toBeInTheDocument()
+    // Per-card "you already voted" affordance on the re-walked card.
+    expect(screen.getByRole('region', { name: /Tu as voté/ })).toBeInTheDocument()
+  })
+
+  it('the eye in review mode opens the current card, not allActivities[history.length]', () => {
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('résultats'))
+    fireEvent.click(screen.getByText('Revoir mes votes'))
+    fireEvent.click(screen.getByLabelText('voir le détail'))
+    // getCurrent() at topIdx 0 = card 1; the buggy fallback would show card 2.
+    const sheet = screen.getByTestId('detail-sheet')
+    expect(
+      within(sheet).getByText('Snorkeling à Blue Bay Marine Park'),
+    ).toBeInTheDocument()
   })
 })
