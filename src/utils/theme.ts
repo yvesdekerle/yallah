@@ -17,6 +17,9 @@ export const YB = {
   ink: '#181B1F',
   ink2: '#3A3D44',
   muted: '#7A7B85',
+  // Lighter muted grey for disabled / exhausted states (e.g. the super-like
+  // star + badge when the quota is spent) and softer section sub-headings.
+  mutedSoft: '#9A93A6',
 
   // Brand
   primary: '#FFCB45',

@@ -71,7 +71,7 @@ function ActionButton({
         <span
           data-testid="super-badge"
           className="yallah-action-badge"
-          style={{ background: badge > 0 ? color : '#9A93A6' }}
+          style={{ background: badge > 0 ? color : YB.mutedSoft }}
         >
           {badge}
         </span>
@@ -160,8 +160,8 @@ export function ActionRow({
         onAct={onAct}
         icon={
           <Star
-            color={noSuper ? '#9A93A6' : YB.top}
-            fill={noSuper ? '#9A93A6' : YB.top}
+            color={noSuper ? YB.mutedSoft : YB.top}
+            fill={noSuper ? YB.mutedSoft : YB.top}
             size={22}
           />
         }

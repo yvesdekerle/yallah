@@ -17,6 +17,7 @@ export default {
           ink: '#181B1F',
           ink2: '#3A3D44',
           muted: '#7A7B85',
+          mutedSoft: '#9A93A6',
           // Brand
           primary: '#FFCB45',
           primaryDeep: '#E5A30F',

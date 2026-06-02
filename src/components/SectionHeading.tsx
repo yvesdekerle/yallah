@@ -27,7 +27,7 @@ export function SectionHeading({ children, count }: SectionHeadingProps) {
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: '#9A93A6',
+            color: YB.mutedSoft,
             letterSpacing: -0.1,
           }}
         >
