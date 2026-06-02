@@ -137,4 +137,35 @@ describe('App (integration)', () => {
       JSON.parse(window.localStorage.getItem('yallah.history.v1')!),
     ).toEqual([])
   })
+
+  it('migrates a legacy "neutre" vote to "whynot" on load', () => {
+    // Pre-rename users may still carry a 'neutre' verdict in storage (the id
+    // was renamed to 'whynot'). migrateHistory rewrites it so the vote keeps
+    // counting in the right bucket; non-legacy verdicts pass through untouched.
+    window.localStorage.setItem(
+      'yallah.history.v1',
+      JSON.stringify([
+        { id: 'a001', verdict: 'neutre' },
+        { id: 'a002', verdict: 'oui' },
+      ]),
+    )
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('résultats'))
+    expect(screen.getByTestId('results-whynot')).toHaveTextContent('1')
+    expect(screen.getByTestId('results-oui')).toHaveTextContent('1')
+    expect(screen.queryByTestId('results-neutre')).not.toBeInTheDocument()
+  })
+
+  it('migrates an all-legacy "neutre" history without crashing', () => {
+    window.localStorage.setItem(
+      'yallah.history.v1',
+      JSON.stringify([
+        { id: 'a001', verdict: 'neutre' },
+        { id: 'a002', verdict: 'neutre' },
+      ]),
+    )
+    render(<App />)
+    fireEvent.click(screen.getByLabelText('résultats'))
+    expect(screen.getByTestId('results-whynot')).toHaveTextContent('2')
+  })
 })
