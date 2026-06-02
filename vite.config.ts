@@ -19,8 +19,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'json-summary'],
       include: ['src/**/*.{ts,tsx}'],
-      // Thresholds are intentionally NOT set here — TEST-02 measures the real
-      // baseline first, then pins the floor + adds the CI ratchet.
+      // Integer floors just below the measured baseline. Ratchet: any
+      // regression below these fails `vitest run --coverage` (enforced in CI).
+      // Raise over time; do NOT "tidy" these up to the exact measured %.
+      thresholds: { lines: 66, functions: 59, branches: 67, statements: 63 },
       exclude: [
         'src/main.tsx',
         'src/vite-env.d.ts',
