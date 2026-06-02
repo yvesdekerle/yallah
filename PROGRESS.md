@@ -139,3 +139,17 @@ Mémoire d'avancement (source de vérité). Mise à jour à chaque transition d'
 **Implémenté (TDD)** : `DetailMetaTiles.tsx` (bloc → 2 lignes calculées, `return null` sans coords) + `Card.tsx` (ligne « depuis Tamarin » calculée, masquée sans coords). 3 tests DetailModal + 2 tests Card (RED→GREEN). **279 unit / 25 e2e ✓**, build + lint OK.
 
 **⚠️ BACKLOG (plus tard, avec le hors-ligne)** : **~78/198 activités sans coords** → leur bloc Trajets est masqué (temporaire). Récupérer les coords manquantes (`npm run geocode:activities` + `coords-overrides.json`) pour réafficher les trajets partout. Cf. mémoire deferred-work item 3.
+
+---
+
+## Hors-audit — Lot « Ajouter une activité » (juin 2026)
+
+7 retours Yves sur le formulaire d'ajout, corrigés en 6 commits TDD sur `feature/optims` :
+
+1. **Note ⭐ (#1)** — cibles 30→44 px + tap = fixe la note (plus de remise à 0 accidentelle au re-tap) + bouton « Effacer ». `AddActivityScreen.tsx`. `ed325cd`→`c25f8f1`.
+2. **Tags #2/#5** — 💎/🗝️ retirés de la palette (les toggles Pépite/Secret sont la source unique, re-synchronisés dans `tags` à l'enregistrement, en tête pour l'anneau doré Card) ; bouton « Ajouter » des tags retiré (Entrée + blur suffisent). `useAddActivityForm.ts` + `TagPickerPanel.tsx`. `ed325cd`.
+3. **Position #4** — CSP `connect-src` débloque `nominatim.openstreetmap.org` (la recherche d'adresse remarche en prod) + champs latitude/longitude manuels. `vercel.json` + `LocationPicker.tsx`. `53f68f7`.
+4. **Activité ajoutée #6** — **pas de bug** : déjà appendue en fin de deck (choix Yves « à la fin », futur multi-user) → atteignable après le deck curé, dans Résultats une fois votée. Ajout : lignes « Mes activités ajoutées » cliquables → ouvrent le détail (source review) pour prévisualiser/voter tout de suite. `AddActivityScreen.tsx` + `App.tsx`. `ff82d85`.
+5. **Photo #3** — `resizeImage` lève sur format non décodable (HEIC sur navigateurs sans support) ; `submit` avalait l'erreur → maintenant catch + message d'alerte, formulaire conservé. `useAddActivityForm.ts`. `57305b8`.
+
+Suites : **288 unit / 25 e2e ✓**, build + lint + budget OK. Non mergé sur main (à tester en local).
