@@ -36,6 +36,37 @@ export function evaluateBundle(chunks: Chunk[], budgets: Budgets): Violation[] {
   return violations
 }
 
+// Leaflet ships runtime DOM class literals (`leaflet-pane`, `leaflet-container`,
+// `leaflet-zoom-*`, …) that survive minification — a reliable fingerprint for
+// "Leaflet's code is in THIS chunk". The map UI (DetailModal mini-map +
+// FullscreenMap) is `React.lazy`'d, so Leaflet must live ONLY in its own vendor
+// chunk and NEVER in the eager entry (`index-*`); a leak would drag ~43 kB gzip
+// into first paint. The size budget alone can't catch a partial leak that stays
+// under `mainKB`, so this content guard backstops PERF-06.
+const LEAFLET_FINGERPRINT = /leaflet-(?:pane|container|zoom|tile|map-pane)/
+
+export interface NamedCode {
+  name: string
+  code: string
+}
+export interface LeafletAudit {
+  /** Name of an eager `index-*` chunk containing Leaflet, or `null` if clean. */
+  leak: string | null
+  /** Whether ANY chunk carries the fingerprint (guards against a stale regex). */
+  vendorFound: boolean
+}
+
+export function auditLeaflet(chunks: NamedCode[]): LeafletAudit {
+  let leak: string | null = null
+  let vendorFound = false
+  for (const c of chunks) {
+    if (!LEAFLET_FINGERPRINT.test(c.code)) continue
+    vendorFound = true
+    if (c.name.startsWith('index-')) leak = c.name
+  }
+  return { leak, vendorFound }
+}
+
 // Budgets are measured against this script's `gzipSync(level 9)` output, which
 // runs ~4 kB below Vite's build-log gzip number (different compressor effort).
 // THIS number is the source of truth — ignore the Vite log for the budget.
@@ -56,10 +87,14 @@ function main(): void {
     console.error(`✗ ${ASSETS_DIR} not found — run \`npm run build\` first.`)
     process.exit(1)
   }
-  const chunks: Chunk[] = files.map((name) => ({
-    name,
-    gzipKB: gzipSync(readFileSync(join(ASSETS_DIR, name)), { level: 9 }).length / 1024,
-  }))
+  const chunks = files.map((name) => {
+    const buf = readFileSync(join(ASSETS_DIR, name))
+    return {
+      name,
+      gzipKB: gzipSync(buf, { level: 9 }).length / 1024,
+      code: buf.toString('utf8'),
+    }
+  })
 
   // Guard against a silent no-op pass: a real build always has an entry chunk.
   if (!chunks.some((c) => c.name.startsWith('index-'))) {
@@ -71,6 +106,23 @@ function main(): void {
     console.log(`  ${c.gzipKB.toFixed(1).padStart(7)} kB  ${kindOf(c.name).padEnd(13)} ${c.name}`)
   }
 
+  const audit = auditLeaflet(chunks)
+  if (!audit.vendorFound) {
+    console.error(
+      '\n✗ no Leaflet vendor chunk detected — the fingerprint may be stale (Leaflet ' +
+        'upgrade renamed its classes?) or the maps feature was removed. Update the ' +
+        'guard in scripts/check-bundle-size.ts.',
+    )
+    process.exit(1)
+  }
+  if (audit.leak !== null) {
+    console.error(
+      `\n✗ Leaflet leaked into the eager entry chunk (${audit.leak}) — it must stay ` +
+        'lazy-only. A map component is likely imported statically instead of via React.lazy.',
+    )
+    process.exit(1)
+  }
+
   const violations = evaluateBundle(chunks, BUDGETS)
   if (violations.length > 0) {
     console.error('\n✗ bundle budget exceeded:')
@@ -80,7 +132,8 @@ function main(): void {
     process.exit(1)
   }
   console.log(
-    `\n✓ bundle within budget (main ≤ ${BUDGETS.mainKB} kB, lazy ≤ ${BUDGETS.lazyKB} kB gzip; Leaflet excluded)`,
+    `\n✓ bundle within budget (main ≤ ${BUDGETS.mainKB} kB, lazy ≤ ${BUDGETS.lazyKB} kB gzip; ` +
+      'Leaflet excluded) — and Leaflet confined to its lazy vendor chunk',
   )
 }
 

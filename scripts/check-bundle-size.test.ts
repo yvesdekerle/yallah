@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBundle, type Budgets } from './check-bundle-size.ts'
+import { evaluateBundle, auditLeaflet, type Budgets } from './check-bundle-size.ts'
 
 const B: Budgets = { mainKB: 135, lazyKB: 15 }
 
@@ -42,5 +42,31 @@ describe('evaluateBundle', () => {
         B,
       ),
     ).toEqual([])
+  })
+})
+
+describe('auditLeaflet', () => {
+  // Minified Leaflet emits its DOM class literals verbatim; one is enough here.
+  const VENDOR = { name: 'TileLayer-x.js', code: 'a.className="leaflet-pane leaflet-map-pane"' }
+
+  it('reports no leak when Leaflet lives only in its vendor chunk', () => {
+    const r = auditLeaflet([{ name: 'index-x.js', code: 'console.log(1)' }, VENDOR])
+    expect(r.leak).toBeNull()
+    expect(r.vendorFound).toBe(true)
+  })
+
+  it('flags a leak when the eager entry chunk carries Leaflet code', () => {
+    const r = auditLeaflet([
+      { name: 'index-x.js', code: 'el.className="leaflet-container"' },
+      VENDOR,
+    ])
+    expect(r.leak).toBe('index-x.js')
+    expect(r.vendorFound).toBe(true)
+  })
+
+  it('reports vendorFound=false when no chunk carries the fingerprint (stale regex / maps removed)', () => {
+    const r = auditLeaflet([{ name: 'index-x.js', code: 'console.log(1)' }])
+    expect(r.vendorFound).toBe(false)
+    expect(r.leak).toBeNull()
   })
 })
