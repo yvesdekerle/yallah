@@ -9,72 +9,86 @@ import { MapOverlay } from './MapOverlay.tsx'
 import { SettingsModal } from './SettingsModal.tsx'
 import { TagFilterSheet } from './TagFilterSheet.tsx'
 
+/** A confirm dialog's visibility + its (self-closing) confirm and cancel. */
+interface ConfirmDialog {
+  open: boolean
+  onConfirm: () => void
+  onClose: () => void
+}
+
+export interface DetailOverlay {
+  state: DetailState
+  onClose: () => void
+  onVerdict: (verdict: Verdict) => void
+  /** DetailModal mini-map → open the fullscreen map above the sheet. */
+  onOpenMap: (view: MapView) => void
+}
+
+export interface MapOverlayState {
+  view: MapView | null
+  aboveDetail: boolean
+  onClose: () => void
+  onSelectActivity: (activity: Activity) => void
+}
+
+export interface ConfirmOverlays {
+  reset: ConfirmDialog
+  randomFill: ConfirmDialog
+  deleteActivity: ConfirmDialog
+}
+
+export interface PickerOverlay {
+  show: boolean
+  /** When false the picker is blocking (onboarding). */
+  changingIdentity: boolean
+  onPick: (id: string) => void
+  onExit: () => void
+}
+
+export interface SettingsOverlay {
+  open: boolean
+  version: string
+  onClose: () => void
+}
+
+export interface FilterOverlay {
+  open: boolean
+  availableTags: string[]
+  tagCounts: Record<string, number>
+  selected: string[]
+  onApply: (tags: string[]) => void
+  onClose: () => void
+}
+
 interface AppOverlaysProps {
-  // --- Shared data ---
+  // Shared data the overlays read.
   history: VoteEntry[]
   /** Curated + user activities — drives meDone, the random-fill count, the map pins. */
   activities: Activity[]
   userId: string | null
   superRemaining: number
-
-  // --- Detail sheet ---
-  detail: DetailState
-  onDetailClose: () => void
-  onDetailVerdict: (verdict: Verdict) => void
-  /** DetailModal mini-map → open the fullscreen map above the sheet. */
-  onOpenMapAboveDetail: (view: MapView) => void
-
-  // --- Fullscreen map ---
-  mapView: MapView | null
-  mapAboveDetail: boolean
-  onCloseMap: () => void
-  onMapSelectActivity: (a: Activity) => void
-
-  // --- Confirm dialogs (reset / random-fill / delete) ---
-  confirmingReset: boolean
-  onReset: () => void
-  onCloseReset: () => void
-  confirmingRandomFill: boolean
-  onRandomFill: () => void
-  onCloseRandomFill: () => void
-  confirmingDeleteActivity: boolean
-  onConfirmDeleteActivity: () => void
-  onCloseDeleteActivity: () => void
-
-  // --- Identity picker ---
-  showPicker: boolean
-  /** When false the picker is blocking (onboarding) — no close affordance. */
-  changingIdentity: boolean
-  onPickIdentity: (id: string) => void
-  onExitChangeIdentity: () => void
-
-  // --- Settings ---
-  settingsOpen: boolean
-  appVersion: string
-  onCloseSettings: () => void
-
-  // --- Tag filter ---
-  filterOpen: boolean
-  availableTags: string[]
-  tagCounts: Record<string, number>
-  selectedTags: string[]
-  onApplyTags: (tags: string[]) => void
-  onCloseFilter: () => void
+  // Each overlay's state + callbacks, grouped to keep the wiring legible.
+  detail: DetailOverlay
+  map: MapOverlayState
+  confirms: ConfirmOverlays
+  picker: PickerOverlay
+  settings: SettingsOverlay
+  filter: FilterOverlay
 }
 
 /**
- * The floating overlay layer that sits above the four tab screens: the detail
- * sheet, the confirm dialogs, the identity picker, the fullscreen map, the
- * settings sheet and the tag-filter sheet.
+ * The floating overlay layer above the four tab screens: the detail sheet, the
+ * confirm dialogs, the identity picker, the fullscreen map, the settings sheet
+ * and the tag-filter sheet.
  *
- * Lifted out of App so the orchestrator's render reads as a high-level
- * composition (chrome + tabs + nav + this layer) rather than ~80 lines of modal
- * wiring. All state lives in App and reaches here as props; the only derivations
- * done locally are pure view lookups (meDone, myVerdict, the random-fill count).
+ * Props are grouped by overlay (`detail`, `map`, `confirms`, …) rather than ~40
+ * flat props, so adding/changing an overlay touches one cohesive object. All
+ * state still lives in App; the only derivations done here are pure view lookups
+ * (meDone, myVerdict).
  *
  * Rendered at App level — NOT inside a scrollable screen — so each overlay's
- * `position: absolute; inset: 0` anchors to the Phone frame, not to scrolled
- * content (see the ConfirmModal gotcha in CLAUDE.md).
+ * `position: absolute; inset: 0` anchors to the Phone frame (see the
+ * ConfirmModal gotcha in CLAUDE.md).
  */
 export function AppOverlays({
   history,
@@ -82,50 +96,27 @@ export function AppOverlays({
   userId,
   superRemaining,
   detail,
-  onDetailClose,
-  onDetailVerdict,
-  onOpenMapAboveDetail,
-  mapView,
-  mapAboveDetail,
-  onCloseMap,
-  onMapSelectActivity,
-  confirmingReset,
-  onReset,
-  onCloseReset,
-  confirmingRandomFill,
-  onRandomFill,
-  onCloseRandomFill,
-  confirmingDeleteActivity,
-  onConfirmDeleteActivity,
-  onCloseDeleteActivity,
-  showPicker,
-  changingIdentity,
-  onPickIdentity,
-  onExitChangeIdentity,
-  settingsOpen,
-  appVersion,
-  onCloseSettings,
-  filterOpen,
-  availableTags,
-  tagCounts,
-  selectedTags,
-  onApplyTags,
-  onCloseFilter,
+  map,
+  confirms,
+  picker,
+  settings,
+  filter,
 }: AppOverlaysProps) {
   const meDone = history.length >= activities.length
-  const myVerdict = detail
-    ? (history.find((h) => h.id === detail.activity.id)?.verdict ?? null)
+  const detailState = detail.state
+  const myVerdict = detailState
+    ? (history.find((h) => h.id === detailState.activity.id)?.verdict ?? null)
     : null
 
   return (
     <>
-      {detail && (
+      {detailState && (
         <DetailModal
-          activity={detail.activity}
-          onClose={onDetailClose}
+          activity={detailState.activity}
+          onClose={detail.onClose}
           superRemaining={superRemaining}
-          onVerdict={onDetailVerdict}
-          onOpenMap={onOpenMapAboveDetail}
+          onVerdict={detail.onVerdict}
+          onOpenMap={detail.onOpenMap}
           meDone={meDone}
           userId={userId}
           myVerdict={myVerdict}
@@ -133,54 +124,48 @@ export function AppOverlays({
       )}
 
       <AppConfirmModals
-        confirmingReset={confirmingReset}
-        onConfirmReset={() => {
-          onReset()
-          onCloseReset()
-        }}
-        onCancelReset={onCloseReset}
-        confirmingRandomFill={confirmingRandomFill}
+        confirmingReset={confirms.reset.open}
+        onConfirmReset={confirms.reset.onConfirm}
+        onCancelReset={confirms.reset.onClose}
+        confirmingRandomFill={confirms.randomFill.open}
         randomFillCount={activities.length - history.length}
-        onConfirmRandomFill={() => {
-          onRandomFill()
-          onCloseRandomFill()
-        }}
-        onCancelRandomFill={onCloseRandomFill}
-        confirmingDeleteActivity={confirmingDeleteActivity}
-        onConfirmDeleteActivity={onConfirmDeleteActivity}
-        onCancelDeleteActivity={onCloseDeleteActivity}
+        onConfirmRandomFill={confirms.randomFill.onConfirm}
+        onCancelRandomFill={confirms.randomFill.onClose}
+        confirmingDeleteActivity={confirms.deleteActivity.open}
+        onConfirmDeleteActivity={confirms.deleteActivity.onConfirm}
+        onCancelDeleteActivity={confirms.deleteActivity.onClose}
       />
 
-      {showPicker && (
+      {picker.show && (
         <IdentityPicker
           currentUserId={userId}
-          onPick={onPickIdentity}
-          onClose={changingIdentity ? onExitChangeIdentity : undefined}
+          onPick={picker.onPick}
+          onClose={picker.changingIdentity ? picker.onExit : undefined}
         />
       )}
 
-      {mapView && (
+      {map.view && (
         <MapOverlay
-          view={mapView}
+          view={map.view}
           history={history}
           activities={activities}
-          aboveDetail={mapAboveDetail}
-          onClose={onCloseMap}
-          onSelectActivity={onMapSelectActivity}
+          aboveDetail={map.aboveDetail}
+          onClose={map.onClose}
+          onSelectActivity={map.onSelectActivity}
         />
       )}
 
-      {settingsOpen && (
-        <SettingsModal version={appVersion} onClose={onCloseSettings} />
+      {settings.open && (
+        <SettingsModal version={settings.version} onClose={settings.onClose} />
       )}
 
-      {filterOpen && (
+      {filter.open && (
         <TagFilterSheet
-          tags={availableTags}
-          tagCounts={tagCounts}
-          selected={selectedTags}
-          onApply={onApplyTags}
-          onClose={onCloseFilter}
+          tags={filter.availableTags}
+          tagCounts={filter.tagCounts}
+          selected={filter.selected}
+          onApply={filter.onApply}
+          onClose={filter.onClose}
         />
       )}
     </>

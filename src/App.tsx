@@ -440,44 +440,68 @@ export default function App({ activities }: AppProps) {
           activities={allActivities}
           userId={userId}
           superRemaining={superRemaining}
-          detail={detail}
-          onDetailClose={() => setDetail(null)}
-          onDetailVerdict={handleDetailVerdict}
-          onOpenMapAboveDetail={openMapAboveDetail}
-          mapView={mapView}
-          mapAboveDetail={mapAboveDetail}
-          onCloseMap={closeMap}
-          onMapSelectActivity={(a) => {
-            // Keep the map mounted underneath so closing the DetailModal
-            // returns the user to it instead of the swipe deck. Opened from
-            // outside (Results/swipe) → drop it below the modal we're opening.
-            setDetail({ activity: a, source: 'review' })
-            setMapAboveDetail(false)
+          detail={{
+            state: detail,
+            onClose: () => setDetail(null),
+            onVerdict: handleDetailVerdict,
+            onOpenMap: openMapAboveDetail,
           }}
-          confirmingReset={confirmingReset}
-          onReset={handleReset}
-          onCloseReset={() => setConfirmingReset(false)}
-          confirmingRandomFill={confirmingRandomFill}
-          onRandomFill={handleRandomFill}
-          onCloseRandomFill={() => setConfirmingRandomFill(false)}
-          confirmingDeleteActivity={confirmingDeleteActivity !== null}
-          onConfirmDeleteActivity={() => {
-            void handleConfirmDeleteActivity()
+          map={{
+            view: mapView,
+            aboveDetail: mapAboveDetail,
+            onClose: closeMap,
+            onSelectActivity: (a) => {
+              // Keep the map mounted underneath so closing the DetailModal
+              // returns the user to it instead of the swipe deck. Opened from
+              // outside (Results/swipe) → drop it below the modal we're opening.
+              setDetail({ activity: a, source: 'review' })
+              setMapAboveDetail(false)
+            },
           }}
-          onCloseDeleteActivity={() => setConfirmingDeleteActivity(null)}
-          showPicker={showPicker}
-          changingIdentity={changingIdentity}
-          onPickIdentity={handlePickIdentity}
-          onExitChangeIdentity={() => setChangingIdentity(false)}
-          settingsOpen={settingsOpen}
-          appVersion={APP_VERSION}
-          onCloseSettings={() => setSettingsOpen(false)}
-          filterOpen={filterOpen}
-          availableTags={availableTags}
-          tagCounts={tagCounts}
-          selectedTags={selectedTags}
-          onApplyTags={setSelectedTags}
-          onCloseFilter={() => setFilterOpen(false)}
+          confirms={{
+            reset: {
+              open: confirmingReset,
+              onConfirm: () => {
+                handleReset()
+                setConfirmingReset(false)
+              },
+              onClose: () => setConfirmingReset(false),
+            },
+            randomFill: {
+              open: confirmingRandomFill,
+              onConfirm: () => {
+                handleRandomFill()
+                setConfirmingRandomFill(false)
+              },
+              onClose: () => setConfirmingRandomFill(false),
+            },
+            deleteActivity: {
+              open: confirmingDeleteActivity !== null,
+              onConfirm: () => {
+                void handleConfirmDeleteActivity()
+              },
+              onClose: () => setConfirmingDeleteActivity(null),
+            },
+          }}
+          picker={{
+            show: showPicker,
+            changingIdentity,
+            onPick: handlePickIdentity,
+            onExit: () => setChangingIdentity(false),
+          }}
+          settings={{
+            open: settingsOpen,
+            version: APP_VERSION,
+            onClose: () => setSettingsOpen(false),
+          }}
+          filter={{
+            open: filterOpen,
+            availableTags,
+            tagCounts,
+            selected: selectedTags,
+            onApply: setSelectedTags,
+            onClose: () => setFilterOpen(false),
+          }}
         />
       </div>
     </Phone>
