@@ -46,13 +46,9 @@ export function TagFilterSheet({
       onClose={onClose}
       align="end"
       testId="filter-backdrop"
-      panelClassName="w-full"
+      panelClassName="w-full yallah-sheet"
       panelStyle={{
-        background: YB.surface,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
         padding: '20px 18px calc(env(safe-area-inset-bottom, 0px) + 18px)',
-        boxShadow: '0 -10px 30px -10px rgba(20,30,50,0.35)',
         maxHeight: '85%',
         display: 'flex',
         flexDirection: 'column',

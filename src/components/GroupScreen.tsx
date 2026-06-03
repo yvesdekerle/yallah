@@ -58,17 +58,14 @@ export function GroupScreen({
 
         {!meDone && (
           <div
-            className="flex items-start font-sans"
+            className="flex items-start font-sans yallah-card"
             style={{
               gap: 10,
               padding: '12px 14px',
               marginBottom: 14,
-              background: YB.surface,
-              borderRadius: 14,
               fontSize: 13,
               color: YB.ink2,
               lineHeight: 1.45,
-              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
             }}
             data-testid="reveal-lock-banner"
           >
@@ -93,13 +90,8 @@ export function GroupScreen({
             return (
               <div
                 key={p.id}
-                className="font-sans"
-                style={{
-                  background: YB.surface,
-                  borderRadius: 14,
-                  padding: '12px 14px',
-                  boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
-                }}
+                className="font-sans yallah-card"
+                style={{ padding: '12px 14px' }}
                 data-testid={`participant-${p.id}`}
               >
                 <div className="flex items-center" style={{ gap: 14 }}>

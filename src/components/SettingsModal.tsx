@@ -60,14 +60,11 @@ export function SettingsModal({
         </h1>
 
         <div
-          className="flex items-center"
+          className="flex items-center yallah-card"
           style={{
             justifyContent: 'space-between',
             marginTop: 24,
             padding: '14px 16px',
-            background: YB.surface,
-            borderRadius: 14,
-            boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
           }}
         >
           <span style={{ fontSize: 14, fontWeight: 600, color: YB.ink2 }}>
@@ -80,14 +77,11 @@ export function SettingsModal({
           href="https://docs.google.com/spreadsheets/d/1kPmZExsNV8C05CuWg8tyiRA1l4Jm7CftUSMxPohm1w4/edit?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center no-underline"
+          className="flex items-center no-underline yallah-card"
           style={{
             justifyContent: 'space-between',
             marginTop: 12,
             padding: '14px 16px',
-            background: YB.surface,
-            borderRadius: 14,
-            boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
             color: 'inherit',
             gap: 12,
           }}
