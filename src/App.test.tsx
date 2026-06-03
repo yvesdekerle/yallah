@@ -387,7 +387,8 @@ describe('App — user activities (add / edit / delete)', () => {
     const user = userEvent.setup()
     renderApp()
     await user.click(screen.getByLabelText('ajouter'))
-    await user.type(screen.getByLabelText('Titre'), 'Spot perso')
+    // The Ajouter tab is code-split — wait for the lazy chunk to mount.
+    await user.type(await screen.findByLabelText('Titre'), 'Spot perso')
     await user.click(screen.getByRole('button', { name: SUBMIT }))
     expect(await screen.findByText('Activité ajoutée')).toBeInTheDocument()
     expect(screen.getByText('Mes activités ajoutées')).toBeInTheDocument()
@@ -398,7 +399,7 @@ describe('App — user activities (add / edit / delete)', () => {
     const user = userEvent.setup()
     renderApp()
     await user.click(screen.getByLabelText('ajouter'))
-    await user.type(screen.getByLabelText('Titre'), 'Avant edit')
+    await user.type(await screen.findByLabelText('Titre'), 'Avant edit')
     await user.click(screen.getByRole('button', { name: SUBMIT }))
     await screen.findByText('Activité ajoutée')
 
@@ -417,7 +418,7 @@ describe('App — user activities (add / edit / delete)', () => {
     const user = userEvent.setup()
     renderApp()
     await user.click(screen.getByLabelText('ajouter'))
-    await user.type(screen.getByLabelText('Titre'), 'À supprimer')
+    await user.type(await screen.findByLabelText('Titre'), 'À supprimer')
     await user.click(screen.getByRole('button', { name: SUBMIT }))
     await screen.findByText('Activité ajoutée')
 

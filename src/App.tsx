@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
 import type { Verdict } from './types/verdict.ts'
 import { PARTICIPANTS } from './data/participants.ts'
@@ -18,7 +18,6 @@ import type { SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { SwipeScreen } from './components/SwipeScreen.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
-import { AddActivityScreen } from './components/AddActivityScreen.tsx'
 import { AppOverlays } from './components/AppOverlays.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
@@ -27,6 +26,16 @@ import {
   useUserActivities,
   type UserActivityInput,
 } from './hooks/useUserActivities.ts'
+
+// The "Ajouter" tab (~700 LOC of form + pickers) is split into its own chunk
+// and only fetched the first time the user opens that tab — keeping it out of
+// the eager entry bundle (PERF-01). Once visited it stays mounted (see
+// `addTabSeen`) so in-progress form state survives tab switches.
+const AddActivityScreen = lazy(() =>
+  import('./components/AddActivityScreen.tsx').then((m) => ({
+    default: m.AddActivityScreen,
+  })),
+)
 
 interface AppProps {
   /** Curated activities, loaded + code-split in `main.tsx` and injected here so
@@ -309,6 +318,11 @@ export default function App({ activities }: AppProps) {
 
   const onSwipeTab = activeTab === 0
 
+  // Mount the lazily-loaded "Ajouter" tab on first visit, then keep it mounted.
+  // (React 19 setState-during-render — runs once, then the guard short-circuits.)
+  const [addTabSeen, setAddTabSeen] = useState(false)
+  if (activeTab === 3 && !addTabSeen) setAddTabSeen(true)
+
   return (
     <Phone bg={YB.bgSun}>
       <div
@@ -377,21 +391,25 @@ export default function App({ activities }: AppProps) {
           />
         </div>
 
-        <div
-          style={{ display: activeTab === 3 ? 'contents' : 'none' }}
-          aria-hidden={activeTab !== 3}
-        >
-          <AddActivityScreen
-            curatedActivities={activities}
-            userActivities={userActivities}
-            stored={storedUserActivities}
-            onAdd={handleAddActivity}
-            onUpdate={handleUpdateActivity}
-            onRequestDelete={(id) => setConfirmingDeleteActivity(id)}
-            onPreview={(a) => setDetail({ activity: a, source: 'review' })}
-            active={activeTab === 3}
-          />
-        </div>
+        {addTabSeen && (
+          <div
+            style={{ display: activeTab === 3 ? 'contents' : 'none' }}
+            aria-hidden={activeTab !== 3}
+          >
+            <Suspense fallback={null}>
+              <AddActivityScreen
+                curatedActivities={activities}
+                userActivities={userActivities}
+                stored={storedUserActivities}
+                onAdd={handleAddActivity}
+                onUpdate={handleUpdateActivity}
+                onRequestDelete={(id) => setConfirmingDeleteActivity(id)}
+                onPreview={(a) => setDetail({ activity: a, source: 'review' })}
+                active={activeTab === 3}
+              />
+            </Suspense>
+          </div>
+        )}
 
         {toast && (
           <Toast
