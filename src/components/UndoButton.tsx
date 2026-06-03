@@ -17,7 +17,7 @@ export function UndoButton({ enabled, onClick }: UndoButtonProps) {
       disabled={!enabled}
       aria-label="annuler le dernier swipe"
       title="Annuler le dernier swipe"
-      className="phone-undo absolute z-[9] flex items-center justify-center border-0 p-0 transition-opacity"
+      className="phone-undo absolute z-chrome flex items-center justify-center border-0 p-0 transition-opacity"
       style={{
         top: 46,
         left: 18,

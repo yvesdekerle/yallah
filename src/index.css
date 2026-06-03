@@ -130,6 +130,9 @@ body {
   }
 }
 
+/* Phone breakpoint: below 460px the "device frame" mock collapses to a real
+   full-bleed phone screen (no bezel/notch, edge-to-edge). 460px ≈ just above
+   the 420px design width so the framed preview only shows on wider screens. */
 @media (max-width: 460px) {
   #root {
     max-width: 100vw;

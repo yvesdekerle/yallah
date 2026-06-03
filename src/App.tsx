@@ -191,7 +191,7 @@ export default function App({ activities }: AppProps) {
 
   const handleReset = useCallback(() => {
     // userId is cleared too → the blocking IdentityPicker re-appears and
-    // covers the toast (z-[40] > toast z-[9]), so no toast here.
+    // covers the toast (z-overlay > toast z-chrome), so no toast here.
     clearHistory()
     setUserId(null)
     setDone(false)

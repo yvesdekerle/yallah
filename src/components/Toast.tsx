@@ -24,7 +24,7 @@ export function Toast({ text, emoji, duration = 2400, onDone }: ToastProps) {
   return (
     <div
       role="status"
-      className="absolute z-[9] inline-flex items-center font-sans animate-yallahToast"
+      className="absolute z-chrome inline-flex items-center font-sans animate-yallahToast"
       style={{
         bottom: 162,
         left: '50%',

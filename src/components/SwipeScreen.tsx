@@ -77,7 +77,7 @@ export function SwipeScreen({
           type="button"
           onClick={onExitReview}
           aria-label="quitter le mode révision"
-          className="absolute z-[9] inline-flex items-center font-sans cursor-pointer border-0"
+          className="absolute z-chrome inline-flex items-center font-sans cursor-pointer border-0"
           style={{
             top: 46,
             right: 18,

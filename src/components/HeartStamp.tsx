@@ -14,7 +14,7 @@ export function HeartStamp({ intensity }: HeartStampProps) {
   const opacity = Math.min(1, intensity * 1.4 + 0.1)
   return (
     <div
-      className="pointer-events-none absolute z-[9]"
+      className="pointer-events-none absolute z-chrome"
       style={{
         top: '36%',
         left: '50%',

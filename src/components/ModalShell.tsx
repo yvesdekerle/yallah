@@ -45,7 +45,7 @@ export function ModalShell({
   onClose,
   align = 'center',
   tone = 'light',
-  zClassName = 'z-[40]',
+  zClassName = 'z-overlay',
   panelClassName = '',
   panelStyle,
   testId,

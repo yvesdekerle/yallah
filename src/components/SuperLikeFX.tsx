@@ -108,7 +108,7 @@ function makeSparkles(): Sparkle[] {
 export function SuperLikeFX() {
   const sparkles = useMemo(() => makeSparkles(), [])
   return (
-    <div className="pointer-events-none absolute inset-0 z-[20]">
+    <div className="pointer-events-none absolute inset-0 z-nav">
       {/* Radial flash */}
       <div
         className="absolute inset-0 animate-yallahFlash"

@@ -41,6 +41,25 @@ export default {
         serif: ['"Instrument Serif"', 'Georgia', 'serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
+      // Named radius scale (the recurring inline corner radii).
+      borderRadius: {
+        card: '12px',
+        sheet: '14px',
+        lg: '16px',
+      },
+      // Named app-level stacking layers, replacing the magic z-[9]/[40]/[50]/[80]
+      // arbitrary values. (Small within-component z-[1..8] stays local/inline.)
+      zIndex: {
+        chrome: '9', // floating chrome: undo button, review-exit pill, toast
+        nav: '20', // bottom navigation bar
+        overlay: '40', // modal backdrops (identity picker, filter, confirm)
+        sheet: '50', // detail sheet + photo lightbox
+        settings: '80', // hidden settings page
+      },
+      // NOTE: yallahDeckExit + yallahSparkleFly are keyframes only (no matching
+      // `animation` entry below): they're applied inline with JS-computed
+      // durations and CSS vars (--fx/--tx, --dx/--rot), so they can't be static
+      // `animate-*` utilities like the others.
       keyframes: {
         yallahDeckExit: {
           from: {

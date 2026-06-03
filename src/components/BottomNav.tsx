@@ -25,7 +25,7 @@ export function BottomNav({ active, onChange, dark = false }: BottomNavProps) {
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 z-[20] flex items-center justify-around"
+      className="absolute bottom-0 left-0 right-0 z-nav flex items-center justify-around"
       style={{
         height: 58,
         background: dark ? 'rgba(20,25,40,0.95)' : 'rgba(255,253,247,0.95)',

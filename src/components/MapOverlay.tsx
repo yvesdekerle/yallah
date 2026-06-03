@@ -53,7 +53,7 @@ export function MapOverlay({
     <Suspense
       fallback={
         <div
-          className="absolute inset-0 z-[40]"
+          className="absolute inset-0 z-overlay"
           style={{ background: YB.bgSoft }}
         />
       }

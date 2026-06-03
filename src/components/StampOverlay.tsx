@@ -26,7 +26,7 @@ export function StampOverlay({ verdict, intensity }: StampOverlayProps) {
   const opacity = Math.min(1, intensity * 1.4 + 0.1)
   return (
     <div
-      className="pointer-events-none absolute z-[9] font-sans"
+      className="pointer-events-none absolute z-chrome font-sans"
       style={{
         top: '38%',
         left: '50%',

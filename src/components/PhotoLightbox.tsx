@@ -110,7 +110,7 @@ export const PhotoLightbox = memo(function PhotoLightbox({
         onClose()
       }}
       onMouseDown={(e) => e.stopPropagation()}
-      className="absolute inset-0 z-[50] overflow-hidden outline-none"
+      className="absolute inset-0 z-sheet overflow-hidden outline-none"
       style={{
         background: enter ? 'rgba(10,12,18,0.96)' : 'rgba(10,12,18,0)',
         transition: 'background 0.22s',

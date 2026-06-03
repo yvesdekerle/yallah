@@ -25,7 +25,7 @@ export function SettingsModal({
       role="dialog"
       aria-modal="true"
       aria-label="Réglages"
-      className="absolute inset-0 z-[80] font-sans outline-none"
+      className="absolute inset-0 z-settings font-sans outline-none"
       style={{
         background: YB.bgSun,
         color: YB.ink,
