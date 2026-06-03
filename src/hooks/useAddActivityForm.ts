@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { Activity, Difficulty } from '../types/activity.ts'
-import type { PhotoRef, StoredUserActivity } from '../types/userActivity.ts'
-import type { PhotoDraft, UserActivityInput } from './useUserActivities.ts'
-import { isSafePhotoUrl } from '../utils/photoUrl.ts'
+import type { StoredUserActivity } from '../types/userActivity.ts'
+import type { UserActivityInput } from './useUserActivities.ts'
+import { usePhotoLifecycle } from './usePhotoLifecycle.ts'
+
+// Re-exported so consumers (PhotoPickerPanel) keep a single import surface.
+export type { PhotoItem } from './usePhotoLifecycle.ts'
 
 export const DIFFICULTIES: Difficulty[] = [
   { dot: '🟢', label: 'Facile' },
@@ -17,13 +20,6 @@ export const DIFFICULTIES: Difficulty[] = [
 const PEPITE_TAG = '💎'
 const SECRET_TAG = '🗝️'
 const SPECIAL_TAGS = [PEPITE_TAG, SECRET_TAG]
-
-export interface PhotoItem {
-  draft: PhotoDraft
-  preview: string
-  /** True when `preview` is an object URL we created (a picked file). */
-  createdUrl: boolean
-}
 
 interface LatLng {
   lat: number
@@ -53,11 +49,10 @@ interface UseAddActivityFormArgs {
 }
 
 /**
- * Owns the entire add/edit-activity form: field state, the picked-file photo
- * lifecycle (object-URL creation + revocation on remove/reset/unmount), URL
- * validation, edit-record hydration, and submit. Kept as one hook (rather than
- * a separate usePhotoPicker) because reset/submit/edit are entangled with the
- * photo list — splitting would just draw a boundary through that coupling.
+ * Owns the add/edit-activity form's fields, category/tag palettes, edit-record
+ * hydration and submit. The picked-file photo lifecycle (object-URL creation +
+ * revocation, paste-URL validation) is delegated to {@link usePhotoLifecycle}
+ * (ARCH-04), keeping this hook a thin orchestrator.
  */
 export function useAddActivityForm({
   curatedActivities,
@@ -85,48 +80,27 @@ export function useAddActivityForm({
   const [category, setCategory] = useState(categories[0] ?? '')
   const [categoryOther, setCategoryOther] = useState('')
   const [difficultyIdx, setDifficultyIdx] = useState(-1)
-  const [photos, setPhotos] = useState<PhotoItem[]>([])
   const [coords, setCoords] = useState<LatLng | null>(null)
-  const [urlInput, setUrlInput] = useState('')
-  const [urlError, setUrlError] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // Object URLs created for picked-file previews, revoked on reset/unmount.
-  const createdUrlsRef = useRef<Set<string>>(new Set())
-
-  useEffect(() => {
-    const created = createdUrlsRef.current
-    return () => created.forEach((u) => URL.revokeObjectURL(u))
-  }, [])
+  const photo = usePhotoLifecycle()
 
   const resetForm = () => {
-    photos.forEach((p) => {
-      if (p.createdUrl) {
-        URL.revokeObjectURL(p.preview)
-        createdUrlsRef.current.delete(p.preview)
-      }
-    })
+    photo.reset()
     setEditingId(null)
     setFields({ ...EMPTY })
     setCategoryMode('preset')
     setCategory(categories[0] ?? '')
     setCategoryOther('')
     setDifficultyIdx(-1)
-    setPhotos([])
     setCoords(null)
-    setUrlInput('')
     setSubmitError('')
   }
 
   const startEdit = (record: StoredUserActivity) => {
     const runtime = userActivities.find((a) => a.id === record.id)
     const urls = runtime?.photoUrls ?? []
-    const items: PhotoItem[] = record.photoRefs.map((ref, i) => ({
-      draft: { kind: 'ref', ref },
-      preview: ref.kind === 'url' ? ref.url : (urls[i] ?? '/photos/hero.jpg'),
-      createdUrl: false,
-    }))
     setEditingId(record.id)
     setFields({
       title: record.title,
@@ -154,43 +128,8 @@ export function useAddActivityForm({
         ? DIFFICULTIES.findIndex((d) => d.label === record.difficulty!.label)
         : -1,
     )
-    setPhotos(items)
+    photo.hydrate(record.photoRefs, urls)
     setCoords(record.coords ?? null)
-  }
-
-  const addFiles = (files: FileList | null) => {
-    if (!files) return
-    const next: PhotoItem[] = []
-    for (const file of Array.from(files)) {
-      const preview = URL.createObjectURL(file)
-      createdUrlsRef.current.add(preview)
-      next.push({ draft: { kind: 'file', file }, preview, createdUrl: true })
-    }
-    setPhotos((p) => [...p, ...next])
-  }
-
-  const addUrlPhoto = () => {
-    const url = urlInput.trim()
-    if (!url) return
-    if (!isSafePhotoUrl(url)) {
-      setUrlError('URL d’image invalide (https, http ou blob uniquement).')
-      return
-    }
-    const ref: PhotoRef = { kind: 'url', url }
-    setPhotos((p) => [...p, { draft: { kind: 'ref', ref }, preview: url, createdUrl: false }])
-    setUrlInput('')
-    setUrlError('')
-  }
-
-  const removePhoto = (idx: number) => {
-    setPhotos((p) => {
-      const item = p[idx]
-      if (item?.createdUrl) {
-        URL.revokeObjectURL(item.preview)
-        createdUrlsRef.current.delete(item.preview)
-      }
-      return p.filter((_, i) => i !== idx)
-    })
   }
 
   // Stable identity so the memoized TagPickerPanel doesn't re-render on every
@@ -205,12 +144,6 @@ export function useAddActivityForm({
       })),
     [],
   )
-
-  // Clear the URL error as soon as the user edits the field again.
-  const onUrlInputChange = (value: string) => {
-    setUrlInput(value)
-    if (urlError) setUrlError('')
-  }
 
   // The <select> emits the preset value or the `__other__` sentinel.
   const onCategoryChange = (value: string) => {
@@ -264,7 +197,7 @@ export function useAddActivityForm({
       secret: fields.secret,
       insolite: fields.insolite.trim() || undefined,
       coords: coords ?? undefined,
-      photos: photos.map((p) => p.draft),
+      photos: photo.photos.map((p) => p.draft),
     }
     try {
       if (editingId) await onUpdate(editingId, input)
@@ -293,12 +226,12 @@ export function useAddActivityForm({
     onCategoryChange,
     difficultyIdx,
     setDifficultyIdx,
-    photos,
+    photos: photo.photos,
     coords,
     setCoords,
-    urlInput,
-    urlError,
-    onUrlInputChange,
+    urlInput: photo.urlInput,
+    urlError: photo.urlError,
+    onUrlInputChange: photo.onUrlInputChange,
     submitError,
     saving,
     categories,
@@ -306,9 +239,9 @@ export function useAddActivityForm({
     canSubmit,
     resetForm,
     startEdit,
-    addFiles,
-    addUrlPhoto,
-    removePhoto,
+    addFiles: photo.addFiles,
+    addUrlPhoto: photo.addUrlPhoto,
+    removePhoto: photo.removePhoto,
     toggleTag,
     submit,
   }
