@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { YB } from '../utils/theme.ts'
 import { labelForTag } from '../utils/tags.ts'
+import { ModalShell } from './ModalShell.tsx'
 
 interface TagFilterSheetProps {
   /** All tags present in the deck, in display order. */
@@ -32,14 +33,6 @@ export function TagFilterSheet({
 }: TagFilterSheetProps) {
   const [draft, setDraft] = useState<string[]>(selected)
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const toggle = (tag: string) =>
     setDraft((d) =>
       d.includes(tag) ? d.filter((t) => t !== tag) : [...d, tag],
@@ -48,29 +41,23 @@ export function TagFilterSheet({
   const clearAll = () => setDraft([])
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Filtrer par catégorie"
-      data-testid="filter-backdrop"
-      onClick={onClose}
-      className="absolute inset-0 z-[40] flex items-end justify-center font-sans"
-      style={{ background: 'rgba(20,25,40,0.55)' }}
+    <ModalShell
+      ariaLabel="Filtrer par catégorie"
+      onClose={onClose}
+      align="end"
+      testId="filter-backdrop"
+      panelClassName="w-full"
+      panelStyle={{
+        background: '#fff',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: '20px 18px calc(env(safe-area-inset-bottom, 0px) + 18px)',
+        boxShadow: '0 -10px 30px -10px rgba(20,30,50,0.35)',
+        maxHeight: '85%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full"
-        style={{
-          background: '#fff',
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          padding: '20px 18px calc(env(safe-area-inset-bottom, 0px) + 18px)',
-          boxShadow: '0 -10px 30px -10px rgba(20,30,50,0.35)',
-          maxHeight: '85%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
         <div
           className="flex items-center"
           style={{ justifyContent: 'space-between', marginBottom: 4 }}
@@ -203,8 +190,7 @@ export function TagFilterSheet({
             ? 'Confirmer · tout afficher'
             : `Confirmer · ${draft.length} catégorie${draft.length > 1 ? 's' : ''}`}
         </button>
-      </div>
-    </div>
+    </ModalShell>
   )
 }
 

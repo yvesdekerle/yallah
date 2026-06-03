@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   MapContainer,
   Marker,
@@ -13,6 +13,7 @@ import type { Coords } from '../utils/coords.ts'
 import { YB } from '../utils/theme.ts'
 import { heroPhotoUrl } from '../utils/photos.ts'
 import { photoPinIcon } from '../utils/mapMarkers.ts'
+import { useModalA11y } from '../hooks/useModalA11y.ts'
 
 export interface MapPin {
   activity: Activity
@@ -73,13 +74,10 @@ export function FullscreenMap({
   onSelectActivity,
   zIndex = 40,
 }: FullscreenMapProps) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // Esc-to-close, focus trap + restoration (scoped to this overlay so it
+  // dismisses ahead of a detail sheet underneath it).
+  const ref = useRef<HTMLDivElement>(null)
+  useModalA11y(ref, { onClose })
 
   // When this overlay is opened by a touch tap (e.g. the DetailModal
   // mini-map), mobile browsers synthesize a "ghost" mouse click ~300ms
@@ -97,10 +95,12 @@ export function FullscreenMap({
 
   return (
     <div
+      ref={ref}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label="Carte des activités"
-      className="absolute inset-0"
+      className="absolute inset-0 outline-none"
       style={{ zIndex }}
     >
       <MapContainer

@@ -6,6 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { X } from '../icons/index.tsx'
+import { useModalA11y } from '../hooks/useModalA11y.ts'
 
 interface PhotoLightboxProps {
   photos: string[]
@@ -42,19 +43,24 @@ export function PhotoLightbox({
   // that lands on the backdrop doesn't also close the viewer.
   const suppressClickRef = useRef(false)
 
+  // Esc-to-close, focus trap + restoration. Scoped here so when the lightbox
+  // is layered over the detail sheet, Esc closes the photo first.
+  const rootRef = useRef<HTMLDivElement>(null)
+  useModalA11y(rootRef, { onClose })
+
   useEffect(() => {
     requestAnimationFrame(() => setEnter(true))
   }, [])
 
+  // Arrow-key navigation (Esc is handled by useModalA11y above).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowRight') onIndex(Math.min(index + 1, photos.length - 1))
       if (e.key === 'ArrowLeft') onIndex(Math.max(index - 1, 0))
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [index, photos.length, onIndex, onClose])
+  }, [index, photos.length, onIndex])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -85,6 +91,11 @@ export function PhotoLightbox({
 
   return (
     <div
+      ref={rootRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Photo en plein écran"
       data-testid="photo-lightbox"
       onClick={(e) => {
         // Stop the close-click from bubbling to the DetailModal backdrop,
@@ -97,7 +108,7 @@ export function PhotoLightbox({
         onClose()
       }}
       onMouseDown={(e) => e.stopPropagation()}
-      className="absolute inset-0 z-[50] overflow-hidden"
+      className="absolute inset-0 z-[50] overflow-hidden outline-none"
       style={{
         background: enter ? 'rgba(10,12,18,0.96)' : 'rgba(10,12,18,0)',
         transition: 'background 0.22s',

@@ -1,5 +1,7 @@
+import { useRef } from 'react'
 import { YB } from '../utils/theme.ts'
 import { X } from '../icons/index.tsx'
+import { useModalA11y } from '../hooks/useModalA11y.ts'
 
 /**
  * Hidden "Réglages" page, reachable only via 5 consecutive taps on the TopBar
@@ -13,11 +15,17 @@ export function SettingsModal({
   version: string
   onClose: () => void
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useModalA11y(ref, { onClose })
+
   return (
     <div
+      ref={ref}
+      tabIndex={-1}
       role="dialog"
+      aria-modal="true"
       aria-label="Réglages"
-      className="absolute inset-0 z-[80] font-sans"
+      className="absolute inset-0 z-[80] font-sans outline-none"
       style={{
         background: YB.bgSun,
         color: YB.ink,

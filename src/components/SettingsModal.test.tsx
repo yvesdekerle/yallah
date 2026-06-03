@@ -15,6 +15,13 @@ describe('SettingsModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
+  it('closes on Escape', () => {
+    const onClose = vi.fn()
+    render(<SettingsModal version="1.0.0" onClose={onClose} />)
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   it('links to the shared spreadsheet, opening safely in a new tab', () => {
     render(<SettingsModal version="1.0.0" onClose={() => {}} />)
     const link = screen.getByRole('link', { name: /Tableur des activités/ })

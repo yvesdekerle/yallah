@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
+import { useModalA11y } from '../hooks/useModalA11y.ts'
 import { detailPhotos } from '../utils/photos.ts'
 import { ActionRow } from './ActionRow.tsx'
 import { PhotoLightbox } from './PhotoLightbox.tsx'
@@ -73,6 +74,11 @@ export function DetailModal({
     window.setTimeout(onClose, 250)
   }
 
+  // Esc-to-close (running the slide-out), focus trap + restoration. Scoped to
+  // the sheet so when a lightbox/map is layered above, Esc dismisses that first.
+  const sheetRef = useRef<HTMLDivElement>(null)
+  useModalA11y(sheetRef, { onClose: close })
+
   const closeFromBackdrop = () => {
     if (!armed) return
     close()
@@ -99,9 +105,11 @@ export function DetailModal({
           (aria-modal + aria-label); this panel has no natural ARIA role of its
           own, so tests keep a data-testid to scope within(sheet) queries. */}
       <div
+        ref={sheetRef}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         data-testid="detail-sheet"
-        className="absolute left-0 right-0 bottom-0 overflow-y-auto font-sans"
+        className="absolute left-0 right-0 bottom-0 overflow-y-auto font-sans outline-none"
         style={{
           top: open ? 0 : '100%',
           background: YB.paper,
