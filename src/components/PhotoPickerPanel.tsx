@@ -2,6 +2,7 @@ import { YB } from '../utils/theme.ts'
 import { Plus, X } from '../icons/index.tsx'
 import { Field, SmallButton } from './AddActivityFields.tsx'
 import { inputStyle } from './addActivityStyles.ts'
+import { cssUrlValue } from '../utils/photoUrl.ts'
 import type { PhotoItem } from '../hooks/useAddActivityForm.ts'
 
 /**
@@ -37,7 +38,7 @@ export function PhotoPickerPanel({
                   width: 72,
                   height: 90,
                   borderRadius: 10,
-                  background: `url(${p.preview}) center/cover, ${YB.bgSoft}`,
+                  background: `url('${cssUrlValue(p.preview)}') center/cover, ${YB.bgSoft}`,
                   border: i === 0 ? `2px solid ${YB.coral}` : '2px solid transparent',
                 }}
                 aria-label={i === 0 ? 'photo principale' : `photo ${i + 1}`}

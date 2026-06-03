@@ -6,6 +6,7 @@ import { YB } from '../utils/theme.ts'
 import { Star, StarFilled } from '../icons/index.tsx'
 import { useAddActivityForm, DIFFICULTIES } from '../hooks/useAddActivityForm.ts'
 import { Field, FieldText, FieldArea, Chip, Toggle } from './AddActivityFields.tsx'
+import { cssUrlValue } from '../utils/photoUrl.ts'
 import { CategoryPicker } from './CategoryPicker.tsx'
 import { TagPickerPanel } from './TagPickerPanel.tsx'
 import { PhotoPickerPanel } from './PhotoPickerPanel.tsx'
@@ -358,7 +359,7 @@ export function AddActivityScreen({
                           height: 44,
                           borderRadius: 10,
                           flexShrink: 0,
-                          background: `url(${preview}) center/cover, ${YB.bgSoft}`,
+                          background: `url('${cssUrlValue(preview)}') center/cover, ${YB.bgSoft}`,
                         }}
                         aria-hidden
                       />
