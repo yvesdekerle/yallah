@@ -24,6 +24,9 @@ jobs:
       - run: npm run build
       # Fails the job if a chunk exceeds its gzip budget (regression ceiling).
       - run: npm run check:bundle
+      # Fails if a tokenised colour literal (#fff surface, backdrop rgba, …)
+      # reappears inline in src/components instead of using a YB.* token.
+      - run: npm run check:css
       # Coverage thresholds in vite.config.ts make this the ratchet:
       # the job fails if coverage drops below the pinned floor.
       - run: npm test -- --coverage

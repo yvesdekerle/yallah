@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "check:bundle": "tsx scripts/check-bundle-size.ts",
+    "check:css": "tsx scripts/check-css-tokens.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
