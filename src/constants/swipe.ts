@@ -28,4 +28,5 @@ export const STORAGE_KEYS = {
   history: 'yallah.history.v1',
   userId: 'yallah.userId.v1',
   tagFilter: 'yallah.tagFilter.v1',
+  googleUser: 'yallah.googleUser.v1',
 } as const
