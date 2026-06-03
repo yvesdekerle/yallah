@@ -49,6 +49,14 @@ export default function App({ activities }: AppProps) {
     null,
   )
   const [changingIdentity, setChangingIdentity] = useState(false)
+  // The swipe screen's mode is two *independent* flags, deliberately not a
+  // `'swiping' | 'review' | 'done'` union (ARCH-09): `done` (the current pass
+  // reached the end → show the ReviewPrompt) and `reviewMode` (re-walking to
+  // edit votes) are orthogonal, and all four combinations are reachable. In
+  // particular `reviewMode && done` is the end of a *review* pass: the prompt
+  // sits over the now-empty re-walked deck while the "exit review" pill stays
+  // available — a 3-state union can't express that without dropping the pill or
+  // just renaming the two booleans, so they stay separate.
   const [done, setDone] = useState(false)
   /**
    * Review-mode = "re-balayer le deck": after finishing the initial swipe
