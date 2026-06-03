@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { coordsFor } from '../utils/coords.ts'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict, VoteEntry } from '../types/verdict.ts'
-import { VERDICT_META } from '../constants/swipe.ts'
 import { YB } from '../utils/theme.ts'
-import { VerdictBadge } from './VerdictBadge.tsx'
+import { VerdictSummaryTiles } from './VerdictSummaryTiles.tsx'
+import { VotedActivityList, type VotedActivity } from './VotedActivityList.tsx'
 
 interface ResultsScreenProps {
   history: VoteEntry[]
@@ -26,18 +26,6 @@ interface ResultsScreenProps {
   onRequestRandomFill?: () => void
   /** Open the FullscreenMap with all LIKE/SUPER_LIKE pins. */
   onOpenMap?: () => void
-}
-
-const SUMMARY: { key: Verdict; label: string }[] = [
-  { key: 'oui', label: '♥ like' },
-  { key: 'top', label: '★ super like' },
-  { key: 'whynot', label: '↓ why not' },
-  { key: 'non', label: '✕ non' },
-]
-
-interface VotedActivity {
-  activity: Activity
-  verdict: Verdict
 }
 
 /**
@@ -149,54 +137,7 @@ export function ResultsScreen({
           {history.length} / {activities.length} activités swipées.
         </p>
 
-        <div
-          className="grid"
-          style={{
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: 6,
-            marginBottom: 24,
-          }}
-        >
-          {SUMMARY.map(({ key, label }) => (
-            <div
-              key={key}
-              className="text-left"
-              style={{
-                background: '#fff',
-                borderRadius: 12,
-                padding: '10px 8px',
-                boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
-                minWidth: 0,
-              }}
-            >
-              <div
-                className="font-mono"
-                style={{
-                  fontSize: 9,
-                  color: YB.muted,
-                  letterSpacing: 0.3,
-                  textTransform: 'uppercase',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {label}
-              </div>
-              <div
-                className="font-sans"
-                style={{
-                  fontWeight: 800,
-                  fontSize: 22,
-                  color: VERDICT_META[key].color,
-                  marginTop: 2,
-                }}
-              >
-                {counts[key]}
-              </div>
-            </div>
-          ))}
-        </div>
+        <VerdictSummaryTiles counts={counts} />
 
         {onOpenMap && mappablePins.length > 0 && (
           <>
@@ -238,89 +179,7 @@ export function ResultsScreen({
           </>
         )}
 
-        {voted.length === 0 ? (
-          <div
-            className="font-sans"
-            style={{
-              background: '#fff',
-              borderRadius: 14,
-              padding: 18,
-              fontSize: 14,
-              color: YB.ink2,
-              lineHeight: 1.5,
-              textAlign: 'center',
-            }}
-          >
-            Rien encore. Va swiper quelques activités, ça apparaîtra ici.
-          </div>
-        ) : (
-          <div className="flex flex-col" style={{ gap: 6 }}>
-            {voted.map(({ activity, verdict }) => {
-              const clickable = !!onSelectActivity
-              const Tag = clickable ? 'button' : ('div' as const)
-              return (
-                <Tag
-                  key={activity.id}
-                  {...(clickable
-                    ? {
-                        type: 'button' as const,
-                        onClick: () => onSelectActivity!(activity),
-                        'aria-label': `Voir le détail de ${activity.title}`,
-                      }
-                    : {})}
-                  className="flex items-center font-sans text-left w-full border-0"
-                  style={{
-                    background: '#fff',
-                    borderRadius: 12,
-                    padding: '8px 10px',
-                    gap: 12,
-                    boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
-                    cursor: clickable ? 'pointer' : 'default',
-                    transition: 'transform 0.12s, box-shadow 0.12s',
-                  }}
-                  onMouseDown={
-                    clickable
-                      ? (e) =>
-                          (e.currentTarget.style.transform = 'scale(0.98)')
-                      : undefined
-                  }
-                  onMouseUp={
-                    clickable
-                      ? (e) => (e.currentTarget.style.transform = 'scale(1)')
-                      : undefined
-                  }
-                  onMouseLeave={
-                    clickable
-                      ? (e) => (e.currentTarget.style.transform = 'scale(1)')
-                      : undefined
-                  }
-                >
-                  <VerdictBadge verdict={verdict} number={activity.number} />
-                  <span
-                    style={{
-                      fontSize: 14,
-                      lineHeight: 1.3,
-                      color: YB.ink,
-                      fontWeight: 500,
-                      flex: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    {activity.title}
-                  </span>
-                  {clickable && (
-                    <span
-                      style={{ color: YB.muted, fontSize: 18, flexShrink: 0 }}
-                      aria-hidden
-                    >
-                      ›
-                    </span>
-                  )}
-                </Tag>
-              )
-            })}
-          </div>
-        )}
+        <VotedActivityList voted={voted} onSelectActivity={onSelectActivity} />
 
         {onReview && history.length > 0 && (
           <button
