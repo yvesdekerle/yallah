@@ -29,23 +29,22 @@ test('tapping the mini-map opens the FullscreenMap', async ({ page }) => {
 test('"Voir sur la carte" button in Résultats opens the FullscreenMap', async ({
   page,
 }) => {
-  // Cast a LIKE on a001 (which has overridden coords).
+  // Cast a LIKE on a001 (which has overridden coords). The vote is recorded on
+  // commit, so we can switch tabs immediately and let the button assertion
+  // below auto-retry rather than waiting a fixed time for the exit animation.
   await page.getByLabel('like', { exact: true }).click()
-  await page.waitForTimeout(700)
   await page.getByRole('button', { name: 'résultats' }).click()
   const btn = page.getByRole('button', { name: /voir sur la carte/i })
   await expect(btn).toBeVisible()
   await btn.click()
-  await expect(
-    page.getByRole('dialog', { name: 'Carte des activités' }),
-  ).toBeVisible()
-  // The close button ignores actions in the first 400ms after open (the
-  // ghost-click guard); wait past that before an intentional close.
-  await page.waitForTimeout(450)
-  await page.getByLabel('fermer la carte').click()
-  await expect(
-    page.getByRole('dialog', { name: 'Carte des activités' }),
-  ).toHaveCount(0)
+  const mapDialog = page.getByRole('dialog', { name: 'Carte des activités' })
+  await expect(mapDialog).toBeVisible()
+  // The close button ignores clicks during the ~400ms ghost-click guard — retry
+  // the close until it actually dismisses the map, instead of a fixed wait.
+  await expect(async () => {
+    await page.getByLabel('fermer la carte').click()
+    await expect(mapDialog).toHaveCount(0)
+  }).toPass()
 })
 
 test('closing a map opened from the mini-map returns to the DetailModal', async ({
@@ -59,9 +58,11 @@ test('closing a map opened from the mini-map returns to the DetailModal', async 
   await mini.click()
   const map = page.getByRole('dialog', { name: 'Carte des activités' })
   await expect(map).toBeVisible()
-  await page.waitForTimeout(450) // ghost-click guard
-  await page.getByLabel('fermer la carte').click()
-  await expect(map).toHaveCount(0)
+  // Retry the close past the ~400ms ghost-click guard (no fixed wait).
+  await expect(async () => {
+    await page.getByLabel('fermer la carte').click()
+    await expect(map).toHaveCount(0)
+  }).toPass()
   // The map sat ABOVE the still-mounted DetailModal (mapAboveDetail); closing
   // it must return the user to the detail, not the swipe deck.
   await expect(detail).toBeVisible()
