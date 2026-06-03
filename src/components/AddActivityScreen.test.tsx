@@ -286,4 +286,28 @@ describe('AddActivityScreen', () => {
       'false',
     )
   })
+
+  it('keeps the form and surfaces an error when saving fails', async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn().mockRejectedValue(new Error('decode failed'))
+    render(
+      <AddActivityScreen
+        curatedActivities={CURATED}
+        userActivities={[]}
+        stored={[]}
+        onAdd={onAdd}
+        onUpdate={vi.fn()}
+        onRequestDelete={vi.fn()}
+        onPreview={vi.fn()}
+        active={false}
+      />,
+    )
+    await user.type(screen.getByLabelText('Titre'), 'Spot')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /Échec de l’enregistrement/,
+    )
+    // Form stays so the user can retry.
+    expect(screen.getByLabelText('Titre')).toHaveValue('Spot')
+  })
 })
