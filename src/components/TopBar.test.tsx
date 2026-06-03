@@ -27,3 +27,29 @@ describe('TopBar — hidden settings gesture', () => {
     expect(mark).toBeInTheDocument()
   })
 })
+
+describe('TopBar — Google profile avatar', () => {
+  const googleUser = {
+    sub: '1',
+    name: 'Yves',
+    email: 'yves@example.com',
+    picture: 'https://lh3.googleusercontent.com/a/abc',
+  }
+
+  it('shows no avatar in demo mode (no googleUser)', () => {
+    render(<TopBar />)
+    expect(screen.queryByLabelText(/Compte de/)).not.toBeInTheDocument()
+  })
+
+  it('shows the avatar and a logout menu when signed in with Google', () => {
+    const onLogout = vi.fn()
+    render(<TopBar googleUser={googleUser} onLogout={onLogout} />)
+    const avatar = screen.getByLabelText('Compte de Yves')
+    expect(avatar).toBeInTheDocument()
+    // Menu hidden until opened.
+    expect(screen.queryByText('Se déconnecter')).not.toBeInTheDocument()
+    fireEvent.click(avatar)
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Se déconnecter' }))
+    expect(onLogout).toHaveBeenCalledTimes(1)
+  })
+})
