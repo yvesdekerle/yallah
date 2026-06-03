@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -10,8 +11,11 @@ import { VERDICT_META } from '../constants/swipe.ts'
  * "Le groupe" panel: gated behind `meDone` — a placeholder until the local
  * user has finished their own deck, then the 9 participants with their
  * (faked, except the local user's real) verdict.
+ *
+ * `memo`'d: it lives in the always-mounted detail sheet and its props are
+ * stable, so it skips the re-renders DetailModal does for its open/armed state.
  */
-export function DetailGroupVotes({
+export const DetailGroupVotes = memo(function DetailGroupVotes({
   activity,
   meDone,
   userId,
@@ -161,4 +165,4 @@ export function DetailGroupVotes({
       )}
     </>
   )
-}
+})

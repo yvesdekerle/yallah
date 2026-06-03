@@ -1,4 +1,5 @@
 import {
+  memo,
   useEffect,
   useRef,
   useState,
@@ -29,7 +30,7 @@ const TAP_SLOP = 8
  * - Horizontal pointer drag (≥60px) to swipe between photos, with rubber-band
  *   resistance at the first / last photo
  */
-export function PhotoLightbox({
+export const PhotoLightbox = memo(function PhotoLightbox({
   photos,
   index,
   onIndex,
@@ -237,7 +238,7 @@ export function PhotoLightbox({
       )}
     </div>
   )
-}
+})
 
 function arrowStyle(side: 'left' | 'right'): CSSProperties {
   return {

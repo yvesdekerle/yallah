@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -50,6 +50,9 @@ export function DetailModal({
 }: DetailModalProps) {
   const [open, setOpen] = useState(false)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+  // Stable identity so the memoized PhotoLightbox isn't re-rendered by the
+  // sheet's open/armed state churn.
+  const closeLightbox = useCallback(() => setLightboxIdx(null), [])
 
   const photos = useMemo(() => detailPhotos(activity), [activity])
 
@@ -165,7 +168,7 @@ export function DetailModal({
           photos={photos}
           index={lightboxIdx}
           onIndex={setLightboxIdx}
-          onClose={() => setLightboxIdx(null)}
+          onClose={closeLightbox}
         />
       )}
     </div>

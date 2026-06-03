@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Activity } from '../types/activity.ts'
 import { YB } from '../utils/theme.ts'
 import { X, Pin } from '../icons/index.tsx'
@@ -19,6 +19,8 @@ export function DetailHero({
   onClose: () => void
 }) {
   const [legendOpen, setLegendOpen] = useState(false)
+  // The first 3 tags drive both the chips and the legend list — compute once.
+  const topTags = useMemo(() => activity.tags.slice(0, 3), [activity.tags])
   return (
     <div
       className="relative w-full overflow-hidden"
@@ -66,7 +68,7 @@ export function DetailHero({
         }}
       >
         <div className="flex" style={{ gap: 4 }}>
-          {activity.tags.slice(0, 3).map((tag, i) => (
+          {topTags.map((tag, i) => (
             <button
               type="button"
               key={`${tag}-${i}`}
@@ -120,7 +122,7 @@ export function DetailHero({
                 gap: 6,
               }}
             >
-              {activity.tags.slice(0, 3).map((tag, i) => (
+              {topTags.map((tag, i) => (
                 <li
                   key={`legend-${tag}-${i}`}
                   className="flex items-center"
