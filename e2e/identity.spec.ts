@@ -7,18 +7,30 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
-test('onboarding picker appears on first launch and is blocking', async ({
+// The welcome screen now precedes the identity picker. "Mode démo" reveals the
+// blocking picker; Google sign-in is the other entry (not exercised in e2e).
+const startDemo = (page: import('@playwright/test').Page) =>
+  page.getByRole('button', { name: 'Mode démo' }).click()
+
+test('welcome screen appears first; Mode démo opens the blocking picker', async ({
   page,
 }) => {
-  await expect(page.getByRole('dialog', { name: 'Tu es qui ?' })).toBeVisible()
-  // Escape does not dismiss in blocking mode.
-  await page.keyboard.press('Escape')
+  // First launch shows the welcome screen, not the picker.
+  await expect(page.getByRole('button', { name: 'Mode démo' })).toBeVisible()
   await expect(
     page.getByRole('dialog', { name: 'Tu es qui ?' }),
-  ).toBeVisible()
+  ).toHaveCount(0)
+
+  await startDemo(page)
+  const dialog = page.getByRole('dialog', { name: 'Tu es qui ?' })
+  await expect(dialog).toBeVisible()
+  // Escape does not dismiss in blocking mode.
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeVisible()
 })
 
 test('picking Chloé closes the picker and shows the deck', async ({ page }) => {
+  await startDemo(page)
   await page.getByTestId('picker-row-chloe').click()
   await expect(
     page.getByRole('dialog', { name: 'Tu es qui ?' }),
@@ -35,6 +47,7 @@ test('picking Chloé closes the picker and shows the deck', async ({ page }) => 
 test('on Groupe page, the picked participant carries the "toi" badge', async ({
   page,
 }) => {
+  await startDemo(page)
   await page.getByTestId('picker-row-chloe').click()
   await page.getByRole('button', { name: 'groupe' }).click()
   const chloeRow = page.getByTestId('participant-chloe')
@@ -45,6 +58,7 @@ test('on Groupe page, the picked participant carries the "toi" badge', async ({
 test('"Changer d\'identité" reopens the dismissable picker', async ({
   page,
 }) => {
+  await startDemo(page)
   await page.getByTestId('picker-row-chloe').click()
   await page.getByRole('button', { name: 'groupe' }).click()
   await page.getByRole('button', { name: /changer d'identité/i }).click()
@@ -59,9 +73,10 @@ test('"Changer d\'identité" reopens the dismissable picker', async ({
   await expect(page.getByTestId('participant-ade')).toContainText('toi')
 })
 
-test('Réinitialiser wipes the chosen identity and onboarding returns', async ({
+test('Réinitialiser wipes the chosen identity and the welcome screen returns', async ({
   page,
 }) => {
+  await startDemo(page)
   await page.getByTestId('picker-row-chloe').click()
   // Cast a vote so the reset button is enabled.
   await page.getByLabel('like', { exact: true }).click()
@@ -71,11 +86,11 @@ test('Réinitialiser wipes the chosen identity and onboarding returns', async ({
   await page.getByRole('button', { name: /réinitialiser les votes/i }).click()
   await page.getByRole('button', { name: 'Tout effacer' }).click()
 
-  // Picker is back (blocking, no close button).
+  // Welcome screen is back; the picker is not shown directly.
+  await expect(page.getByRole('button', { name: 'Mode démo' })).toBeVisible()
   await expect(
     page.getByRole('dialog', { name: 'Tu es qui ?' }),
-  ).toBeVisible()
-  await expect(page.getByLabel('fermer le sélecteur')).toHaveCount(0)
+  ).toHaveCount(0)
 
   const stored = await page.evaluate(() =>
     window.localStorage.getItem('yallah.userId.v1'),
