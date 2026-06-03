@@ -17,11 +17,20 @@ export default defineConfig([
     ],
     languageOptions: {
       ecmaVersion: 2023,
-      globals: { ...globals.browser, ...globals.node },
+      // Browser globals only — app code, tests (jsdom) and e2e run in a browser
+      // context. Node globals are added back for tooling below.
+      globals: globals.browser,
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'error',
     },
+  },
+  // Node-context tooling: the build/test config and the dev scripts run in
+  // Node, so they get Node globals (process, __dirname, …).
+  {
+    files: ['scripts/**/*.ts', 'vite.config.ts', 'playwright.config.ts'],
+    languageOptions: { globals: globals.node },
   },
   // Type-aware rules — scoped to the app source (tsconfig.app includes `src`).
   // The floating-promise risk lives here (handlers `void` their async work by
