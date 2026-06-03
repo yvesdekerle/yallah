@@ -58,7 +58,7 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
                 style={{
                   gap: 10,
                   padding: '8px 10px',
-                  background: '#fff',
+                  background: YB.surface,
                   borderRadius: 12,
                   fontSize: 14,
                 }}
@@ -139,7 +139,7 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
               width: 36,
               height: 36,
               borderRadius: 99,
-              background: '#fff',
+              background: YB.surface,
               fontSize: 16,
               flexShrink: 0,
             }}

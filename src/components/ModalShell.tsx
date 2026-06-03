@@ -1,5 +1,6 @@
 import { useRef, type CSSProperties, type ReactNode } from 'react'
 import { useModalA11y } from '../hooks/useModalA11y.ts'
+import { YB } from '../utils/theme.ts'
 
 interface ModalShellProps {
   /** Accessible name for the dialog. */
@@ -24,8 +25,8 @@ interface ModalShellProps {
 }
 
 const TONE_BG = {
-  light: 'rgba(20,25,40,0.55)',
-  heavy: 'rgba(20,25,40,0.85)',
+  light: YB.backdrop.light,
+  heavy: YB.backdrop.heavy,
 } as const
 
 /**

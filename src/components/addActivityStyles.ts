@@ -10,7 +10,7 @@ export const inputStyle: CSSProperties = {
   height: 60,
   borderRadius: 14,
   border: `1px solid ${YB.bgSoft}`,
-  background: '#fff',
+  background: YB.surface,
   // 16px keeps iOS Safari from auto-zooming the viewport on focus.
   padding: '0 16px',
   fontSize: 16,

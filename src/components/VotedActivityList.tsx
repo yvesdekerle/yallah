@@ -41,7 +41,7 @@ const VotedActivityRow = memo(function VotedActivityRow({
         clickable ? ' active:scale-[0.98]' : ''
       }`}
       style={{
-        background: '#fff',
+        background: YB.surface,
         borderRadius: 12,
         padding: '8px 10px',
         gap: 12,
@@ -92,7 +92,7 @@ export function VotedActivityList({
       <div
         className="font-sans"
         style={{
-          background: '#fff',
+          background: YB.surface,
           borderRadius: 14,
           padding: 18,
           fontSize: 14,

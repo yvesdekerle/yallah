@@ -8,6 +8,7 @@ import {
 } from 'react'
 import { X } from '../icons/index.tsx'
 import { useModalA11y } from '../hooks/useModalA11y.ts'
+import { YB } from '../utils/theme.ts'
 
 interface PhotoLightboxProps {
   photos: string[]
@@ -152,7 +153,7 @@ export const PhotoLightbox = memo(function PhotoLightbox({
                 objectFit: 'contain',
                 borderRadius: 18,
                 boxShadow: '0 20px 60px -20px rgba(0,0,0,0.6)',
-                background: '#181B1F',
+                background: YB.ink,
               }}
             />
           </div>

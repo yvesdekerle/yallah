@@ -103,7 +103,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
     height: 60,
     borderRadius: 14,
     border: `1px solid ${YB.bgSoft}`,
-    background: '#fff',
+    background: YB.surface,
     padding: '0 16px',
     fontSize: 16,
     color: YB.ink,

@@ -44,7 +44,7 @@ export function SettingsModal({
           width: 40,
           height: 40,
           borderRadius: 99,
-          background: '#fff',
+          background: YB.surface,
           boxShadow: '0 2px 8px -2px rgba(20,30,50,0.15)',
         }}
       >
@@ -65,7 +65,7 @@ export function SettingsModal({
             justifyContent: 'space-between',
             marginTop: 24,
             padding: '14px 16px',
-            background: '#fff',
+            background: YB.surface,
             borderRadius: 14,
             boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
           }}
@@ -85,7 +85,7 @@ export function SettingsModal({
             justifyContent: 'space-between',
             marginTop: 12,
             padding: '14px 16px',
-            background: '#fff',
+            background: YB.surface,
             borderRadius: 14,
             boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
             color: 'inherit',

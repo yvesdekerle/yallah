@@ -29,7 +29,7 @@ export function VerdictSummaryTiles({
           key={key}
           className="text-left"
           style={{
-            background: '#fff',
+            background: YB.surface,
             borderRadius: 12,
             padding: '10px 8px',
             boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',

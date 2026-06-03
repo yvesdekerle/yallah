@@ -85,7 +85,7 @@ export function DetailMetaTiles({ activity }: { activity: Activity }) {
           gap: 2,
           marginBottom: 18,
           padding: '14px 8px',
-          background: '#fff',
+          background: YB.surface,
           borderRadius: 18,
           boxShadow: '0 2px 10px -4px rgba(20,30,50,0.08)',
         }}

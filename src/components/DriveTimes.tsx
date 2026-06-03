@@ -40,7 +40,7 @@ export function DriveTimes({ activity }: { activity: Activity }) {
           width: 32,
           height: 32,
           borderRadius: 99,
-          background: '#fff',
+          background: YB.surface,
           fontSize: 16,
           lineHeight: 1,
         }}

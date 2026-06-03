@@ -43,7 +43,7 @@ export function StoredActivityList({
               key={record.id}
               className="flex items-center font-sans"
               style={{
-                background: '#fff',
+                background: YB.surface,
                 borderRadius: 12,
                 padding: '8px 10px',
                 gap: 12,

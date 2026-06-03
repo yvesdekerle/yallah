@@ -180,7 +180,7 @@ export function FullscreenMap({
           width: 40,
           height: 40,
           borderRadius: 99,
-          background: '#fff',
+          background: YB.surface,
           color: YB.ink,
           fontSize: 20,
           fontWeight: 700,

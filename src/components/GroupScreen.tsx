@@ -63,7 +63,7 @@ export function GroupScreen({
               gap: 10,
               padding: '12px 14px',
               marginBottom: 14,
-              background: '#fff',
+              background: YB.surface,
               borderRadius: 14,
               fontSize: 13,
               color: YB.ink2,
@@ -95,7 +95,7 @@ export function GroupScreen({
                 key={p.id}
                 className="font-sans"
                 style={{
-                  background: '#fff',
+                  background: YB.surface,
                   borderRadius: 14,
                   padding: '12px 14px',
                   boxShadow: '0 2px 8px -2px rgba(20,30,50,0.06)',
@@ -204,7 +204,7 @@ export function GroupScreen({
             width: '100%',
             padding: '12px 0',
             borderRadius: 99,
-            background: '#fff',
+            background: YB.surface,
             color: YB.ink,
             fontWeight: 700,
             fontSize: 14,

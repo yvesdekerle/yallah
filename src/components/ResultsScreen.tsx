@@ -214,7 +214,7 @@ export function ResultsScreen({
               width: '100%',
               padding: '12px 0',
               borderRadius: 99,
-              background: '#fff',
+              background: YB.surface,
               color: YB.ink,
               fontWeight: 700,
               fontSize: 14,

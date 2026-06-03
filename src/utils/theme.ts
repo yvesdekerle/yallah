@@ -36,6 +36,27 @@ export const YB = {
 
   // Misc accents
   green: '#22C268',
+
+  // --- Surface & elevation tokens -------------------------------------------
+  // Replace the white-surface + shadow + backdrop literals that were repeated
+  // inline across ~20 components. Guarded by scripts/check-css-tokens.ts so the
+  // raw equivalents don't creep back in.
+  surface: '#fff',
+  // Warm light-grey hairline for star outlines / borders on white pills
+  // (was the off-palette #C9C4BA literal).
+  surfaceLine: '#C9C4BA',
+  /** Drop-shadow tints at increasing strength (paired with varying offsets). */
+  shadow: {
+    sm: 'rgba(20,30,50,0.06)',
+    md: 'rgba(20,30,50,0.08)',
+    lg: 'rgba(20,30,50,0.15)',
+    xl: 'rgba(20,30,50,0.25)',
+  },
+  /** Modal/scrim backdrops. */
+  backdrop: {
+    light: 'rgba(20,25,40,0.55)',
+    heavy: 'rgba(20,25,40,0.85)',
+  },
 } as const
 
 export type YBKey = keyof typeof YB

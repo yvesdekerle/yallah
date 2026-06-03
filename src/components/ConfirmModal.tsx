@@ -35,7 +35,7 @@ export function ConfirmModal({
       panelClassName="w-full"
       panelStyle={{
         maxWidth: 320,
-        background: '#fff',
+        background: YB.surface,
         borderRadius: 20,
         padding: 22,
         boxShadow: '0 30px 60px -15px rgba(20,30,50,0.45)',

@@ -88,7 +88,7 @@ export function PhotoPickerPanel({
         style={{
           gap: 6,
           height: 60,
-          background: '#fff',
+          background: YB.surface,
           border: `1px solid ${YB.bgSoft}`,
           borderRadius: 14,
           padding: '0 18px',

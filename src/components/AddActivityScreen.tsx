@@ -143,7 +143,7 @@ export function AddActivityScreen({
               <div
                 className="flex items-center"
                 style={{
-                  background: '#fff',
+                  background: YB.surface,
                   border: `1px solid ${YB.bgSoft}`,
                   borderRadius: 14,
                   padding: '4px 8px',
@@ -178,7 +178,7 @@ export function AddActivityScreen({
                         />
                       ) : (
                         <Star
-                          color="#C9C4BA"
+                          color={YB.surfaceLine}
                           size={34}
                           style={{ pointerEvents: 'none' }}
                         />
@@ -274,7 +274,7 @@ export function AddActivityScreen({
                   flex: '0 0 auto',
                   padding: '13px 18px',
                   borderRadius: 99,
-                  background: '#fff',
+                  background: YB.surface,
                   color: YB.ink,
                   fontWeight: 700,
                   fontSize: 14,

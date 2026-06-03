@@ -48,7 +48,7 @@ export function TagFilterSheet({
       testId="filter-backdrop"
       panelClassName="w-full"
       panelStyle={{
-        background: '#fff',
+        background: YB.surface,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: '20px 18px calc(env(safe-area-inset-bottom, 0px) + 18px)',
