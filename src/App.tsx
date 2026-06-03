@@ -309,6 +309,13 @@ export default function App({ activities }: AppProps) {
     [setDetail],
   )
 
+  // Open the detail sheet in review mode (Résultats row / Ajouter preview).
+  // Stable identity so the memoized VotedActivityRow can skip re-renders.
+  const openReviewDetail = useCallback(
+    (a: Activity) => setDetail({ activity: a, source: 'review' }),
+    [setDetail],
+  )
+
   // Eye-toggle: open the detail modal for the current card, or close it.
   const handleToggleDetail = useCallback(() => {
     if (detail) {
@@ -377,9 +384,7 @@ export default function App({ activities }: AppProps) {
             history={history}
             activities={allActivities}
             onRequestReset={() => setConfirmingReset(true)}
-            onSelectActivity={(a) =>
-              setDetail({ activity: a, source: 'review' })
-            }
+            onSelectActivity={openReviewDetail}
             onReview={handleReview}
             reviewing={reviewMode}
             onRequestRandomFill={() => setConfirmingRandomFill(true)}
@@ -412,7 +417,7 @@ export default function App({ activities }: AppProps) {
                 onAdd={handleAddActivity}
                 onUpdate={handleUpdateActivity}
                 onRequestDelete={(id) => setConfirmingDeleteActivity(id)}
-                onPreview={(a) => setDetail({ activity: a, source: 'review' })}
+                onPreview={openReviewDetail}
                 active={activeTab === 3}
               />
             </Suspense>

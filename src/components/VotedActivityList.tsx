@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
@@ -8,8 +9,15 @@ export interface VotedActivity {
   verdict: Verdict
 }
 
-/** A single voted-activity row: verdict badge + title, tappable to open detail. */
-function VotedActivityRow({
+/**
+ * A single voted-activity row: verdict badge + title, tappable to open detail.
+ *
+ * `memo`'d so the whole (potentially ~200-row) list doesn't reconcile when the
+ * Résultats screen re-renders. The press-feedback scale is pure CSS
+ * (`active:scale-…`) rather than imperative onMouseDown/Up/Leave handlers — no
+ * per-row closures recreated each render, and it works for touch too.
+ */
+const VotedActivityRow = memo(function VotedActivityRow({
   activity,
   verdict,
   onSelect,
@@ -29,7 +37,9 @@ function VotedActivityRow({
             'aria-label': `Voir le détail de ${activity.title}`,
           }
         : {})}
-      className="flex items-center font-sans text-left w-full border-0"
+      className={`flex items-center font-sans text-left w-full border-0${
+        clickable ? ' active:scale-[0.98]' : ''
+      }`}
       style={{
         background: '#fff',
         borderRadius: 12,
@@ -39,21 +49,6 @@ function VotedActivityRow({
         cursor: clickable ? 'pointer' : 'default',
         transition: 'transform 0.12s, box-shadow 0.12s',
       }}
-      onMouseDown={
-        clickable
-          ? (e) => (e.currentTarget.style.transform = 'scale(0.98)')
-          : undefined
-      }
-      onMouseUp={
-        clickable
-          ? (e) => (e.currentTarget.style.transform = 'scale(1)')
-          : undefined
-      }
-      onMouseLeave={
-        clickable
-          ? (e) => (e.currentTarget.style.transform = 'scale(1)')
-          : undefined
-      }
     >
       <VerdictBadge verdict={verdict} number={activity.number} />
       <span
@@ -78,7 +73,7 @@ function VotedActivityRow({
       )}
     </Tag>
   )
-}
+})
 
 /**
  * Flat list of every voted activity (sorted upstream by activity number), or a
