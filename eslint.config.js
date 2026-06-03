@@ -23,4 +23,24 @@ export default defineConfig([
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
+  // Type-aware rules — scoped to the app source (tsconfig.app includes `src`).
+  // The floating-promise risk lives here (handlers `void` their async work by
+  // hand). Tests are excluded: RTL's synchronous `act()` returns a thenable
+  // that would trip no-floating-promises on every call.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+    },
+  },
 ])

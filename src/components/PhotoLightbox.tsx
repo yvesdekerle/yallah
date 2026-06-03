@@ -57,7 +57,7 @@ export function PhotoLightbox({
   }, [index, photos.length, onIndex, onClose])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    e.currentTarget.setPointerCapture?.(e.pointerId)
+    e.currentTarget.setPointerCapture(e.pointerId)
     startRef.current = { x: e.clientX, moved: false }
     setDragging(true)
   }

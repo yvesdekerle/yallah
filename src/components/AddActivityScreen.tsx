@@ -370,7 +370,7 @@ export function AddActivityScreen({
                       type="button"
                       onClick={() => {
                         f.startEdit(record)
-                        scrollRef.current?.scrollTo?.({ top: 0 })
+                        scrollRef.current?.scrollTo({ top: 0 })
                       }}
                       className="font-sans cursor-pointer border-0"
                       style={{ background: 'transparent', color: YB.ink, fontSize: 13, fontWeight: 700, padding: 6 }}

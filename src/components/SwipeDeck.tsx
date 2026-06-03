@@ -164,7 +164,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
 
     const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
       if (exiting || !current) return
-      e.currentTarget.setPointerCapture?.(e.pointerId)
+      e.currentTarget.setPointerCapture(e.pointerId)
       startRef.current = { x: e.clientX, y: e.clientY }
       tapRef.current = { time: Date.now(), x: e.clientX, y: e.clientY }
       setDrag({ x: 0, y: 0, dragging: true })
@@ -228,8 +228,14 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
           const cardTransform = isActive
             ? `translate(${drag.x}px, ${drag.y}px) rotate(${rotate}deg)`
             : `scale(${1 - i * 0.05}) translateY(${i * 14}px)`
-          const prevVerdict = previousVerdictById.get(a.id) ?? null
-          const showBanner = isActive && reviewMode && prevVerdict !== null && !exiting
+          // The previous vote to surface as a review banner on the active card
+          // — null unless we're in review mode, on the active card, a vote
+          // exists for it, and no exit is in flight. `null` cleanly gates the
+          // banner below without a redundant second truthiness check.
+          const bannerVerdict =
+            isActive && reviewMode && !exiting
+              ? (previousVerdictById.get(a.id) ?? null)
+              : null
           return (
             <div
               key={a.id}
@@ -254,10 +260,10 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
               }}
             >
               <Card activity={a} />
-              {showBanner && prevVerdict && (
+              {bannerVerdict && (
                 <PreviousVoteBanner
-                  verdict={prevVerdict}
-                  onConfirm={() => commit(prevVerdict)}
+                  verdict={bannerVerdict}
+                  onConfirm={() => commit(bannerVerdict)}
                 />
               )}
             </div>

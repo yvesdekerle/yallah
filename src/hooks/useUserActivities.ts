@@ -120,7 +120,7 @@ export function useUserActivities(): UseUserActivities {
   useEffect(() => {
     let cancelled = false
     const created: string[] = []
-    ;(async () => {
+    void (async () => {
       const map: Record<string, string[]> = {}
       for (const a of stored) {
         const urls: string[] = []
@@ -138,6 +138,11 @@ export function useUserActivities(): UseUserActivities {
         }
         map[a.id] = urls
       }
+      // `cancelled` is flipped true by the cleanup below when this run is
+      // superseded before its async work finishes. TS's flow analysis can't
+      // model that cross-closure async mutation, so it wrongly narrows
+      // `cancelled` to `false` here.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         created.forEach((u) => URL.revokeObjectURL(u))
         return
