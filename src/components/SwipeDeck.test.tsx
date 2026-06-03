@@ -227,6 +227,64 @@ describe('SwipeDeck', () => {
     expect(onOpenDetail).not.toHaveBeenCalled()
   })
 
+  // --- Imperative drag (PERF: transform written to the DOM, not React) ------
+
+  it('writes the drag transform straight to the active card and coalesces moves into one frame', () => {
+    renderDeck()
+    const card = activeCard()
+    const rafSpy = vi.spyOn(window, 'requestAnimationFrame')
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: 1 })
+    fireEvent.pointerMove(card, { clientX: 130, clientY: 100 })
+    fireEvent.pointerMove(card, { clientX: 160, clientY: 100 })
+    // Two moves in the same frame schedule only one rAF (coalesced).
+    expect(rafSpy).toHaveBeenCalledTimes(1)
+    act(() => {
+      vi.advanceTimersByTime(20)
+    })
+    // Transform reflects the latest offset (dx = 60) and is GPU-composited.
+    expect(card.style.transform).toContain('translate3d(60px')
+    rafSpy.mockRestore()
+  })
+
+  it('promotes the active card to its own layer during the drag, then releases it after the snap-back', () => {
+    renderDeck()
+    const card = activeCard()
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: 1 })
+    expect(card.style.willChange).toBe('transform')
+    expect(card.style.transition).toBe('none')
+    // Release below the verdict threshold → snap back to centre, then drop the
+    // GPU hint once the transition has settled.
+    fireEvent.pointerUp(card, { clientX: 112, clientY: 100 })
+    expect(card.style.transform).toContain('translate3d(0')
+    act(() => {
+      vi.advanceTimersByTime(400)
+    })
+    expect(card.style.willChange).toBe('')
+  })
+
+  it('shows the live verdict stamp while dragging, without committing', () => {
+    const { onVerdict } = renderDeck()
+    const card = activeCard()
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: 1 })
+    fireEvent.pointerMove(card, { clientX: 220, clientY: 100 }) // dx 120 → oui
+    act(() => {
+      vi.advanceTimersByTime(20) // flush the frame → feedback layer updates
+    })
+    expect(screen.getByText('LIKE')).toBeInTheDocument()
+    expect(onVerdict).not.toHaveBeenCalled()
+  })
+
+  it('cancels the pending frame on release', () => {
+    renderDeck()
+    const card = activeCard()
+    const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame')
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: 1 })
+    fireEvent.pointerMove(card, { clientX: 140, clientY: 100 })
+    fireEvent.pointerUp(card, { clientX: 140, clientY: 100 })
+    expect(cancelSpy).toHaveBeenCalled()
+    cancelSpy.mockRestore()
+  })
+
   // --- Review-mode branches -------------------------------------------------
 
   it('restarts from the top and surfaces the previous-vote banner in review mode', () => {

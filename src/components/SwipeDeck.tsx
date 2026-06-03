@@ -3,22 +3,19 @@ import {
   useCallback,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict, VoteEntry } from '../types/verdict.ts'
 import { VERDICT_META, EXIT_MS, BUTTON_EXIT_MS, TOP_EXIT_MS } from '../constants/swipe.ts'
-import {
-  dragVerdict,
-  exitOffset,
-  dragRotation,
-  dragIntensity,
-} from '../utils/swipe.ts'
+import { exitOffset, dragRotation } from '../utils/swipe.ts'
 import { useSwipeGesture } from '../hooks/useSwipeGesture.ts'
 import { cssVars } from '../utils/css.ts'
 import { Card } from './Card.tsx'
 import { StampOverlay } from './StampOverlay.tsx'
 import { HeartStamp } from './HeartStamp.tsx'
+import { DragFeedback, type DragFeedbackHandle } from './DragFeedback.tsx'
 import { SuperLikeFX } from './SuperLikeFX.tsx'
 import { Equal } from '../icons/index.tsx'
 
@@ -111,6 +108,11 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
 
     const [exiting, setExiting] = useState<ExitingState | null>(null)
 
+    // The active card wrapper (transform written imperatively during drag) and
+    // the isolated live-feedback layer (tint + stamps) the gesture pushes to.
+    const cardRef = useRef<HTMLDivElement>(null)
+    const feedbackRef = useRef<DragFeedbackHandle>(null)
+
     const stack: Activity[] = []
     for (let i = 0; i < 3; i++) {
       const a = activities[topIdx + i]
@@ -152,20 +154,20 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
       [commit, current],
     )
 
-    // Pointer-drag gesture lives in a hook; the deck renders visuals from `drag`
-    // and a past-threshold swipe routes back through `commit` (with the release
-    // offset for the exit animation).
-    const { drag, handlers } = useSwipeGesture({
+    // Pointer-drag gesture lives in a hook; it writes the card transform
+    // straight to `cardRef` per frame and pushes the live offset to the
+    // feedback layer. A past-threshold swipe routes back through `commit`
+    // (with the release offset for the exit animation).
+    const { handlers } = useSwipeGesture({
       disabled: exiting !== null || !current,
       onSwipe: commit,
       onTap: () => {
         if (current) onOpenDetail?.(current)
       },
+      cardRef,
+      onDragMove: (x, y) => feedbackRef.current?.update(x, y),
+      onDragEnd: () => feedbackRef.current?.clear(),
     })
-
-    const verdict = drag.dragging ? dragVerdict(drag.x, drag.y) : null
-    const rotate = drag.dragging ? dragRotation(drag.x) : 0
-    const intensity = verdict ? dragIntensity(drag.x, drag.y) : 0
 
     if (!current && !exiting) return null
 
@@ -178,25 +180,14 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
 
     return (
       <>
-        {/* Subtle full-frame tint while dragging */}
-        {verdict && (
-          <div
-            className="pointer-events-none absolute"
-            style={{
-              inset: -40,
-              background: VERDICT_META[verdict].color,
-              opacity: intensity * 0.16,
-              transition: drag.dragging ? 'none' : 'opacity 0.2s',
-              zIndex: 0,
-            }}
-          />
-        )}
-
         {/* The stack — keyed by activity id for stable transitions */}
         {stack.map((a, i) => {
           const isActive = i === 0
+          // The active card rests at identity; its drag transform is written
+          // imperatively by the gesture hook (no React render per frame). Back
+          // cards keep their static scale/offset, animated by the transition.
           const cardTransform = isActive
-            ? `translate(${drag.x}px, ${drag.y}px) rotate(${rotate}deg)`
+            ? 'translate3d(0, 0, 0)'
             : `scale(${1 - i * 0.05}) translateY(${i * 14}px)`
           // The previous vote to surface as a review banner on the active card
           // — null unless we're in review mode, on the active card, a vote
@@ -209,6 +200,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
           return (
             <div
               key={a.id}
+              ref={isActive ? cardRef : undefined}
               data-testid={isActive ? 'active-card' : undefined}
               {...(isActive ? handlers : {})}
               className="absolute select-none"
@@ -216,12 +208,12 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
                 inset: 0,
                 transform: cardTransform,
                 transformOrigin: 'center bottom',
-                transition: drag.dragging
-                  ? 'none'
-                  : 'transform 0.4s cubic-bezier(.2,.7,.3,1), opacity 0.4s',
+                // The hook overrides transform/transition imperatively during a
+                // drag; this resting value is what it snaps back to.
+                transition: 'transform 0.4s cubic-bezier(.2,.7,.3,1), opacity 0.4s',
                 opacity: isActive ? 1 : Math.max(0.35, 1 - i * 0.4),
                 zIndex: 3 - i,
-                cursor: isActive ? (drag.dragging ? 'grabbing' : 'grab') : 'default',
+                cursor: isActive ? 'grab' : 'default',
                 touchAction: 'none',
                 pointerEvents: isActive ? 'auto' : 'none',
               }}
@@ -252,6 +244,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
               '--tr': `${exitOff.r}deg`,
               transformOrigin: 'center bottom',
               animation: `yallahDeckExit ${exitDur}ms cubic-bezier(.4,.0,.6,.95) forwards`,
+              willChange: 'transform',
               zIndex: 10,
               filter:
                 exiting.verdict === 'top'
@@ -267,11 +260,9 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
           </div>
         )}
 
-        {/* Drag stamps — centred at deck while dragging only. */}
-        {verdict === 'oui' && <HeartStamp intensity={intensity} />}
-        {(verdict === 'non' || verdict === 'whynot') && (
-          <StampOverlay verdict={verdict} intensity={intensity} />
-        )}
+        {/* Live drag feedback — tint + centred stamp. Isolated so the
+            per-frame drag updates don't re-render the card stack. */}
+        <DragFeedback ref={feedbackRef} />
 
         {/* Super-like FX overlay during exit */}
         {exiting?.verdict === 'top' && <SuperLikeFX />}

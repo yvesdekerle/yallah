@@ -64,11 +64,11 @@ export default {
         yallahDeckExit: {
           from: {
             transform:
-              'translate(var(--fx, 0), var(--fy, 0)) rotate(var(--fr, 0deg))',
+              'translate3d(var(--fx, 0), var(--fy, 0), 0) rotate(var(--fr, 0deg))',
           },
           to: {
             transform:
-              'translate(var(--tx, 0), var(--ty, 0)) rotate(var(--tr, 0deg))',
+              'translate3d(var(--tx, 0), var(--ty, 0), 0) rotate(var(--tr, 0deg))',
           },
         },
         yallahSparkleFly: {
