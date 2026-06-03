@@ -150,4 +150,42 @@ describe('GroupScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: /changer d'identité/i }))
     expect(onChangeIdentity).toHaveBeenCalledTimes(1)
   })
+
+  describe('Google mode', () => {
+    const googleUser = { sub: '1', name: 'Yves', email: 'yves@example.com' }
+
+    it('prepends a "toi" row for the Google identity with real progress', () => {
+      render(
+        <GroupScreen
+          currentUserId={null}
+          currentUserProgress={12}
+          total={201}
+          onChangeIdentity={noop}
+          googleUser={googleUser}
+        />,
+      )
+      const meRow = screen.getByTestId('participant-me-google')
+      expect(meRow).toHaveTextContent('Yves')
+      expect(meRow).toHaveTextContent('toi')
+      expect(meRow).toHaveTextContent('12 / 201')
+    })
+
+    it('keeps the 9 hard-coded participants and hides "Changer d\'identité"', () => {
+      render(
+        <GroupScreen
+          currentUserId={null}
+          currentUserProgress={12}
+          total={201}
+          onChangeIdentity={noop}
+          googleUser={googleUser}
+        />,
+      )
+      for (const p of PARTICIPANTS) {
+        expect(screen.getByTestId(`participant-${p.id}`)).toBeInTheDocument()
+      }
+      expect(
+        screen.queryByRole('button', { name: /changer d'identité/i }),
+      ).not.toBeInTheDocument()
+    })
+  })
 })

@@ -1,30 +1,141 @@
 import { PARTICIPANTS } from '../data/participants.ts'
+import type { GoogleUser } from '../types/user.ts'
 import { YB } from '../utils/theme.ts'
 import { AvatarPill } from './AvatarPill.tsx'
 
 interface GroupScreenProps {
-  /** Id of the participant the local user identifies as. Null while
-      onboarding is still pending (picker visible, GroupScreen invisible
-      but still mounted). */
+  /** Id of the participant the local user identifies as (demo mode). Null in
+      Google mode or while onboarding is pending. */
   currentUserId: string | null
   /** Number of activities the local user has swiped. */
   currentUserProgress: number
   /** Total number of activities in the deck. */
   total: number
-  /** Open the IdentityPicker (handled at App level). */
+  /** Open the IdentityPicker (demo mode only). */
   onChangeIdentity: () => void
+  /** When set (Google mode), prepends a "toi" row with the Google identity and
+      hides the "Changer d'identité" button. */
+  googleUser?: GoogleUser | null
+}
+
+/** One participant/identity row: avatar, name, optional "toi" badge, progress
+    bar. Shared by the hard-coded participants and the Google "toi" row. */
+function ProgressRow({
+  testId,
+  initial,
+  color,
+  name,
+  isMe,
+  reveal,
+  progress,
+  total,
+}: {
+  testId: string
+  initial: string
+  color: string
+  name: string
+  isMe: boolean
+  reveal: boolean
+  progress: number
+  total: number
+}) {
+  const pct = total > 0 ? Math.min(100, (progress / total) * 100) : 0
+  const isDone = progress >= total && total > 0
+  return (
+    <div
+      className="font-sans yallah-card"
+      style={{ padding: '12px 14px' }}
+      data-testid={testId}
+    >
+      <div className="flex items-center" style={{ gap: 14 }}>
+        <AvatarPill initial={initial} color={color} size={40} fontSize={16} />
+        <div className="flex-1 flex items-baseline" style={{ gap: 8 }}>
+          <span
+            style={{
+              fontSize: 16,
+              fontWeight: 600,
+              color: YB.ink,
+              letterSpacing: -0.2,
+            }}
+          >
+            {name}
+          </span>
+          {isMe && (
+            <span
+              className="font-mono"
+              style={{
+                fontSize: 9.5,
+                letterSpacing: 0.8,
+                padding: '2px 6px',
+                borderRadius: 99,
+                background: YB.ink,
+                color: '#fff',
+                textTransform: 'uppercase',
+              }}
+            >
+              toi
+            </span>
+          )}
+        </div>
+        <span
+          className="font-mono"
+          style={{
+            fontSize: 12,
+            color: reveal ? (isDone ? YB.green : YB.muted) : YB.muted,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+          aria-label={
+            reveal
+              ? `${progress} sur ${total} activités swipées`
+              : 'votes masqués'
+          }
+        >
+          {reveal ? (isDone ? '✓ fini' : `${progress} / ${total}`) : '🔒'}
+        </span>
+      </div>
+
+      <div
+        className="relative overflow-hidden"
+        style={{
+          marginTop: 10,
+          height: 6,
+          borderRadius: 99,
+          background: 'rgba(20,30,50,0.08)',
+        }}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={reveal ? progress : 0}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: reveal ? `${pct}%` : '0%',
+            background: isDone ? YB.green : color,
+            borderRadius: 99,
+            transition: 'width 0.3s ease-out',
+          }}
+        />
+      </div>
+    </div>
+  )
 }
 
 /**
  * "Groupe" tab — hard-coded list of the 9 participants. Each row shows a
- * per-person progress bar: real for the local user (`currentUserId`),
- * faked-but-stable for the others (until we wire a backend).
+ * per-person progress bar: real for the local user, faked-but-stable for the
+ * others. When signed in with Google, a "toi" row for the Google identity is
+ * prepended (the 9 hard-coded names stay unchanged) and "Changer d'identité"
+ * is hidden — identity switching is a demo-only affordance.
  */
 export function GroupScreen({
   currentUserId,
   currentUserProgress,
   total,
   onChangeIdentity,
+  googleUser,
 }: GroupScreenProps) {
   const meDone = total > 0 && currentUserProgress >= total
   return (
@@ -79,133 +190,57 @@ export function GroupScreen({
         )}
 
         <div className="flex flex-col" style={{ gap: 8 }}>
+          {googleUser && (
+            <ProgressRow
+              testId="participant-me-google"
+              initial={(googleUser.name[0] ?? '?').toUpperCase()}
+              color={YB.coral}
+              name={googleUser.name}
+              isMe
+              reveal
+              progress={currentUserProgress}
+              total={total}
+            />
+          )}
           {PARTICIPANTS.map((p) => {
             const isMe = currentUserId !== null && p.id === currentUserId
-            const reveal = isMe || meDone
-            const progress = isMe
-              ? currentUserProgress
-              : (p.fakeProgress ?? 0)
-            const pct = total > 0 ? Math.min(100, (progress / total) * 100) : 0
-            const isDone = progress >= total && total > 0
             return (
-              <div
+              <ProgressRow
                 key={p.id}
-                className="font-sans yallah-card"
-                style={{ padding: '12px 14px' }}
-                data-testid={`participant-${p.id}`}
-              >
-                <div className="flex items-center" style={{ gap: 14 }}>
-                  <AvatarPill
-                    initial={p.initial}
-                    color={p.color}
-                    size={40}
-                    fontSize={16}
-                  />
-                  <div
-                    className="flex-1 flex items-baseline"
-                    style={{ gap: 8 }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 600,
-                        color: YB.ink,
-                        letterSpacing: -0.2,
-                      }}
-                    >
-                      {p.name}
-                    </span>
-                    {isMe && (
-                      <span
-                        className="font-mono"
-                        style={{
-                          fontSize: 9.5,
-                          letterSpacing: 0.8,
-                          padding: '2px 6px',
-                          borderRadius: 99,
-                          background: YB.ink,
-                          color: '#fff',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        toi
-                      </span>
-                    )}
-                  </div>
-                  <span
-                    className="font-mono"
-                    style={{
-                      fontSize: 12,
-                      color: reveal
-                        ? isDone
-                          ? YB.green
-                          : YB.muted
-                        : YB.muted,
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
-                    }}
-                    aria-label={
-                      reveal
-                        ? `${progress} sur ${total} activités swipées`
-                        : 'votes masqués'
-                    }
-                  >
-                    {reveal
-                      ? isDone
-                        ? '✓ fini'
-                        : `${progress} / ${total}`
-                      : '🔒'}
-                  </span>
-                </div>
-
-                <div
-                  className="relative overflow-hidden"
-                  style={{
-                    marginTop: 10,
-                    height: 6,
-                    borderRadius: 99,
-                    background: 'rgba(20,30,50,0.08)',
-                  }}
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={total}
-                  aria-valuenow={reveal ? progress : 0}
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: reveal ? `${pct}%` : '0%',
-                      background: isDone ? YB.green : p.color,
-                      borderRadius: 99,
-                      transition: 'width 0.3s ease-out',
-                    }}
-                  />
-                </div>
-              </div>
+                testId={`participant-${p.id}`}
+                initial={p.initial}
+                color={p.color}
+                name={p.name}
+                isMe={isMe}
+                reveal={isMe || meDone}
+                progress={isMe ? currentUserProgress : (p.fakeProgress ?? 0)}
+                total={total}
+              />
             )
           })}
         </div>
 
-        <button
-          type="button"
-          onClick={onChangeIdentity}
-          className="font-sans cursor-pointer"
-          style={{
-            marginTop: 24,
-            width: '100%',
-            padding: '12px 0',
-            borderRadius: 99,
-            background: YB.surface,
-            color: YB.ink,
-            fontWeight: 700,
-            fontSize: 14,
-            border: `1px solid ${YB.ink}`,
-            boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
-          }}
-        >
-          Changer d'identité
-        </button>
+        {!googleUser && (
+          <button
+            type="button"
+            onClick={onChangeIdentity}
+            className="font-sans cursor-pointer"
+            style={{
+              marginTop: 24,
+              width: '100%',
+              padding: '12px 0',
+              borderRadius: 99,
+              background: YB.surface,
+              color: YB.ink,
+              fontWeight: 700,
+              fontSize: 14,
+              border: `1px solid ${YB.ink}`,
+              boxShadow: '0 2px 8px -2px rgba(20,30,50,0.08)',
+            }}
+          >
+            Changer d'identité
+          </button>
+        )}
       </div>
     </div>
   )
