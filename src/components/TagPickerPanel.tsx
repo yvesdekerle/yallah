@@ -1,8 +1,14 @@
+import { memo } from 'react'
 import { YB } from '../utils/theme.ts'
 import { Field } from './AddActivityFields.tsx'
 
-/** Emoji-tag palette (toggle). Pure presentational. */
-export function TagPickerPanel({
+/**
+ * Emoji-tag palette (toggle). Pure presentational + `memo`'d so editing other
+ * form fields (which re-render the parent on every keystroke) doesn't re-render
+ * the whole tag grid — its props (memoized palette, stable `onToggleTag`) are
+ * referentially stable across unrelated edits.
+ */
+export const TagPickerPanel = memo(function TagPickerPanel({
   tagPalette,
   selectedTags,
   onToggleTag,
@@ -43,4 +49,4 @@ export function TagPickerPanel({
       </div>
     </Field>
   )
-}
+})

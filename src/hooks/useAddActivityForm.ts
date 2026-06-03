@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Activity, Difficulty } from '../types/activity.ts'
 import type { PhotoRef, StoredUserActivity } from '../types/userActivity.ts'
 import type { PhotoDraft, UserActivityInput } from './useUserActivities.ts'
@@ -193,13 +193,18 @@ export function useAddActivityForm({
     })
   }
 
-  const toggleTag = (tag: string) =>
-    setFields((f) => ({
-      ...f,
-      tags: f.tags.includes(tag)
-        ? f.tags.filter((t) => t !== tag)
-        : [...f.tags, tag],
-    }))
+  // Stable identity so the memoized TagPickerPanel doesn't re-render on every
+  // keystroke in the other fields.
+  const toggleTag = useCallback(
+    (tag: string) =>
+      setFields((f) => ({
+        ...f,
+        tags: f.tags.includes(tag)
+          ? f.tags.filter((t) => t !== tag)
+          : [...f.tags, tag],
+      })),
+    [],
+  )
 
   // Clear the URL error as soon as the user edits the field again.
   const onUrlInputChange = (value: string) => {
@@ -217,13 +222,17 @@ export function useAddActivityForm({
   }
 
   // Existing palette + any custom tags the user typed (so they're toggleable
-  // and removable from the same place).
-  const tagPalette = [
-    ...existingTags,
-    ...fields.tags.filter(
-      (t) => !existingTags.includes(t) && !SPECIAL_TAGS.includes(t),
-    ),
-  ]
+  // and removable from the same place). Memoized so it keeps a stable identity
+  // across unrelated field edits (feeds the memoized TagPickerPanel).
+  const tagPalette = useMemo(
+    () => [
+      ...existingTags,
+      ...fields.tags.filter(
+        (t) => !existingTags.includes(t) && !SPECIAL_TAGS.includes(t),
+      ),
+    ],
+    [existingTags, fields.tags],
+  )
 
   const canSubmit = fields.title.trim() !== '' && !saving
 
