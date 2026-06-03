@@ -1,162 +1,236 @@
-# Page d'accueil (Welcome screen) — design
+# Page d'accueil + connexion Google (SSO) — design
 
 **Date** : 2026-06-03
 **Statut** : validé en brainstorming, en attente de relecture spec
 
 ## Objectif
 
-Ajouter une première page (écran d'accueil) affichée au lancement, avant le choix
-d'identité. Elle comporte le logo en haut et deux boutons :
+Ajouter une **page d'accueil** affichée au lancement, avant tout usage de l'app,
+avec deux options :
 
-1. **« Continuer avec Google »** — bouton visuel au style Google (**placeholder**,
-   aucune vraie auth). Au clic → ouvre l'`IdentityPicker` existant.
-2. **« Essayer la démo »** — entre directement dans l'app, sur le deck de swipe,
-   sous une identité **Invité**.
+1. **« Se connecter avec Google »** — vrai SSO Google **client-side** (sans backend
+   ni BDD). À la connexion on récupère le **prénom + email** du compte Google et
+   l'utilisateur arrive **directement sur son deck d'activités**, sans choisir de
+   prénom (son prénom = celui de son compte Google).
+2. **« Mode démo »** — comportement **identique à aujourd'hui** : la liste des
+   prénoms en dur (`IdentityPicker`), on en choisit un, on utilise l'app.
 
-Le tout reste **100 % local**, conforme au scope v1 (pas de backend, pas d'auth).
+L'app reste une **SPA statique sans backend**. Le SSO Google n'a pas besoin de BDD :
+Google renvoie un token signé contenant l'identité, on l'exploite en local.
 
 ## Contexte produit
 
 Aujourd'hui, au premier lancement (`yallah.userId.v1 === null`), l'app affiche
-directement l'`IdentityPicker` bloquant (« Tu es qui ? »). La page d'accueil
-s'intercale **devant** ce picker : c'est le nouveau premier écran d'onboarding.
-
-### Pourquoi un placeholder Google et pas une vraie auth
-
-Décision explicite : un login Google *utile* dans Yallah servirait à **synchroniser
-les votes entre les 9 participants** — ce qui suppose un backend + stockage, hors
-scope v1 (« chaque appareil est une île »). Un login Google purement client-side
-(Google Identity Services, sans BDD) reste techniquement possible mais a été écarté
-pour cette itération. Le bouton est donc décoratif et renvoie vers le choix
-d'identité local.
+directement l'`IdentityPicker` bloquant. La page d'accueil s'intercale **devant** :
+c'est le nouveau premier écran. Le mode démo redescend ensuite sur l'`IdentityPicker`
+inchangé.
 
 ## Décisions validées
 
 | Sujet | Décision |
 |---|---|
-| Clic « Continuer avec Google » | Ouvre l'`IdentityPicker` existant (placeholder, pas d'auth) |
-| Bouton « Essayer la démo » | Entre directement dans l'app sous l'identité **Invité** |
-| Identité démo | Nouveau participant **Invité** (`id: 'invite'`) |
-| Invité dans Groupe | **Toujours dans la liste** → 10e participant permanent (texte « 10 personnes ») |
-| Tagline sous le logo | **Aucun** — wordmark seul |
+| Mode démo | **Inchangé** : `IdentityPicker` (liste de prénoms en dur) → choix → app |
+| Connexion Google | Vrai SSO client-side, récupère prénom + email, entre direct sur le deck |
+| Lib SSO | `@react-oauth/google` |
+| Affichage Groupe (connecté Google) | **Ligne « toi » en plus** en haut (prénom Google + vraie progression), 9 prénoms en dur en dessous |
+| Prénoms en dur | Conservés tels quels (Groupe / comparaison) |
+| « Changer d'identité » | **Réservé au mode démo**. En Google : pas de changement d'identité |
+| OAuth Client ID | Fourni par l'utilisateur via `VITE_GOOGLE_CLIENT_ID` (.env) |
+| Tagline page d'accueil | Aucun — wordmark seul |
+
+## Modèle de données (stockage)
+
+Aujourd'hui : `yallah.userId.v1: string | null` (id de participant en dur).
+
+On ajoute une **deuxième clé** pour le profil Google, sans casser la première :
+
+- `yallah.userId.v1: string | null` — id de participant **démo** (sémantique inchangée).
+- `yallah.googleUser.v1: GoogleUser | null` — profil Google :
+  ```ts
+  interface GoogleUser {
+    sub: string      // id stable du compte Google
+    name: string     // prénom (given_name)
+    email: string
+    picture?: string // URL avatar Google (optionnel)
+  }
+  ```
+
+**Identité courante** (dérivée) :
+- connecté Google si `googleUser !== null` ;
+- sinon démo si `userId !== null` ;
+- sinon : non connecté → page d'accueil.
+
+`signedIn = userId !== null || googleUser !== null`.
+Les deux clés ne sont jamais non-nulles en même temps (Google a priorité ;
+choisir l'un efface l'autre à la connexion).
 
 ## Composants & modifications
 
 ### Nouveau : `src/components/WelcomeScreen.tsx`
 
-Écran plein cadre, rendu au **niveau App** (sibling des écrans, comme l'`IdentityPicker`),
-fond `YB.bgSun`. Layout vertical :
+Écran plein cadre rendu au **niveau App** (sibling des écrans, comme l'`IdentityPicker`),
+fond `YB.bgSun`. **Purement présentation** (testable, pas de logique OAuth dedans) :
 
-- **Haut** : le wordmark `yallah ·` en grand (logo seul, pas de tagline).
-- **Centre** : espace / visuel léger optionnel (peut rester vide pour épure).
-- **Bas** : deux boutons empilés, pleine largeur, au-dessus de
-  `env(safe-area-inset-bottom)` :
-  1. `« Continuer avec Google »` — surface blanche, bordure fine, icône « G »
-     multicolore, texte ink. `onClick → onGoogle()`.
-  2. `« Essayer la démo »` — bouton secondaire (coral ou ghost). `onClick → onDemo()`.
-
-Props :
 ```ts
 interface WelcomeScreenProps {
-  onGoogle: () => void
-  onDemo: () => void
+  onGoogle: () => void   // déclenche le flux Google (câblé dans App via le hook)
+  onDemo: () => void     // ouvre l'IdentityPicker
+  googleAvailable: boolean // false si VITE_GOOGLE_CLIENT_ID absent
 }
 ```
 
-Pas d'état interne, pas d'effet de bord — purement présentation + 2 callbacks.
+Layout vertical :
+- **Haut** : wordmark `yallah ·` en grand (logo seul, pas de tagline).
+- **Bas** : deux boutons empilés pleine largeur, au-dessus de `env(safe-area-inset-bottom)` :
+  1. `« Se connecter avec Google »` — surface blanche, bordure fine, icône « G »
+     multicolore, texte ink. Désactivé (avec libellé d'aide) si `!googleAvailable`.
+  2. `« Mode démo »` — bouton secondaire (coral/ghost).
 
-### Nouveau (extraction) : `src/components/Wordmark.tsx`
+### Nouveau : `src/components/Wordmark.tsx`
 
-Petit composant partagé rendant le wordmark `yallah ·` (texte 800 + point coral),
-avec une prop `size` (et `dark` pour fond sombre). `TopBar` et `WelcomeScreen`
-l'importent → une seule source de vérité pour le logo. La logique « 5 taps →
-réglages » reste dans `TopBar` (hors du Wordmark).
+Extraction du wordmark `yallah ·` (texte 800 + point coral), prop `size`/`dark`.
+`TopBar` et `WelcomeScreen` l'importent (une seule source pour le logo). La logique
+« 5 taps → réglages » reste dans `TopBar`.
 
-### `src/data/participants.ts`
+### Nouveau : `src/components/GoogleGIcon.tsx`
 
-- Ajouter le participant invité :
-  `{ id: 'invite', name: 'Invité', initial: '?', color: '#9A93A6', fakeProgress: 0 }`.
-- Exporter une constante `GUEST_ID = 'invite'`.
-- Conséquence (choix « toujours dans la liste ») : **Invité apparaît partout** où
-  l'on itère `PARTICIPANTS` — donc aussi dans la liste de l'`IdentityPicker` et
-  comme 10e ligne permanente du `GroupScreen`. Le compteur « N personnes » du
-  Groupe passe à 10 via `PARTICIPANTS.length` (déjà dynamique).
+Petit SVG « G » multicolore Google (cohérent avec le style des icônes maison
+`icons/index.tsx`, props `size`).
+
+### Nouveau : `src/hooks/useGoogleAuth.ts`
+
+Encapsule `useGoogleLogin` de `@react-oauth/google` (flux implicite → `access_token`),
+puis **fetch** `https://www.googleapis.com/oauth2/v3/userinfo` avec ce token pour
+récupérer `{ given_name, email, picture, sub }`. Expose :
+```ts
+function useGoogleAuth(onUser: (u: GoogleUser) => void): {
+  login: () => void   // à brancher sur onGoogle du WelcomeScreen
+  available: boolean  // VITE_GOOGLE_CLIENT_ID présent ?
+}
+```
+Gère l'erreur (popup fermée / fetch KO) → toast « Connexion Google échouée ».
+
+> Choix du flux : `useGoogleLogin` (bouton 100 % custom) renvoie un `access_token`
+> qu'on échange contre le profil via l'endpoint `userinfo`. C'est ce qui permet un
+> bouton à notre charte tout en restant client-side et sans BDD. (Le composant
+> `<GoogleLogin>` aurait imposé le bouton stylé par Google.)
+
+### `src/main.tsx`
+
+Envelopper `<App>` dans `<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''}>`.
+Si la clé est absente, le provider se monte quand même mais `useGoogleAuth.available`
+sera `false` → bouton Google désactivé, **le mode démo et le reste de l'app marchent
+normalement** (pas de crash en CI / chez un dev sans clé).
 
 ### `src/App.tsx`
 
-- Nouvel état `const [authStarted, setAuthStarted] = useState(false)`.
-- `needsOnboarding = userId === null` (inchangé).
+- État : `const [googleUser, setGoogleUser] = useLocalStorage<GoogleUser | null>('yallah.googleUser.v1', null)`.
+- État : `const [demoStarted, setDemoStarted] = useState(false)` (clic « Mode démo »).
+- `signedIn = userId !== null || googleUser !== null`.
 - Affichage :
-  - `WelcomeScreen` quand `needsOnboarding && !authStarted`.
-  - `showPicker = (needsOnboarding && authStarted) || changingIdentity`.
-- Handlers :
-  - `onGoogle` → `setAuthStarted(true)` (révèle le picker).
-  - `onDemo` → entre en démo : `clearHistory()`, `setDone(false)`,
-    `setReviewMode(false)`, `setUserId(GUEST_ID)`, toast « Bienvenue en démo » (👋),
-    `setActiveTab(0)`.
-  - `handleReset` : ajouter `setAuthStarted(false)` pour que la page d'accueil
-    réapparaisse après une réinitialisation (qui remet `userId` à `null`).
+  - `WelcomeScreen` quand `!signedIn && !demoStarted`.
+  - `IdentityPicker` (démo) quand `(!signedIn && demoStarted) || changingIdentity`.
+- Câblage Google : `const { login: googleLogin, available } = useGoogleAuth(onGoogleUser)`.
+  - `onGoogleUser(u)` → `clearHistory()` (nouvelle session), `setUserId(null)`,
+    `setGoogleUser(u)`, `setDone(false)`, `setReviewMode(false)`, `setActiveTab(0)`,
+    toast « Salut {u.name} 👋 ».
+- `onDemo` → `setDemoStarted(true)` (révèle le picker).
+- `handlePickIdentity` (démo) : inchangé, mais s'assure `setGoogleUser(null)`.
+- `handleReset` (Réinitialiser) : ajoute `setGoogleUser(null)` + `setDemoStarted(false)`
+  → c'est aussi le **chemin de déconnexion Google** (retour page d'accueil). Voir
+  « cas limites ».
+- Props passées : `GroupScreen` reçoit `googleUser` (en plus de `userId`).
 
-Le `WelcomeScreen` est rendu au niveau App, au-dessus des écrans (z équivalent à
-l'overlay du picker). Comme il ne s'affiche que pendant l'onboarding, il peut être
-rendu de façon conditionnelle (contrairement aux tabs qui restent montées).
+Le `WelcomeScreen` est rendu conditionnellement au niveau App (au-dessus des écrans,
+z = overlay), puisqu'il ne vit que le temps de l'onboarding.
+
+### `src/components/GroupScreen.tsx`
+
+- Nouvelle prop optionnelle `googleUser: GoogleUser | null`.
+- Si `googleUser` présent :
+  - rendre une **ligne « toi » supplémentaire en tête de liste** (avatar = initiale
+    du prénom Google dans `AvatarPill` ; la photo Google reste un nice-to-have
+    optionnel), progression réelle = `currentUserProgress` ;
+  - les 9 participants en dur s'affichent ensuite, **aucun marqué « toi »** ;
+  - **masquer** le bouton « Changer d'identité ».
+- Si pas de `googleUser` (mode démo) : comportement actuel (le participant courant
+  porte « toi », bouton « Changer d'identité » visible).
+- Le compteur « N personnes pour Maurice » reste basé sur `PARTICIPANTS.length` (9).
+
+### `package.json`
+
+Ajouter la dépendance `@react-oauth/google`.
+
+### `.env` / docs
+
+Documenter `VITE_GOOGLE_CLIENT_ID` (lu par `GoogleOAuthProvider`). L'utilisateur
+crée le Client ID (origines autorisées : `http://localhost:5173` + domaine Vercel).
+Ne **pas** committer de clé (le Client ID OAuth web n'est pas secret, mais on le
+garde en var d'env par propreté + pour gérer dev/prod).
 
 ## Flux
 
 ```
-userId === null
-  ├─ !authStarted        → WelcomeScreen
-  │     ├─ « Google »     → setAuthStarted(true) → IdentityPicker (choix réel)
-  │     │                       └─ onPick(id)  → entre dans l'app sous `id`
-  │     └─ « Démo »        → setUserId('invite') → entre dans l'app (deck swipe)
-  └─ authStarted          → IdentityPicker
+Pas connecté (userId null ET googleUser null)
+  ├─ !demoStarted  → WelcomeScreen
+  │     ├─ « Google » → popup Google → userinfo → setGoogleUser → deck (direct)
+  │     └─ « Démo »   → setDemoStarted(true) → IdentityPicker
+  │                         └─ pick(prénom) → setUserId → app
+  └─ demoStarted   → IdentityPicker
 
-userId !== null           → app normale
-Réinitialiser             → userId=null, authStarted=false → retour WelcomeScreen
+Connecté (Google ou démo)            → app normale
+  Groupe : « Changer d'identité » visible seulement en démo
+Réinitialiser (Résultats)            → tout effacé → page d'accueil (= logout Google)
 ```
 
 ## Gestion des erreurs / cas limites
 
-- **Pas d'`onClose` sur le WelcomeScreen** : c'est un écran bloquant d'onboarding,
-  on ne peut pas le « fermer » sans choisir une voie (Google ou Démo).
-- **Retour en arrière depuis le picker** : si l'utilisateur a cliqué « Google » puis
-  veut revenir à l'accueil — le picker en mode onboarding est bloquant (pas de
-  bouton fermer). Acceptable pour la v1 ; on pourra ajouter une flèche retour plus
-  tard si besoin (hors scope ici).
-- **Accessibilité** : boutons `type="button"`, labels explicites. Le WelcomeScreen
-  n'a pas de focus-trap dédié (pas un dialog) mais peut recevoir un `role`/`aria`
-  léger ; on suit le style existant (boutons natifs).
+- **Pas de `VITE_GOOGLE_CLIENT_ID`** : bouton Google désactivé + libellé « Connexion
+  Google indisponible » ; démo + app intacts. Aucun crash.
+- **Popup Google fermée / refus / fetch userinfo KO** : toast d'échec, on reste sur
+  la page d'accueil.
+- **Déconnexion Google** : pas de bouton « changer d'identité » en Google (décision).
+  Le seul retour à la page d'accueil est **« Réinitialiser »** (Résultats), qui
+  efface l'historique + le profil Google. → *Point à confirmer en relecture : est-ce
+  suffisant, ou veux-tu un bouton « Se déconnecter » dédié ?*
+- **Persistance** : `googleUser` est en `localStorage` → la session survit au reload
+  (on ne re-demande pas Google à chaque lancement).
+- **Migration** : aucune clé existante renommée ; les utilisateurs en cours (avec
+  `yallah.userId.v1` déjà posé) restent en mode démo, ne voient pas la page d'accueil.
 
 ## Tests
 
 ### Unitaires / composant
-- `src/components/WelcomeScreen.test.tsx` (nouveau) :
-  - rend le wordmark `yallah` + les deux boutons ;
-  - clic « Continuer avec Google » → appelle `onGoogle` ;
-  - clic « Essayer la démo » → appelle `onDemo`.
-- `src/components/Wordmark.test.tsx` (nouveau, léger) : rend « yallah » + le point.
-- `src/App.test.tsx` (maj) :
-  - premier lancement (`userId` null) → la page d'accueil est visible, le picker
-    **ne l'est pas** ;
-  - clic « Continuer avec Google » → le picker « Tu es qui ? » apparaît ;
-  - clic « Essayer la démo » → on entre dans l'app (deck visible) et
-    `yallah.userId.v1 === 'invite'`.
+- `WelcomeScreen.test.tsx` (nouveau) : rend le wordmark + 2 boutons ; clic Google →
+  `onGoogle` ; clic Démo → `onDemo` ; bouton Google désactivé si `googleAvailable=false`.
+- `Wordmark.test.tsx` (nouveau, léger).
+- `GroupScreen.test.tsx` (maj) : avec `googleUser` → ligne « toi » en tête + bouton
+  « Changer d'identité » masqué ; sans → comportement actuel.
+- `App.test.tsx` (maj) :
+  - 1er lancement → WelcomeScreen visible, picker non visible ;
+  - clic « Mode démo » → picker « Tu es qui ? » visible ;
+  - (Google : voir note ci-dessous).
+- `useGoogleAuth` : le hook dépend de `@react-oauth/google` + `fetch` ; on teste le
+  **mapping userinfo → GoogleUser** (fonction pure extraite `toGoogleUser(raw)`),
+  pas le popup OAuth lui-même.
 
 ### e2e (Playwright)
-- `e2e/identity.spec.ts` (maj) : le test « premier lancement » passe d'abord par
-  le clic « Continuer avec Google » avant d'asserter le picker.
-- Nouveau test (ici ou dans un `e2e/welcome.spec.ts`) : « Essayer la démo » →
-  le deck s'affiche, `userId` vaut `invite`.
-- Les autres specs e2e seedent déjà `yallah.userId.v1 = 'yves'` dans
-  `beforeEach` → **non impactées** (la page d'accueil ne s'affiche pas).
+- `e2e/identity.spec.ts` (maj) : 1er lancement → page d'accueil ; clic « Mode démo »
+  → picker → choix prénom → deck.
+- Les specs existantes seedent `yallah.userId.v1='yves'` → **non impactées**
+  (page d'accueil non affichée).
+- **SSO Google non testé en e2e** (popup OAuth réelle non automatisable simplement) ;
+  couvert par le test unitaire du mapping. Noté explicitement.
 
 ## Hors scope
 
-- Vraie authentification Google (client-side ou backend) — voir backlog « plus tard ».
-- Synchronisation multi-appareils des votes.
-- Flèche « retour » de l'IdentityPicker vers la page d'accueil.
+- Vérification serveur du token, sessions serveur (inutile sans backend).
+- Synchronisation multi-appareils / partage des votes (backlog « plus tard »).
+- Affichage de la photo Google dans l'avatar (nice-to-have, initiale suffit).
 
 ## Vérification
 
-- `npm test` (+ coverage ratchet), `npm run lint`, `npm run build`.
-- `npm run test:e2e` pour les specs onboarding/démo.
+- `npm test` (+ coverage ratchet), `npm run lint`, `npm run build`, `npm run check:bundle`
+  (la nouvelle dép + le provider ne doivent pas faire exploser le budget gzip ;
+  vérifier, sinon lazy-load le bloc Google).
+- `npm run test:e2e` pour le flux page d'accueil + démo.
