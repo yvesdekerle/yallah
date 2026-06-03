@@ -2,15 +2,11 @@ import { type ReactNode } from 'react'
 import type { Activity } from '../types/activity.ts'
 import { YB } from '../utils/theme.ts'
 import { Clock, Wallet, StarFilled } from '../icons/index.tsx'
-import { coordsFor } from '../utils/coords.ts'
-import {
-  BASE_TAMARIN,
-  BASE_TROU_AUX_BICHES,
-  estimateDriveTime,
-} from '../utils/distance.ts'
 import { ratingComment } from '../utils/rating.ts'
 import { getReviewSummary } from '../utils/reviewSummary.ts'
 import { shortPrice, formatRating } from '../utils/format.ts'
+import { DifficultyWarning } from './DifficultyWarning.tsx'
+import { DriveTimes } from './DriveTimes.tsx'
 
 function MetaTile({
   icon,
@@ -78,57 +74,7 @@ function MetaTile({
 export function DetailMetaTiles({ activity }: { activity: Activity }) {
   return (
     <>
-      {activity.difficulty &&
-        (activity.difficulty.label === 'Difficile' ||
-          activity.difficulty.label === 'Très difficile') && (
-          <div
-            role="note"
-            aria-label={`Avertissement difficulté: ${activity.difficulty.label}`}
-            className="flex font-sans"
-            style={{
-              alignItems: 'flex-start',
-              gap: 12,
-              padding: '14px 16px',
-              marginBottom: 22,
-              background: `${activity.difficulty.dot}14`,
-              border: `1px solid ${activity.difficulty.dot}33`,
-              borderLeft: `4px solid ${activity.difficulty.dot}`,
-              borderRadius: 12,
-            }}
-          >
-            <span
-              style={{ fontSize: 22, lineHeight: 1, marginTop: 1 }}
-              aria-hidden
-            >
-              ⚠️
-            </span>
-            <div style={{ minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: activity.difficulty.dot,
-                  marginBottom: 2,
-                  letterSpacing: -0.1,
-                }}
-              >
-                {activity.difficulty.label}
-              </div>
-              <div
-                style={{
-                  fontSize: 13.5,
-                  lineHeight: 1.4,
-                  color: YB.ink2,
-                }}
-              >
-                {activity.difficulty.detail
-                  ? activity.difficulty.detail.charAt(0).toUpperCase() +
-                    activity.difficulty.detail.slice(1)
-                  : 'Bonne condition physique requise.'}
-              </div>
-            </div>
-          </div>
-        )}
+      <DifficultyWarning activity={activity} />
 
       {/* Meta tiles — Durée / Niveau / Note / Prix in a 4-column grid */}
       <div
@@ -221,62 +167,7 @@ export function DetailMetaTiles({ activity }: { activity: Activity }) {
         )
       })()}
 
-      {(() => {
-        // Both legs are drive-time approximations computed from the activity's
-        // coordinates. Without coords neither leg can be computed, so the whole
-        // block is hidden rather than shown half-empty (temporary — recovering
-        // the missing coords for ~78 activities is tracked in the backlog).
-        const coords = coordsFor(activity)
-        if (!coords) return null
-        const tamarinValue = estimateDriveTime(coords, BASE_TAMARIN)
-        const troubValue = estimateDriveTime(coords, BASE_TROU_AUX_BICHES)
-        return (
-          <div
-            className="font-sans"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto 1fr',
-              columnGap: 10,
-              rowGap: 6,
-              alignItems: 'center',
-              marginBottom: 26,
-              padding: '12px 14px',
-              background: YB.bgSoft,
-              borderRadius: 12,
-              fontSize: 14,
-            }}
-            aria-label="Trajets depuis les villas"
-          >
-            <span
-              className="inline-flex items-center justify-center"
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 99,
-                background: '#fff',
-                fontSize: 16,
-                lineHeight: 1,
-              }}
-              aria-hidden
-            >
-              🚗
-            </span>
-            <div style={{ color: YB.ink }}>
-              <span style={{ fontWeight: 700 }}>{BASE_TAMARIN.label}</span>
-              {' : '}
-              {tamarinValue}
-            </div>
-            <span aria-hidden />
-            <div style={{ color: YB.ink2 }}>
-              <span style={{ fontWeight: 700 }}>
-                {BASE_TROU_AUX_BICHES.label}
-              </span>
-              {' : '}
-              {troubValue}
-            </div>
-          </div>
-        )
-      })()}
+      <DriveTimes activity={activity} />
     </>
   )
 }
