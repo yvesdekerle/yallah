@@ -49,6 +49,7 @@ export interface SettingsOverlay {
   open: boolean
   version: string
   onClose: () => void
+  onGoHome: () => void
 }
 
 export interface FilterOverlay {
@@ -156,7 +157,11 @@ export function AppOverlays({
       )}
 
       {settings.open && (
-        <SettingsModal version={settings.version} onClose={settings.onClose} />
+        <SettingsModal
+          version={settings.version}
+          onClose={settings.onClose}
+          onGoHome={settings.onGoHome}
+        />
       )}
 
       {filter.open && (

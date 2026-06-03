@@ -251,6 +251,20 @@ export default function App({ activities }: AppProps) {
     showToast('Connexion Google échouée', '⚠️')
   }, [showToast])
 
+  // "Retour à l'accueil" from Réglages: drop the current identity (Google or
+  // demo) and land back on the welcome screen. History is left intact (the next
+  // sign-in / demo pick clears it), matching logout semantics.
+  const handleReturnHome = useCallback(() => {
+    setSettingsOpen(false)
+    setGoogleUser(null)
+    setUserId(null)
+    setDemoStarted(false)
+    setChangingIdentity(false)
+    setDone(false)
+    setReviewMode(false)
+    setActiveTab(0)
+  }, [setGoogleUser, setUserId])
+
   const handleReview = useCallback(() => {
     setDone(false)
     setReviewMode(true)
@@ -567,6 +581,7 @@ export default function App({ activities }: AppProps) {
             open: settingsOpen,
             version: APP_VERSION,
             onClose: () => setSettingsOpen(false),
+            onGoHome: handleReturnHome,
           }}
           filter={{
             open: filterOpen,
