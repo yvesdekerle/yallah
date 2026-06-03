@@ -9,7 +9,7 @@ import {
   formatLocation,
   formatRating,
 } from '../utils/format.ts'
-import { labelForTag } from '../utils/tags.ts'
+import { TagLegend } from './TagLegend.tsx'
 import { coordsFor } from '../utils/coords.ts'
 import { BASE_TAMARIN, estimateDriveTime } from '../utils/distance.ts'
 
@@ -68,90 +68,14 @@ export const Card = memo(function Card({ activity }: CardProps) {
       </div>
 
       {/* Tag chips — top-right, tap to toggle the legend */}
-      <div
-        className="absolute flex flex-col items-end"
-        style={{ top: 14, right: 14, gap: 6 }}
-      >
-        <div className="flex" style={{ gap: 4 }}>
-          {activity.tags.slice(0, 3).map((tag, i) => (
-            <button
-              type="button"
-              key={`${tag}-${i}`}
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerMove={(e) => e.stopPropagation()}
-              onPointerUp={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation()
-                setLegendOpen((v) => !v)
-              }}
-              aria-label={labelForTag(tag)}
-              aria-expanded={legendOpen}
-              className="inline-flex items-center justify-center"
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 99,
-                background: legendOpen ? '#fff' : 'rgba(255,255,255,0.94)',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                fontSize: 16,
-                boxShadow:
-                  tag === '💎'
-                    ? `0 0 0 2px ${YB.top}, 0 2px 8px -2px rgba(20,30,50,0.15)`
-                    : '0 2px 8px -2px rgba(20,30,50,0.15)',
-              }}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-        {legendOpen && (
-          <div
-            role="dialog"
-            aria-label="Légende des tags"
-            className="font-sans"
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerMove={(e) => e.stopPropagation()}
-            onPointerUp={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'rgba(255,255,255,0.97)',
-              color: YB.ink,
-              borderRadius: 14,
-              padding: '10px 12px',
-              boxShadow: '0 6px 20px -6px rgba(20,30,50,0.35)',
-              maxWidth: 220,
-              fontSize: 12.5,
-              lineHeight: 1.35,
-            }}
-          >
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-              }}
-            >
-              {activity.tags.slice(0, 3).map((tag, i) => (
-                <li
-                  key={`legend-${tag}-${i}`}
-                  className="flex items-center"
-                  style={{ gap: 8 }}
-                >
-                  <span style={{ fontSize: 15 }} aria-hidden>
-                    {tag}
-                  </span>
-                  <span>{labelForTag(tag)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+      <TagLegend
+        className="absolute"
+        style={{ top: 14, right: 14 }}
+        tags={activity.tags.slice(0, 3)}
+        open={legendOpen}
+        onToggle={() => setLegendOpen((v) => !v)}
+        swallowPointerEvents
+      />
 
       {/* Bottom gradient block — leaves room for the floating action row that
           overlaps the card. */}

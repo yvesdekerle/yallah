@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Activity } from '../types/activity.ts'
 import { YB } from '../utils/theme.ts'
 import { X, Pin } from '../icons/index.tsx'
-import { labelForTag } from '../utils/tags.ts'
+import { TagLegend } from './TagLegend.tsx'
 
 /**
  * Hero block of the DetailModal: the photo, the close button, the tag chips
@@ -58,86 +58,13 @@ export function DetailHero({
       </button>
 
       {/* Tag chips — tap to toggle the legend */}
-      <div
-        className="absolute z-[3] flex flex-col"
-        style={{
-          top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
-          right: 14,
-          alignItems: 'flex-end',
-          gap: 6,
-        }}
-      >
-        <div className="flex" style={{ gap: 4 }}>
-          {topTags.map((tag, i) => (
-            <button
-              type="button"
-              key={`${tag}-${i}`}
-              onClick={() => setLegendOpen((v) => !v)}
-              aria-label={labelForTag(tag)}
-              aria-expanded={legendOpen}
-              className="inline-flex items-center justify-center"
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 99,
-                background: legendOpen ? '#fff' : 'rgba(255,255,255,0.95)',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                fontSize: 16,
-                boxShadow:
-                  tag === '💎'
-                    ? `0 0 0 2px ${YB.top}, 0 2px 8px -2px rgba(20,30,50,0.15)`
-                    : '0 2px 8px -2px rgba(20,30,50,0.15)',
-              }}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-        {legendOpen && (
-          <div
-            role="dialog"
-            aria-label="Légende des tags"
-            className="font-sans"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'rgba(255,255,255,0.97)',
-              color: YB.ink,
-              borderRadius: 14,
-              padding: '10px 12px',
-              boxShadow: '0 6px 20px -6px rgba(20,30,50,0.35)',
-              maxWidth: 220,
-              fontSize: 12.5,
-              lineHeight: 1.35,
-            }}
-          >
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-              }}
-            >
-              {topTags.map((tag, i) => (
-                <li
-                  key={`legend-${tag}-${i}`}
-                  className="flex items-center"
-                  style={{ gap: 8 }}
-                >
-                  <span style={{ fontSize: 15 }} aria-hidden>
-                    {tag}
-                  </span>
-                  <span>{labelForTag(tag)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+      <TagLegend
+        className="absolute z-[3]"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)', right: 14 }}
+        tags={topTags}
+        open={legendOpen}
+        onToggle={() => setLegendOpen((v) => !v)}
+      />
 
       {/* Title block */}
       <div
