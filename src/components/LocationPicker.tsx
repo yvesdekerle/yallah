@@ -15,6 +15,22 @@ interface LocationPickerProps {
 
 const MAURITIUS_CENTER: [number, number] = [-20.25, 57.55]
 
+// Mauritius bounding box (matches scripts/geocode-activities.ts). A geocode
+// result outside it — or one that doesn't parse to finite numbers — is rejected
+// rather than trusted, instead of blindly casting the network payload.
+const MU_BOUNDS = { latMin: -20.6, latMax: -19.9, lngMin: 57.2, lngMax: 57.9 }
+
+function parseSearchResult(raw: unknown): LatLng | null {
+  const first = Array.isArray(raw) ? (raw[0] as unknown) : null
+  if (!first || typeof first !== 'object') return null
+  const lat = Number((first as Record<string, unknown>).lat)
+  const lng = Number((first as Record<string, unknown>).lon)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  if (lat < MU_BOUNDS.latMin || lat > MU_BOUNDS.latMax) return null
+  if (lng < MU_BOUNDS.lngMin || lng > MU_BOUNDS.lngMax) return null
+  return { lat, lng }
+}
+
 function pinIcon(): L.DivIcon {
   const html = `
     <svg viewBox="0 0 24 24" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
@@ -82,12 +98,11 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
         q,
       )}&format=json&limit=1&countrycodes=mu`
       const res = await fetch(url, { headers: { Accept: 'application/json' } })
-      const data = (await res.json()) as Array<{ lat: string; lon: string }>
-      if (data.length === 0) {
+      const next = parseSearchResult(await res.json())
+      if (!next) {
         setError('Aucun résultat trouvé.')
         return
       }
-      const next = { lat: parseFloat(data[0]!.lat), lng: parseFloat(data[0]!.lon) }
       onChange(next)
       setSearched(next)
     } catch {
