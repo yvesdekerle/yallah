@@ -1,14 +1,46 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { render, screen, fireEvent, act, within } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  within,
+  waitFor,
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import App from './App.tsx'
 import type { Activity } from './types/activity.ts'
 import activitiesJson from './data/activities.json'
+import { APP_VERSION_KEY } from './constants/version.ts'
 
 // Curated activities are code-split + loaded in main.tsx, then passed to <App>
 // as a prop. Inject the real list directly so these integration tests stay
 // synchronous (no dynamic-import / fake-timer interplay to await).
 const ACTIVITIES: Activity[] = activitiesJson
 const renderApp = () => render(<App activities={ACTIVITIES} />)
+
+// A 2-card deck used by the completion/review/filter specs below: exhausting
+// the full deck is feasible with two activities (it isn't with the real 198),
+// which is what exercises handleComplete / done / exitReview / filteredEmpty.
+const tiny = (over: Partial<Activity> = {}): Activity => ({
+  id: 't1',
+  number: 1,
+  title: 'Tiny One',
+  tags: ['🌊'],
+  category: 'Plage',
+  location: '',
+  transit: '',
+  description: '',
+  price: '',
+  rating: 0,
+  pepite: false,
+  secret: false,
+  ...over,
+})
+const TINY: Activity[] = [
+  tiny(),
+  tiny({ id: 't2', number: 2, title: 'Tiny Two', tags: ['🐅'] }),
+]
 
 // Locate a verdict-count tile on the Résultats screen by its visible label, so
 // count assertions read the user-facing label/number pair rather than a
@@ -256,5 +288,228 @@ describe('App (integration)', () => {
     const stored = JSON.parse(window.localStorage.getItem('yallah.history.v1')!)
     expect(stored).toHaveLength(1)
     expect(stored[0]).toMatchObject({ id: 'a001', verdict: 'non' })
+  })
+
+  it('voting from a swipe-opened detail modal records the vote via the deck', () => {
+    renderApp()
+    // Eye toggle opens the detail for the current card (source 'swipe').
+    fireEvent.click(screen.getByLabelText('voir le détail'))
+    const sheet = screen.getByTestId('detail-sheet')
+    fireEvent.click(within(sheet).getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    const stored = JSON.parse(window.localStorage.getItem('yallah.history.v1')!)
+    expect(stored).toHaveLength(1)
+    expect(stored[0]).toMatchObject({ id: 'a001', verdict: 'oui' })
+  })
+
+  it('the eye button toggles the detail modal closed when already open', () => {
+    renderApp()
+    fireEvent.click(screen.getByLabelText('voir le détail'))
+    const sheet = screen.getByTestId('detail-sheet')
+    expect(sheet).toBeInTheDocument()
+    // Both the swipe ActionRow and the modal's own ActionRow expose a "fermer
+    // le détail" eye; the swipe-screen one drives App.handleToggleDetail.
+    const swipeEye = screen
+      .getAllByLabelText('fermer le détail')
+      .find((b) => !sheet.contains(b))!
+    fireEvent.click(swipeEye)
+    expect(screen.queryByTestId('detail-sheet')).not.toBeInTheDocument()
+  })
+})
+
+describe('App — onboarding & identity', () => {
+  beforeEach(() => {
+    // NOTE: no userId seeded — the blocking IdentityPicker must appear.
+    window.localStorage.clear()
+  })
+
+  it('blocks on the identity picker at first launch and starts fresh on pick', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    expect(
+      screen.getByRole('dialog', { name: 'Tu es qui ?' }),
+    ).toBeInTheDocument()
+    // Blocking variant → no close affordance.
+    expect(screen.queryByLabelText('fermer le sélecteur')).not.toBeInTheDocument()
+    await user.click(screen.getByTestId('picker-row-yves'))
+    expect(await screen.findByText('Salut Yves')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('dialog', { name: 'Tu es qui ?' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('wipes any pre-existing history when identifying at onboarding', async () => {
+    // Pre-picker upgrade path: history exists but userId is still null.
+    window.localStorage.setItem(
+      'yallah.history.v1',
+      JSON.stringify([{ id: 'a001', verdict: 'oui' }]),
+    )
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByTestId('picker-row-chloe'))
+    await waitFor(() =>
+      expect(
+        JSON.parse(window.localStorage.getItem('yallah.history.v1') ?? '[]'),
+      ).toEqual([]),
+    )
+  })
+
+  it('changing identity from the Groupe tab keeps the existing history', async () => {
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem(
+      'yallah.history.v1',
+      JSON.stringify([{ id: 'a001', verdict: 'oui' }]),
+    )
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByLabelText('groupe'))
+    await user.click(screen.getByText(/Changer d.identité/))
+    // Dismissable variant now (a close button exists).
+    expect(screen.getByLabelText('fermer le sélecteur')).toBeInTheDocument()
+    await user.click(screen.getByTestId('picker-row-chloe'))
+    expect(await screen.findByText(/Tu es maintenant/)).toBeInTheDocument()
+    expect(
+      JSON.parse(window.localStorage.getItem('yallah.history.v1')!),
+    ).toHaveLength(1)
+  })
+})
+
+describe('App — user activities (add / edit / delete)', () => {
+  const SUBMIT = 'ajouter l’activité'
+  beforeEach(() => {
+    window.localStorage.clear()
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+  })
+
+  it('adds an activity from the Ajouter tab and surfaces the toast', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByLabelText('ajouter'))
+    await user.type(screen.getByLabelText('Titre'), 'Spot perso')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    expect(await screen.findByText('Activité ajoutée')).toBeInTheDocument()
+    expect(screen.getByText('Mes activités ajoutées')).toBeInTheDocument()
+    expect(screen.getByLabelText('voir Spot perso')).toBeInTheDocument()
+  })
+
+  it('edits a stored activity and surfaces the update toast', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByLabelText('ajouter'))
+    await user.type(screen.getByLabelText('Titre'), 'Avant edit')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    await screen.findByText('Activité ajoutée')
+
+    await user.click(screen.getByLabelText('modifier Avant edit'))
+    const title = screen.getByLabelText('Titre')
+    await user.clear(title)
+    await user.type(title, 'Après edit')
+    await user.click(
+      screen.getByRole('button', { name: 'enregistrer les modifications' }),
+    )
+    expect(await screen.findByText('Activité mise à jour')).toBeInTheDocument()
+    expect(screen.getByLabelText('voir Après edit')).toBeInTheDocument()
+  })
+
+  it('deletes a stored activity after confirmation', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByLabelText('ajouter'))
+    await user.type(screen.getByLabelText('Titre'), 'À supprimer')
+    await user.click(screen.getByRole('button', { name: SUBMIT }))
+    await screen.findByText('Activité ajoutée')
+
+    await user.click(screen.getByLabelText('supprimer À supprimer'))
+    expect(screen.getByText('Supprimer cette activité ?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Supprimer' }))
+    expect(await screen.findByText('Activité supprimée')).toBeInTheDocument()
+    expect(screen.queryByLabelText('voir À supprimer')).not.toBeInTheDocument()
+  })
+})
+
+describe('App — deck completion & filtering (tiny deck)', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+  const renderTiny = () => render(<App activities={TINY} />)
+  const voteBoth = () => {
+    fireEvent.click(screen.getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('non'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    // handleComplete schedules setDone(true) EXIT_MS after the deck empties.
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+  }
+
+  it('completing the whole deck lands on the review prompt', () => {
+    renderTiny()
+    voteBoth()
+    expect(screen.getByTestId('review-prompt')).toBeInTheDocument()
+  })
+
+  it('exiting review mode while everything is voted returns to the review prompt', () => {
+    renderTiny()
+    voteBoth()
+    fireEvent.click(screen.getByLabelText('revoir les votes'))
+    expect(screen.getByText('Mode révision')).toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText('quitter le mode révision'))
+    expect(screen.getByText('Mode révision terminé')).toBeInTheDocument()
+    expect(screen.getByTestId('review-prompt')).toBeInTheDocument()
+  })
+
+  it('shows the empty-filter fallback when no unvoted activity matches', () => {
+    renderTiny()
+    // Vote the only 🌊 card, then filter by 🌊 → nothing unvoted matches.
+    fireEvent.click(screen.getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    fireEvent.click(screen.getByLabelText('filtrer par catégorie'))
+    fireEvent.click(screen.getByTestId('filter-chip-🌊'))
+    fireEvent.click(screen.getByTestId('filter-confirm'))
+    expect(
+      screen.getByText('Aucune activité à voter pour ces catégories.'),
+    ).toBeInTheDocument()
+  })
+
+  it('a filtered deck completion does not trigger the global review prompt', () => {
+    renderTiny()
+    // Filter to just the 🌊 card, swipe it → filtered deck empties but the
+    // global "Revoir les votes ?" must NOT appear (handleComplete early-return).
+    fireEvent.click(screen.getByLabelText('filtrer par catégorie'))
+    fireEvent.click(screen.getByTestId('filter-chip-🌊'))
+    fireEvent.click(screen.getByTestId('filter-confirm'))
+    fireEvent.click(screen.getByLabelText('like'))
+    act(() => {
+      vi.advanceTimersByTime(1200)
+    })
+    expect(screen.queryByTestId('review-prompt')).not.toBeInTheDocument()
+  })
+})
+
+describe('App — version upgrade', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+  })
+
+  it('surfaces an upgrade toast when the stored app version is older', () => {
+    // Raw string (useAppVersionCheck reads/writes the key without JSON).
+    window.localStorage.setItem(APP_VERSION_KEY, '0.0.1-old')
+    renderApp()
+    expect(screen.getByText(/Mis à jour en v/)).toBeInTheDocument()
   })
 })
