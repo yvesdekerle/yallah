@@ -3,6 +3,7 @@ import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
 import { SectionHeading } from './SectionHeading.tsx'
+import { AvatarPill } from './AvatarPill.tsx'
 import { PARTICIPANTS } from '../data/participants.ts'
 import { fakeVote } from '../utils/groupVotes.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
@@ -63,23 +64,12 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
                 }}
                 data-testid={`group-vote-${p.id}`}
               >
-                <span
-                  className="inline-flex items-center justify-center font-sans"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 99,
-                    background: p.color,
-                    color: '#fff',
-                    fontSize: 12,
-                    fontWeight: 800,
-                    flexShrink: 0,
-                    textShadow: '0 1px 2px rgba(0,0,0,0.15)',
-                  }}
-                  aria-hidden
-                >
-                  {p.initial}
-                </span>
+                <AvatarPill
+                  initial={p.initial}
+                  color={p.color}
+                  size={28}
+                  fontSize={12}
+                />
                 <span
                   style={{
                     flex: 1,

@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { YB } from '../utils/theme.ts'
 import { inputStyle } from './addActivityStyles.ts'
+import { PillButton } from './PillButton.tsx'
 
 /** Labelled form row wrapper. */
 export function Field({
@@ -89,22 +90,17 @@ export function Chip({
   dot?: string
 }) {
   return (
-    <button
-      type="button"
+    <PillButton
+      selected={selected}
       onClick={onClick}
-      aria-pressed={selected}
-      className="inline-flex items-center justify-center font-sans cursor-pointer"
+      className="justify-center"
       style={{
         minHeight: 40,
         gap: 6,
         padding: '0 14px',
-        borderRadius: 99,
         fontSize: 14,
         fontWeight: 600,
         lineHeight: 1,
-        background: selected ? YB.ink : '#fff',
-        color: selected ? '#fff' : YB.ink,
-        border: selected ? '1px solid transparent' : `1px solid ${YB.bgSoft}`,
       }}
     >
       {dot && (
@@ -113,7 +109,7 @@ export function Chip({
         </span>
       )}
       <span style={{ lineHeight: 1 }}>{label}</span>
-    </button>
+    </PillButton>
   )
 }
 
@@ -146,23 +142,12 @@ export function Toggle({
   onToggle: () => void
 }) {
   return (
-    <button
-      type="button"
+    <PillButton
+      selected={on}
       onClick={onToggle}
-      aria-pressed={on}
-      className="inline-flex items-center font-sans cursor-pointer"
-      style={{
-        gap: 8,
-        padding: '8px 14px',
-        borderRadius: 99,
-        fontSize: 13.5,
-        fontWeight: 700,
-        background: on ? YB.ink : '#fff',
-        color: on ? '#fff' : YB.ink,
-        border: on ? '1px solid transparent' : `1px solid ${YB.bgSoft}`,
-      }}
+      style={{ gap: 8, padding: '8px 14px', fontSize: 13.5, fontWeight: 700 }}
     >
       {label}
-    </button>
+    </PillButton>
   )
 }

@@ -1,6 +1,7 @@
 import { PARTICIPANTS } from '../data/participants.ts'
 import { YB } from '../utils/theme.ts'
 import { ModalShell } from './ModalShell.tsx'
+import { AvatarPill } from './AvatarPill.tsx'
 
 interface IdentityPickerProps {
   currentUserId: string | null
@@ -100,23 +101,12 @@ export function IdentityPicker({
                 gap: 12,
               }}
             >
-              <span
-                className="inline-flex items-center justify-center font-sans"
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 99,
-                  background: p.color,
-                  color: '#fff',
-                  fontSize: 14,
-                  fontWeight: 800,
-                  flexShrink: 0,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.15)',
-                }}
-                aria-hidden
-              >
-                {p.initial}
-              </span>
+              <AvatarPill
+                initial={p.initial}
+                color={p.color}
+                size={36}
+                fontSize={14}
+              />
               <span
                 style={{
                   fontSize: 15,

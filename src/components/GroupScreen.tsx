@@ -1,5 +1,6 @@
 import { PARTICIPANTS } from '../data/participants.ts'
 import { YB } from '../utils/theme.ts'
+import { AvatarPill } from './AvatarPill.tsx'
 
 interface GroupScreenProps {
   /** Id of the participant the local user identifies as. Null while
@@ -102,23 +103,12 @@ export function GroupScreen({
                 data-testid={`participant-${p.id}`}
               >
                 <div className="flex items-center" style={{ gap: 14 }}>
-                  <span
-                    className="inline-flex items-center justify-center font-sans"
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 99,
-                      background: p.color,
-                      color: '#fff',
-                      fontSize: 16,
-                      fontWeight: 800,
-                      flexShrink: 0,
-                      textShadow: '0 1px 2px rgba(0,0,0,0.15)',
-                    }}
-                    aria-hidden
-                  >
-                    {p.initial}
-                  </span>
+                  <AvatarPill
+                    initial={p.initial}
+                    color={p.color}
+                    size={40}
+                    fontSize={16}
+                  />
                   <div
                     className="flex-1 flex items-baseline"
                     style={{ gap: 8 }}
