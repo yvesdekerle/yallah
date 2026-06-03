@@ -15,6 +15,20 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [react()],
+  // Pre-bundle the dependencies that are only reached through lazy `import()`
+  // (Leaflet maps, the add-activity form). Without this Vite discovers them
+  // mid-session on first use and re-optimises, which serves a transient
+  // `504 (Outdated Optimize Dep)` + full reload — long enough to blank the page
+  // and flake the Playwright e2e on a cold dev server. Bundling them in the
+  // initial pass removes the re-optimisation.
+  optimizeDeps: {
+    include: ['leaflet', 'react-leaflet', '@react-oauth/google'],
+  },
+  server: {
+    // Crawl the app entry at startup so the optimizer runs before the first
+    // navigation rather than on first request.
+    warmup: { clientFiles: ['./src/main.tsx'] },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
