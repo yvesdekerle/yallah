@@ -16,6 +16,7 @@ import {
   dragRotation,
   dragIntensity,
 } from '../utils/swipe.ts'
+import { cssVars } from '../utils/css.ts'
 import { Card } from './Card.tsx'
 import { StampOverlay } from './StampOverlay.tsx'
 import { HeartStamp } from './HeartStamp.tsx'
@@ -275,24 +276,22 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
           <div
             key={`exit-${exiting.card.id}`}
             className="pointer-events-none absolute"
-            style={
-              {
-                inset: 0,
-                '--fx': `${exiting.fromX}px`,
-                '--fy': `${exiting.fromY}px`,
-                '--fr': `${exiting.fromR}deg`,
-                '--tx': `${exitOff.x}px`,
-                '--ty': `${exitOff.y}px`,
-                '--tr': `${exitOff.r}deg`,
-                transformOrigin: 'center bottom',
-                animation: `yallahDeckExit ${exitDur}ms cubic-bezier(.4,.0,.6,.95) forwards`,
-                zIndex: 10,
-                filter:
-                  exiting.verdict === 'top'
-                    ? 'drop-shadow(0 0 28px rgba(239,191,4,0.75))'
-                    : 'none',
-              } as React.CSSProperties
-            }
+            style={cssVars({
+              inset: 0,
+              '--fx': `${exiting.fromX}px`,
+              '--fy': `${exiting.fromY}px`,
+              '--fr': `${exiting.fromR}deg`,
+              '--tx': `${exitOff.x}px`,
+              '--ty': `${exitOff.y}px`,
+              '--tr': `${exitOff.r}deg`,
+              transformOrigin: 'center bottom',
+              animation: `yallahDeckExit ${exitDur}ms cubic-bezier(.4,.0,.6,.95) forwards`,
+              zIndex: 10,
+              filter:
+                exiting.verdict === 'top'
+                  ? 'drop-shadow(0 0 28px rgba(239,191,4,0.75))'
+                  : 'none',
+            })}
           >
             <Card activity={exiting.card} />
             {exiting.verdict === 'oui' && <HeartStamp intensity={1} />}

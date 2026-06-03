@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { YB } from '../utils/theme.ts'
+import { cssVars } from '../utils/css.ts'
 
 function buildStarPath(): string {
   // 10-point polygon — alternating outer / inner radii — for a puffy 5-point
@@ -135,18 +136,16 @@ export function SuperLikeFX() {
         <div
           key={s.key}
           className="absolute"
-          style={
-            {
-              top: '50%',
-              left: '50%',
-              width: s.size,
-              height: s.size,
-              '--dx': `${s.dx}px`,
-              '--dy': `${s.dy}px`,
-              '--rot': `${s.rot}deg`,
-              animation: `yallahSparkleFly ${s.dur}ms ${s.delay}ms cubic-bezier(.2,.7,.3,1) forwards`,
-            } as React.CSSProperties
-          }
+          style={cssVars({
+            top: '50%',
+            left: '50%',
+            width: s.size,
+            height: s.size,
+            '--dx': `${s.dx}px`,
+            '--dy': `${s.dy}px`,
+            '--rot': `${s.rot}deg`,
+            animation: `yallahSparkleFly ${s.dur}ms ${s.delay}ms cubic-bezier(.2,.7,.3,1) forwards`,
+          })}
         >
           <svg width={s.size} height={s.size} viewBox="0 0 24 24" aria-hidden>
             <path
