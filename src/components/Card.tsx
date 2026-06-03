@@ -1,6 +1,5 @@
 import { memo, useState, type ReactNode } from 'react'
 import type { Activity } from '../types/activity.ts'
-import type { Verdict } from '../types/verdict.ts'
 import { YB } from '../utils/theme.ts'
 import { heroPhotoUrl } from '../utils/photos.ts'
 import { Pin, Clock, StarFilled, Wallet } from '../icons/index.tsx'
@@ -16,12 +15,6 @@ import { BASE_TAMARIN, estimateDriveTime } from '../utils/distance.ts'
 
 interface CardProps {
   activity: Activity
-  /**
-   * When set, the corresponding drag stamp is shown on the card. The actual
-   * stamp components are rendered separately in the parent so that during an
-   * exit they can slide off attached to the card wrapper.
-   */
-  dragState?: Verdict | null
 }
 
 /**
