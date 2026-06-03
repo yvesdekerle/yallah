@@ -3,19 +3,18 @@ import {
   useCallback,
   useImperativeHandle,
   useMemo,
-  useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
 } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict, VoteEntry } from '../types/verdict.ts'
-import { VERDICT_META, EXIT_MS, BUTTON_EXIT_MS, TOP_EXIT_MS, TAP_MAX_MS, TAP_MAX_DIST } from '../constants/swipe.ts'
+import { VERDICT_META, EXIT_MS, BUTTON_EXIT_MS, TOP_EXIT_MS } from '../constants/swipe.ts'
 import {
   dragVerdict,
   exitOffset,
   dragRotation,
   dragIntensity,
 } from '../utils/swipe.ts'
+import { useSwipeGesture } from '../hooks/useSwipeGesture.ts'
 import { cssVars } from '../utils/css.ts'
 import { Card } from './Card.tsx'
 import { StampOverlay } from './StampOverlay.tsx'
@@ -110,11 +109,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
       return m
     }, [history])
 
-    const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false })
     const [exiting, setExiting] = useState<ExitingState | null>(null)
-
-    const startRef = useRef<{ x: number; y: number } | null>(null)
-    const tapRef = useRef<{ time: number; x: number; y: number } | null>(null)
 
     const stack: Activity[] = []
     for (let i = 0; i < 3; i++) {
@@ -123,38 +118,32 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
     }
     const current = stack[0]
 
-    const verdict = drag.dragging ? dragVerdict(drag.x, drag.y) : null
-    const rotate = drag.dragging ? dragRotation(drag.x) : 0
-    const intensity = verdict ? dragIntensity(drag.x, drag.y) : 0
-
     const commit = useCallback(
-      (v: Verdict) => {
+      (v: Verdict, from?: { x: number; y: number }) => {
         if (exiting || !current) return
+        const fromX = from?.x ?? 0
+        const fromY = from?.y ?? 0
+        const fromButton = fromX === 0 && fromY === 0
         const isQuotaHit = v === 'top' && superRemaining <= 0
         const reportedVerdict: Verdict = isQuotaHit ? 'oui' : v
         onVerdict(current, reportedVerdict, isQuotaHit ? { quotaHit: true } : undefined)
         setExiting({
           card: current,
           verdict: v, // visual exit follows the user's intent, not the converted result
-          fromX: drag.x,
-          fromY: drag.y,
-          fromR: rotate,
-          fromButton: drag.x === 0 && drag.y === 0,
+          fromX,
+          fromY,
+          fromR: dragRotation(fromX),
+          fromButton,
         })
         setTopIdx((i) => i + 1)
-        setDrag({ x: 0, y: 0, dragging: false })
         const dur =
-          v === 'top'
-            ? TOP_EXIT_MS
-            : drag.x === 0 && drag.y === 0
-              ? BUTTON_EXIT_MS
-              : EXIT_MS
+          v === 'top' ? TOP_EXIT_MS : fromButton ? BUTTON_EXIT_MS : EXIT_MS
         window.setTimeout(() => {
           setExiting(null)
           if (topIdx + 1 >= activities.length) onComplete?.()
         }, dur)
       },
-      [exiting, current, onVerdict, onComplete, superRemaining, drag.x, drag.y, rotate, topIdx, activities.length],
+      [exiting, current, onVerdict, onComplete, superRemaining, topIdx, activities.length],
     )
 
     useImperativeHandle(
@@ -163,40 +152,20 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
       [commit, current],
     )
 
-    const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (exiting || !current) return
-      e.currentTarget.setPointerCapture(e.pointerId)
-      startRef.current = { x: e.clientX, y: e.clientY }
-      tapRef.current = { time: Date.now(), x: e.clientX, y: e.clientY }
-      setDrag({ x: 0, y: 0, dragging: true })
-    }
+    // Pointer-drag gesture lives in a hook; the deck renders visuals from `drag`
+    // and a past-threshold swipe routes back through `commit` (with the release
+    // offset for the exit animation).
+    const { drag, handlers } = useSwipeGesture({
+      disabled: exiting !== null || !current,
+      onSwipe: commit,
+      onTap: () => {
+        if (current) onOpenDetail?.(current)
+      },
+    })
 
-    const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!drag.dragging || !startRef.current) return
-      setDrag({
-        x: e.clientX - startRef.current.x,
-        y: e.clientY - startRef.current.y,
-        dragging: true,
-      })
-    }
-
-    const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!drag.dragging) return
-      const v = dragVerdict(drag.x, drag.y)
-      if (v) {
-        commit(v)
-      } else {
-        const t = tapRef.current
-        const dt = t ? Date.now() - t.time : Infinity
-        const dist = t ? Math.hypot(e.clientX - t.x, e.clientY - t.y) : Infinity
-        if (dt < TAP_MAX_MS && dist < TAP_MAX_DIST && current && onOpenDetail) {
-          onOpenDetail(current)
-        }
-        setDrag({ x: 0, y: 0, dragging: false })
-      }
-      startRef.current = null
-      tapRef.current = null
-    }
+    const verdict = drag.dragging ? dragVerdict(drag.x, drag.y) : null
+    const rotate = drag.dragging ? dragRotation(drag.x) : 0
+    const intensity = verdict ? dragIntensity(drag.x, drag.y) : 0
 
     if (!current && !exiting) return null
 
@@ -241,10 +210,7 @@ export const SwipeDeck = forwardRef<SwipeDeckHandle, SwipeDeckProps>(
             <div
               key={a.id}
               data-testid={isActive ? 'active-card' : undefined}
-              onPointerDown={isActive ? onPointerDown : undefined}
-              onPointerMove={isActive ? onPointerMove : undefined}
-              onPointerUp={isActive ? onPointerUp : undefined}
-              onPointerCancel={isActive ? onPointerUp : undefined}
+              {...(isActive ? handlers : {})}
               className="absolute select-none"
               style={{
                 inset: 0,
