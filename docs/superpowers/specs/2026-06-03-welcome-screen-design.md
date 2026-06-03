@@ -35,6 +35,7 @@ inchangé.
 | Affichage Groupe (connecté Google) | **Ligne « toi » en plus** en haut (prénom Google + vraie progression), 9 prénoms en dur en dessous |
 | Prénoms en dur | Conservés tels quels (Groupe / comparaison) |
 | « Changer d'identité » | **Réservé au mode démo**. En Google : pas de changement d'identité |
+| Avatar topbar | **Google uniquement** : photo de profil en haut à droite de la barre `yallah` → menu **« Se déconnecter »** → page d'accueil. En démo : rien dans la topbar |
 | OAuth Client ID | Fourni par l'utilisateur via `VITE_GOOGLE_CLIENT_ID` (.env) |
 | Tagline page d'accueil | Aucun — wordmark seul |
 
@@ -136,10 +137,14 @@ normalement** (pas de crash en CI / chez un dev sans clé).
     toast « Salut {u.name} 👋 ».
 - `onDemo` → `setDemoStarted(true)` (révèle le picker).
 - `handlePickIdentity` (démo) : inchangé, mais s'assure `setGoogleUser(null)`.
+- `handleLogout` (menu avatar Google) → `setGoogleUser(null)`, `setDemoStarted(false)`,
+  `setDone(false)`, `setReviewMode(false)`, `setActiveTab(0)`. On **revient à la page
+  d'accueil**. (L'historique de votes local : voir « cas limites ».)
 - `handleReset` (Réinitialiser) : ajoute `setGoogleUser(null)` + `setDemoStarted(false)`
-  → c'est aussi le **chemin de déconnexion Google** (retour page d'accueil). Voir
-  « cas limites ».
-- Props passées : `GroupScreen` reçoit `googleUser` (en plus de `userId`).
+  (efface tout, y compris l'historique → page d'accueil).
+- Props passées :
+  - `TopBar` reçoit `googleUser` + `onLogout={handleLogout}` ;
+  - `GroupScreen` reçoit `googleUser` (en plus de `userId`).
 
 Le `WelcomeScreen` est rendu conditionnellement au niveau App (au-dessus des écrans,
 z = overlay), puisqu'il ne vit que le temps de l'onboarding.
@@ -156,6 +161,22 @@ z = overlay), puisqu'il ne vit que le temps de l'onboarding.
 - Si pas de `googleUser` (mode démo) : comportement actuel (le participant courant
   porte « toi », bouton « Changer d'identité » visible).
 - Le compteur « N personnes pour Maurice » reste basé sur `PARTICIPANTS.length` (9).
+
+### `src/components/TopBar.tsx`
+
+- Nouvelles props optionnelles : `googleUser?: GoogleUser | null` et `onLogout?: () => void`.
+- Quand `googleUser` est présent : rendre un **bouton avatar rond en haut à droite**
+  (absolute right, aligné verticalement au wordmark). Image = `googleUser.picture`
+  dans un `<img>` rond ; **fallback** = `AvatarPill` avec l'initiale du prénom si
+  `picture` absent ou en erreur de chargement (`onError`).
+- Au clic sur l'avatar → ouvre un **petit menu** (popover) ancré sous l'avatar,
+  contenant **« Se déconnecter »**. Le menu se ferme au clic extérieur et sur Esc.
+- Quand `googleUser` est absent (démo / onboarding) : **pas d'avatar** (topbar
+  inchangée). Le wordmark reste centré ; le geste « 5 taps → réglages » est conservé.
+
+Nouveau (ou inline) `src/components/ProfileMenu.tsx` : le popover « Se déconnecter ».
+Léger, dismiss au clic extérieur + Esc (réutilise `useModalA11y` si pertinent, sinon
+un backdrop transparent cliquable). `z` au-dessus de la topbar.
 
 ### `package.json`
 
@@ -179,8 +200,9 @@ Pas connecté (userId null ET googleUser null)
   └─ demoStarted   → IdentityPicker
 
 Connecté (Google ou démo)            → app normale
+  Google : avatar topbar → menu « Se déconnecter » → page d'accueil
   Groupe : « Changer d'identité » visible seulement en démo
-Réinitialiser (Résultats)            → tout effacé → page d'accueil (= logout Google)
+Réinitialiser (Résultats)            → tout effacé (dont historique) → page d'accueil
 ```
 
 ## Gestion des erreurs / cas limites
@@ -189,10 +211,12 @@ Réinitialiser (Résultats)            → tout effacé → page d'accueil (= lo
   Google indisponible » ; démo + app intacts. Aucun crash.
 - **Popup Google fermée / refus / fetch userinfo KO** : toast d'échec, on reste sur
   la page d'accueil.
-- **Déconnexion Google** : pas de bouton « changer d'identité » en Google (décision).
-  Le seul retour à la page d'accueil est **« Réinitialiser »** (Résultats), qui
-  efface l'historique + le profil Google. → *Point à confirmer en relecture : est-ce
-  suffisant, ou veux-tu un bouton « Se déconnecter » dédié ?*
+- **Déconnexion Google** : via l'**avatar en haut à droite → menu « Se déconnecter »**
+  (efface `googleUser`, retour page d'accueil). L'historique local n'est **pas**
+  effacé par la déconnexion seule ; il sera de toute façon remis à zéro à la
+  prochaine connexion (Google ou choix démo, qui appellent `clearHistory()`).
+  « Réinitialiser » (Résultats) reste le moyen d'effacer aussi l'historique.
+  Pas de « changer d'identité » en Google (décision).
 - **Persistance** : `googleUser` est en `localStorage` → la session survit au reload
   (on ne re-demande pas Google à chaque lancement).
 - **Migration** : aucune clé existante renommée ; les utilisateurs en cours (avec
@@ -206,6 +230,9 @@ Réinitialiser (Résultats)            → tout effacé → page d'accueil (= lo
 - `Wordmark.test.tsx` (nouveau, léger).
 - `GroupScreen.test.tsx` (maj) : avec `googleUser` → ligne « toi » en tête + bouton
   « Changer d'identité » masqué ; sans → comportement actuel.
+- `TopBar.test.tsx` (maj/nouveau) : avec `googleUser` → avatar visible ; clic →
+  menu « Se déconnecter » ; clic « Se déconnecter » → `onLogout` appelé ; sans
+  `googleUser` → pas d'avatar. Fallback initiale si `picture` absent.
 - `App.test.tsx` (maj) :
   - 1er lancement → WelcomeScreen visible, picker non visible ;
   - clic « Mode démo » → picker « Tu es qui ? » visible ;
