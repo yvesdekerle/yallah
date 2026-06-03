@@ -325,13 +325,22 @@ describe('App — onboarding & identity', () => {
     window.localStorage.clear()
   })
 
-  it('blocks on the identity picker at first launch and starts fresh on pick', async () => {
+  it('shows the welcome screen first, then the picker via "Mode démo"', async () => {
     const user = userEvent.setup()
     renderApp()
+    // Welcome screen: demo entry + (disabled) Google button. No picker yet.
+    expect(screen.getByRole('button', { name: 'Mode démo' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Connexion Google indisponible/ }),
+    ).toBeDisabled()
+    expect(
+      screen.queryByRole('dialog', { name: 'Tu es qui ?' }),
+    ).not.toBeInTheDocument()
+    // Mode démo → the blocking picker appears.
+    await user.click(screen.getByRole('button', { name: 'Mode démo' }))
     expect(
       screen.getByRole('dialog', { name: 'Tu es qui ?' }),
     ).toBeInTheDocument()
-    // Blocking variant → no close affordance.
     expect(screen.queryByLabelText('fermer le sélecteur')).not.toBeInTheDocument()
     await user.click(screen.getByTestId('picker-row-yves'))
     expect(await screen.findByText('Salut Yves')).toBeInTheDocument()
@@ -348,12 +357,44 @@ describe('App — onboarding & identity', () => {
     )
     const user = userEvent.setup()
     renderApp()
+    await user.click(screen.getByRole('button', { name: 'Mode démo' }))
     await user.click(screen.getByTestId('picker-row-chloe'))
     await waitFor(() =>
       expect(
         JSON.parse(window.localStorage.getItem('yallah.history.v1') ?? '[]'),
       ).toEqual([]),
     )
+  })
+
+  it('a persisted Google session skips the welcome screen and shows the avatar', async () => {
+    // The OAuth popup isn't exercised; seed a stored profile as if signed in.
+    window.localStorage.setItem(
+      'yallah.googleUser.v1',
+      JSON.stringify({ sub: '1', name: 'Yves', email: 'yves@example.com' }),
+    )
+    renderApp()
+    // Straight to the app: no welcome, no picker.
+    expect(
+      screen.queryByRole('button', { name: 'Mode démo' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('dialog', { name: 'Tu es qui ?' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Compte de Yves')).toBeInTheDocument()
+  })
+
+  it('logging out from the avatar menu returns to the welcome screen', async () => {
+    window.localStorage.setItem(
+      'yallah.googleUser.v1',
+      JSON.stringify({ sub: '1', name: 'Yves', email: 'yves@example.com' }),
+    )
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByLabelText('Compte de Yves'))
+    await user.click(screen.getByRole('menuitem', { name: 'Se déconnecter' }))
+    // Back on the welcome screen; profile cleared from storage.
+    expect(screen.getByRole('button', { name: 'Mode démo' })).toBeInTheDocument()
+    expect(window.localStorage.getItem('yallah.googleUser.v1')).toBeNull()
   })
 
   it('changing identity from the Groupe tab keeps the existing history', async () => {

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import type { Activity } from './types/activity.ts'
 import type { Verdict } from './types/verdict.ts'
+import type { GoogleUser } from './types/user.ts'
 import { PARTICIPANTS } from './data/participants.ts'
 import { useLocalStorage } from './hooks/useLocalStorage.ts'
 import { useToast } from './hooks/useToast.ts'
@@ -18,6 +19,10 @@ import type { SwipeDeckHandle } from './components/SwipeDeck.tsx'
 import { SwipeScreen } from './components/SwipeScreen.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
+import { WelcomeScreen } from './components/WelcomeScreen.tsx'
+import { GoogleButton } from './components/GoogleButton.tsx'
+import { GoogleSignInButton } from './components/GoogleSignInButton.tsx'
+import { googleAvailable } from './utils/googleAuth.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
@@ -48,6 +53,17 @@ export default function App({ activities }: AppProps) {
     STORAGE_KEYS.userId,
     null,
   )
+  // Google SSO profile (client-side, no backend). Takes precedence over `userId`
+  // as the active identity; the two are never both non-null (picking one clears
+  // the other). Null ⇒ not signed in via Google.
+  const [googleUser, setGoogleUser] = useLocalStorage<GoogleUser | null>(
+    STORAGE_KEYS.googleUser,
+    null,
+  )
+  // True once the user taps "Mode démo" on the welcome screen — reveals the
+  // IdentityPicker. Session-only (the welcome screen never returns mid-session
+  // except via logout/reset, which reset this).
+  const [demoStarted, setDemoStarted] = useState(false)
   const [changingIdentity, setChangingIdentity] = useState(false)
   // The swipe screen's mode is two *independent* flags, deliberately not a
   // `'swiping' | 'review' | 'done'` union (ARCH-09): `done` (the current pass
@@ -155,8 +171,13 @@ export default function App({ activities }: AppProps) {
     return filteredDeck(allActivities, history, selectedTags)
   }, [reviewMode, done, allActivities, history, selectedTags])
 
-  const needsOnboarding = userId === null
-  const showPicker = needsOnboarding || changingIdentity
+  const signedIn = userId !== null || googleUser !== null
+  // First screen on launch: logo + Google sign-in / demo. Shown until the user
+  // signs in (Google) or starts the demo flow.
+  const showWelcome = !signedIn && !demoStarted
+  // Demo identity picker: during onboarding once "Mode démo" is tapped, or when
+  // an already-identified demo user taps "Changer d'identité".
+  const showPicker = (!signedIn && demoStarted) || changingIdentity
 
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
@@ -190,14 +211,45 @@ export default function App({ activities }: AppProps) {
   }, [])
 
   const handleReset = useCallback(() => {
-    // userId is cleared too → the blocking IdentityPicker re-appears and
-    // covers the toast (z-overlay > toast z-chrome), so no toast here.
+    // Identity is cleared too → the welcome screen re-appears and covers the
+    // toast (z-overlay > toast z-chrome), so no toast here.
     clearHistory()
     setUserId(null)
+    setGoogleUser(null)
+    setDemoStarted(false)
     setDone(false)
     setReviewMode(false)
     setChangingIdentity(false)
-  }, [clearHistory, setUserId])
+  }, [clearHistory, setUserId, setGoogleUser])
+
+  // Signed in via Google: adopt the profile as the active identity, start a
+  // fresh session (history is per-device), and land on the swipe deck.
+  const handleGoogleUser = useCallback(
+    (user: GoogleUser) => {
+      clearHistory()
+      setUserId(null)
+      setGoogleUser(user)
+      setDone(false)
+      setReviewMode(false)
+      setActiveTab(0)
+      showToast(`Salut ${user.name}`, '👋')
+    },
+    [clearHistory, setUserId, setGoogleUser, showToast],
+  )
+
+  // Sign out of Google → back to the welcome screen. History is left as-is (the
+  // next sign-in / demo pick clears it); use "Réinitialiser" to wipe votes too.
+  const handleLogout = useCallback(() => {
+    setGoogleUser(null)
+    setDemoStarted(false)
+    setDone(false)
+    setReviewMode(false)
+    setActiveTab(0)
+  }, [setGoogleUser])
+
+  const handleGoogleError = useCallback(() => {
+    showToast('Connexion Google échouée', '⚠️')
+  }, [showToast])
 
   const handleReview = useCallback(() => {
     setDone(false)
@@ -267,6 +319,7 @@ export default function App({ activities }: AppProps) {
         setDone(false)
         setReviewMode(false)
       }
+      setGoogleUser(null) // demo identity and Google profile are exclusive
       setUserId(id)
       setChangingIdentity(false)
       const p = PARTICIPANTS.find((x) => x.id === id)
@@ -276,7 +329,7 @@ export default function App({ activities }: AppProps) {
         wasOnboarding ? '👋' : '✨',
       )
     },
-    [userId, clearHistory, setUserId, showToast],
+    [userId, clearHistory, setUserId, setGoogleUser, showToast],
   )
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
@@ -345,7 +398,11 @@ export default function App({ activities }: AppProps) {
         style={{ background: YB.bgSun }}
       >
         <StatusBar />
-        <TopBar onSecretOpen={() => setSettingsOpen(true)} />
+        <TopBar
+          onSecretOpen={() => setSettingsOpen(true)}
+          googleUser={googleUser}
+          onLogout={handleLogout}
+        />
 
         {/* Tabs stay MOUNTED — switching just toggles visibility. Avoids
             the SwipeDeck remounting + photo reflashing every time the
@@ -398,6 +455,7 @@ export default function App({ activities }: AppProps) {
         >
           <GroupScreen
             currentUserId={userId}
+            googleUser={googleUser}
             currentUserProgress={history.length}
             total={allActivities.length}
             onChangeIdentity={() => setChangingIdentity(true)}
@@ -434,6 +492,22 @@ export default function App({ activities }: AppProps) {
         )}
 
         <BottomNav active={activeTab} onChange={setActiveTab} />
+
+        {showWelcome && (
+          <WelcomeScreen
+            onDemo={() => setDemoStarted(true)}
+            googleSlot={
+              googleAvailable ? (
+                <GoogleSignInButton
+                  onUser={handleGoogleUser}
+                  onError={handleGoogleError}
+                />
+              ) : (
+                <GoogleButton disabled />
+              )
+            }
+          />
+        )}
 
         <AppOverlays
           history={history}
