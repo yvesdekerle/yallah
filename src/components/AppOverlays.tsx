@@ -66,6 +66,8 @@ interface AppOverlaysProps {
   /** Curated + user activities — drives meDone, the random-fill count, the map pins. */
   activities: Activity[]
   userId: string | null
+  /** Active identity id (Google uid or demo id) — flags "créé par toi". */
+  currentUserId: string | null
   superRemaining: number
   // Each overlay's state + callbacks, grouped to keep the wiring legible.
   detail: DetailOverlay
@@ -94,6 +96,7 @@ export function AppOverlays({
   history,
   activities,
   userId,
+  currentUserId,
   superRemaining,
   detail,
   map,
@@ -119,6 +122,7 @@ export function AppOverlays({
           onOpenMap={detail.onOpenMap}
           meDone={meDone}
           userId={userId}
+          currentUserId={currentUserId}
           myVerdict={myVerdict}
         />
       )}

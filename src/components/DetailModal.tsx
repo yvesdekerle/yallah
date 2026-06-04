@@ -28,6 +28,8 @@ interface DetailModalProps {
   meDone?: boolean
   /** Id of the local user — used to slot the real verdict in the group panel. */
   userId?: string | null
+  /** Active identity id (Google uid or demo id) — flags "créé par toi". */
+  currentUserId?: string | null
   /** Local user's verdict for this activity, if any. */
   myVerdict?: Verdict | null
 }
@@ -46,6 +48,7 @@ export function DetailModal({
   onOpenMap,
   meDone = false,
   userId = null,
+  currentUserId = null,
   myVerdict = null,
 }: DetailModalProps) {
   const [open, setOpen] = useState(false)
@@ -133,6 +136,10 @@ export function DetailModal({
             activity={activity}
             photos={photos}
             onOpenPhoto={setLightboxIdx}
+            createdByMe={
+              activity.createdBy != null &&
+              activity.createdBy.uid === currentUserId
+            }
           />
           <DetailMap activity={activity} onOpenMap={onOpenMap} />
           <DetailGroupVotes

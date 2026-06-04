@@ -1,4 +1,7 @@
 import type { Verdict } from './verdict.ts'
+import type { ActivityCreator, Difficulty } from './activity.ts'
+
+export type { ActivityCreator }
 
 /**
  * Shapes of the documents we store in Firestore. Kept separate from the app's
@@ -29,12 +32,6 @@ export interface UserDoc {
   updatedAt: number | null
 }
 
-/** Who created an activity. Curated activities omit this (treated as house picks). */
-export interface ActivityCreator {
-  uid: string
-  name: string
-}
-
 /**
  * `activities/{id}` — full activity detail mirrored into Firestore. The app
  * still reads curated activities from the bundled JSON for speed/offline; this
@@ -49,7 +46,7 @@ export interface ActivityDoc {
   transit: string
   description: string
   duration?: string
-  difficulty?: string
+  difficulty?: Difficulty
   price: string
   rating: number
   pepite: boolean

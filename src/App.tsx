@@ -27,8 +27,11 @@ import {
   saveVotes,
   removeVote,
   signOutFirebase,
+  upsertActivity,
 } from './services/firebase/api.ts'
 import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
+import { userActivityToDoc } from './utils/activityDoc.ts'
+import type { ActivityCreator } from './types/activity.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
@@ -208,6 +211,18 @@ export default function App({ activities }: AppProps) {
     return null
   }, [googleUser, userId])
 
+  // The active identity id (Google uid or demo participant id) — used to tag
+  // "créé par" and to flag the user's own contributions as "toi".
+  const currentUserId = googleUser?.uid ?? userId
+  const creator = useMemo<ActivityCreator | undefined>(() => {
+    if (googleUser) return { uid: googleUser.uid, name: googleUser.name }
+    if (userId) {
+      const p = PARTICIPANTS.find((x) => x.id === userId)
+      return { uid: userId, name: p?.name ?? userId }
+    }
+    return undefined
+  }, [googleUser, userId])
+
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
       if (reviewMode) {
@@ -335,21 +350,24 @@ export default function App({ activities }: AppProps) {
 
   const handleAddActivity = useCallback(
     async (input: UserActivityInput) => {
-      await addUserActivity(input)
+      const record = await addUserActivity(input, creator)
+      // Mirror the new activity (with its creator) to Firestore when signed in.
+      if (googleUser) void upsertActivity(userActivityToDoc(record))
       // A new card now exists past the curated deck — make it reachable even
       // if the user had already finished swiping everything else.
       setDone(false)
       showToast('Activité ajoutée', '➕')
     },
-    [addUserActivity, showToast],
+    [addUserActivity, showToast, creator, googleUser],
   )
 
   const handleUpdateActivity = useCallback(
     async (id: string, input: UserActivityInput) => {
-      await updateUserActivity(id, input)
+      const record = await updateUserActivity(id, input)
+      if (record && googleUser) void upsertActivity(userActivityToDoc(record))
       showToast('Activité mise à jour', '✏️')
     },
-    [updateUserActivity, showToast],
+    [updateUserActivity, showToast, googleUser],
   )
 
   const handleConfirmDeleteActivity = useCallback(async () => {
@@ -575,6 +593,7 @@ export default function App({ activities }: AppProps) {
           history={history}
           activities={allActivities}
           userId={userId}
+          currentUserId={currentUserId}
           superRemaining={superRemaining}
           detail={{
             state: detail,

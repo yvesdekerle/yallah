@@ -4,6 +4,14 @@ export interface Difficulty {
   detail?: string
 }
 
+/** Who added a user activity. Curated house picks omit this. */
+export interface ActivityCreator {
+  /** Firebase uid (Google) or demo participant id. */
+  uid: string
+  /** Display name kept with the activity (nom/prénom). */
+  name: string
+}
+
 export interface Activity {
   /** Stable id derived from the source number, padded — e.g. "a001". */
   id: string
@@ -36,4 +44,6 @@ export interface Activity {
   photoUrls?: string[]
   /** Coordinates for user-added activities (curated ones use coords.json). */
   coords?: { lat: number; lng: number }
+  /** Who added it. Absent ⇒ curated house pick. */
+  createdBy?: ActivityCreator
 }

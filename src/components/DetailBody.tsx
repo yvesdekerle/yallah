@@ -12,10 +12,13 @@ export function DetailBody({
   activity,
   photos,
   onOpenPhoto,
+  createdByMe = false,
 }: {
   activity: Activity
   photos: string[]
   onOpenPhoto: (index: number) => void
+  /** True when the current user created this activity ("Créé par toi"). */
+  createdByMe?: boolean
 }) {
   const activityLinks = getLinks(activity.id)
   return (
@@ -152,6 +155,20 @@ export function DetailBody({
           />
         ))}
       </div>
+
+      {activity.createdBy && (
+        <p
+          className="font-sans"
+          style={{
+            margin: '0 0 8px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: YB.muted,
+          }}
+        >
+          Créé par {createdByMe ? 'toi' : activity.createdBy.name}
+        </p>
+      )}
     </>
   )
 }
