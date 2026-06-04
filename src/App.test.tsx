@@ -382,7 +382,7 @@ describe('App — onboarding & identity', () => {
     // The OAuth popup isn't exercised; seed a stored profile as if signed in.
     window.localStorage.setItem(
       'yallah.googleUser.v1',
-      JSON.stringify({ sub: '1', name: 'Yves', email: 'yves@example.com' }),
+      JSON.stringify({ uid: '1', name: 'Yves', email: 'yves@example.com' }),
     )
     renderApp()
     // Straight to the app: no welcome, no picker.
@@ -398,7 +398,7 @@ describe('App — onboarding & identity', () => {
   it('logging out from the avatar menu returns to the welcome screen', async () => {
     window.localStorage.setItem(
       'yallah.googleUser.v1',
-      JSON.stringify({ sub: '1', name: 'Yves', email: 'yves@example.com' }),
+      JSON.stringify({ uid: '1', name: 'Yves', email: 'yves@example.com' }),
     )
     const user = userEvent.setup()
     renderApp()

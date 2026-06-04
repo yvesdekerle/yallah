@@ -30,7 +30,7 @@ describe('TopBar — hidden settings gesture', () => {
 
 describe('TopBar — Google profile avatar', () => {
   const googleUser = {
-    sub: '1',
+    uid: '1',
     name: 'Yves',
     email: 'yves@example.com',
     picture: 'https://lh3.googleusercontent.com/a/abc',

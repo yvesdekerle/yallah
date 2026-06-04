@@ -1,47 +1,38 @@
-import { useGoogleLogin } from '@react-oauth/google'
+import { useState } from 'react'
 import type { GoogleUser } from '../types/user.ts'
-import { GOOGLE_USERINFO_URL, toGoogleUser } from '../utils/googleAuth.ts'
+import { signInWithGoogle } from '../services/firebase/api.ts'
 import { GoogleButton } from './GoogleButton.tsx'
 
 interface GoogleSignInButtonProps {
-  /** Called with the resolved profile once sign-in + userinfo succeed. */
+  /** Called with the resolved profile once the Google popup sign-in succeeds. */
   onUser: (user: GoogleUser) => void
-  /** Called on any failure (popup closed, network, malformed profile). */
+  /** Called on any failure (popup closed, network, Firebase not configured). */
   onError?: () => void
 }
 
 /**
- * Behavioural Google sign-in button. Runs the implicit OAuth flow via
- * `@react-oauth/google` (so MUST live under a `GoogleOAuthProvider`), then
- * exchanges the access token for the profile at the userinfo endpoint.
- * Rendered only when a Client ID is configured; otherwise the welcome screen
- * shows a disabled {@link GoogleButton} instead — which is why this component
- * never mounts (and never calls the hook) when Google is unavailable.
+ * Behavioural Google sign-in button. Runs the Firebase Auth Google popup flow
+ * (`signInWithPopup`) via the lazily-loaded Firebase facade, then hands the
+ * mapped profile to `onUser`. Rendered only when Firebase is configured;
+ * otherwise the welcome screen shows a disabled {@link GoogleButton}.
  */
 export function GoogleSignInButton({
   onUser,
   onError,
 }: GoogleSignInButtonProps) {
-  const fetchProfile = async (accessToken: string) => {
+  const [pending, setPending] = useState(false)
+
+  const handleClick = async () => {
+    if (pending) return
+    setPending(true)
     try {
-      const res = await fetch(GOOGLE_USERINFO_URL, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      if (!res.ok) throw new Error(`userinfo ${res.status}`)
-      const user = toGoogleUser(await res.json())
-      if (user) onUser(user)
-      else onError?.()
+      onUser(await signInWithGoogle())
     } catch {
       onError?.()
+    } finally {
+      setPending(false)
     }
   }
 
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      void fetchProfile(tokenResponse.access_token)
-    },
-    onError: () => onError?.(),
-  })
-
-  return <GoogleButton onClick={() => login()} />
+  return <GoogleButton onClick={() => void handleClick()} disabled={pending} />
 }

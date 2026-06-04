@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Yallah Firestore security rules.
+//
+// Auth is Firebase Auth (Google provider). The trip is a small, trusted group,
+// so any signed-in user may READ the shared data (the group screen shows
+// everyone's votes), but a user may only WRITE their own profile, their own
+// votes, and activities they created. Curated activities are seeded with the
+// Admin SDK (scripts/seed-firestore.ts), which bypasses these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // users/{uid} — profile + the app version this account last ran.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // votes/{uid} — one document per user holding all their verdicts.
+    match /votes/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // activities/{id} — curated (seeded) + user-added. A user may only create
+    // or modify activities they own (createdBy.uid == their uid). Curated docs
+    // have no createdBy, so they're read-only to clients.
+    match /activities/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy.uid == request.auth.uid;
+      allow update, delete: if signedIn()
+        && resource.data.createdBy.uid == request.auth.uid;
+    }
+  }
+}

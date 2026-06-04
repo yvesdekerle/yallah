@@ -22,7 +22,13 @@ import { GroupScreen } from './components/GroupScreen.tsx'
 import { WelcomeScreen } from './components/WelcomeScreen.tsx'
 import { GoogleButton } from './components/GoogleButton.tsx'
 import { GoogleSignInButton } from './components/GoogleSignInButton.tsx'
-import { googleAvailable } from './utils/googleAuth.ts'
+import {
+  firebaseAvailable,
+  saveVotes,
+  removeVote,
+  signOutFirebase,
+} from './services/firebase/api.ts'
+import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
@@ -100,6 +106,11 @@ export default function App({ activities }: AppProps) {
     [showToast],
   )
   useAppVersionCheck(onVersionUpgrade)
+
+  // Firebase Auth is the source of truth for the Google identity: adopt the
+  // signed-in profile on load / restore (and mirror it + the running version to
+  // Firestore), clear it on sign-out. No-op when Firebase isn't configured.
+  useFirebaseAuthSync(setGoogleUser)
 
   const {
     userActivities,
@@ -192,19 +203,32 @@ export default function App({ activities }: AppProps) {
           ...(meta?.quotaHit ? { quotaHit: true } : {}),
         })
       }
+      // Mirror the verdict to Firestore when signed in via Google (no-op in
+      // demo mode / when Firebase isn't configured). Fire-and-forget: the local
+      // history stays the source of truth for the session.
+      if (googleUser) {
+        void saveVotes(googleUser.uid, googleUser.name, {
+          [activity.id]: {
+            verdict,
+            ...(meta?.quotaHit ? { quotaHit: true } : {}),
+          },
+        })
+      }
       if (meta?.quotaHit) {
         showToast('Plus de super-likes — converti en like', '⭐')
       }
     },
-    [reviewMode, upsertVote, appendVote, showToast],
+    [reviewMode, upsertVote, appendVote, showToast, googleUser],
   )
 
   const handleUndo = useCallback(() => {
     if (history.length === 0) return
+    const undone = history[history.length - 1]
     undoVote()
+    if (googleUser && undone) void removeVote(googleUser.uid, undone.id)
     setDone(false)
     showToast('Swipe annulé', '↩')
-  }, [history.length, undoVote, showToast])
+  }, [history, undoVote, showToast, googleUser])
 
   const handleAction = useCallback((verdict: Verdict) => {
     deckRef.current?.commit(verdict)
@@ -214,6 +238,7 @@ export default function App({ activities }: AppProps) {
     // Identity is cleared too → the welcome screen re-appears and covers the
     // toast (z-overlay > toast z-chrome), so no toast here.
     clearHistory()
+    void signOutFirebase()
     setUserId(null)
     setGoogleUser(null)
     setDemoStarted(false)
@@ -240,6 +265,7 @@ export default function App({ activities }: AppProps) {
   // Sign out of Google → back to the welcome screen. History is left as-is (the
   // next sign-in / demo pick clears it); use "Réinitialiser" to wipe votes too.
   const handleLogout = useCallback(() => {
+    void signOutFirebase()
     setGoogleUser(null)
     setDemoStarted(false)
     setDone(false)
@@ -256,6 +282,7 @@ export default function App({ activities }: AppProps) {
   // sign-in / demo pick clears it), matching logout semantics.
   const handleReturnHome = useCallback(() => {
     setSettingsOpen(false)
+    void signOutFirebase()
     setGoogleUser(null)
     setUserId(null)
     setDemoStarted(false)
@@ -283,10 +310,20 @@ export default function App({ activities }: AppProps) {
   const handleRandomFill = useCallback(() => {
     const added = randomFillVotes()
     if (added.length === 0) return
+    // Mirror the generated batch to Firestore in a single merge write.
+    if (googleUser) {
+      const values = Object.fromEntries(
+        added.map((e) => [
+          e.id,
+          { verdict: e.verdict, ...(e.quotaHit ? { quotaHit: true } : {}) },
+        ]),
+      )
+      void saveVotes(googleUser.uid, googleUser.name, values)
+    }
     // Everything's now voted → land on the "Revoir les votes ?" prompt.
     setDone(true)
     showToast(`${added.length} votes générés aléatoirement`, '🎲')
-  }, [randomFillVotes, showToast])
+  }, [randomFillVotes, showToast, googleUser])
 
   const handleAddActivity = useCallback(
     async (input: UserActivityInput) => {
@@ -313,6 +350,7 @@ export default function App({ activities }: AppProps) {
     await removeUserActivity(id)
     // Drop the vote that referenced this activity so it doesn't linger.
     removeVotesFor(id)
+    if (googleUser) void removeVote(googleUser.uid, id)
     setConfirmingDeleteActivity(null)
     showToast('Activité supprimée', '🗑')
   }, [
@@ -321,6 +359,7 @@ export default function App({ activities }: AppProps) {
     removeVotesFor,
     setConfirmingDeleteActivity,
     showToast,
+    googleUser,
   ])
 
   const handlePickIdentity = useCallback(
@@ -511,7 +550,7 @@ export default function App({ activities }: AppProps) {
           <WelcomeScreen
             onDemo={() => setDemoStarted(true)}
             googleSlot={
-              googleAvailable ? (
+              firebaseAvailable ? (
                 <GoogleSignInButton
                   onUser={handleGoogleUser}
                   onError={handleGoogleError}

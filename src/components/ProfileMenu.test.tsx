@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ProfileMenu } from './ProfileMenu.tsx'
 
-const base = { sub: '1', name: 'Yves', email: 'yves@example.com' }
+const base = { uid: '1', name: 'Yves', email: 'yves@example.com' }
 
 describe('ProfileMenu', () => {
   it('toggles the menu and shows the email', () => {

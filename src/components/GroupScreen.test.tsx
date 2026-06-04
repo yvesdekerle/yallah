@@ -152,7 +152,7 @@ describe('GroupScreen', () => {
   })
 
   describe('Google mode', () => {
-    const googleUser = { sub: '1', name: 'Yves', email: 'yves@example.com' }
+    const googleUser = { uid: '1', name: 'Yves', email: 'yves@example.com' }
 
     it('prepends a "toi" row for the Google identity with real progress', () => {
       render(

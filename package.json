@@ -17,10 +17,11 @@
     "fetch:photos": "tsx --env-file-if-exists=.env scripts/fetch-photos.ts",
     "download:photos": "tsx scripts/download-photos.ts",
     "geocode:activities": "tsx scripts/geocode-activities.ts",
-    "preview:photos": "tsx scripts/preview-photos.ts"
+    "preview:photos": "tsx scripts/preview-photos.ts",
+    "seed:firestore": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/seed-firestore.ts"
   },
   "dependencies": {
-    "@react-oauth/google": "^0.13.5",
+    "firebase": "^12.14.0",
     "leaflet": "^1.9.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -43,6 +44,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "fake-indexeddb": "^6.2.5",
+    "firebase-admin": "^13.10.0",
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
     "postcss": "^8.5.8",

@@ -15,6 +15,26 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        // Pin the Firebase SDK into its own vendor chunk. It's only ever
+        // reached through a dynamic import (services/firebase/client.ts), so
+        // this `firebase-*` chunk loads on demand — never in the eager entry.
+        // `scripts/check-bundle-size.ts` excludes it from the lazy budget (a
+        // fixed third-party cost) and asserts it never leaks into `index-*`.
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/firebase/') ||
+            id.includes('node_modules/@firebase/')
+          ) {
+            return 'firebase'
+          }
+          return undefined
+        },
+      },
+    },
+  },
   // Pre-bundle the dependencies that are only reached through lazy `import()`
   // (Leaflet maps, the add-activity form). Without this Vite discovers them
   // mid-session on first use and re-optimises, which serves a transient
@@ -22,7 +42,7 @@ export default defineConfig({
   // and flake the Playwright e2e on a cold dev server. Bundling them in the
   // initial pass removes the re-optimisation.
   optimizeDeps: {
-    include: ['leaflet', 'react-leaflet', '@react-oauth/google'],
+    include: ['leaflet', 'react-leaflet'],
   },
   server: {
     // Crawl the app entry at startup so the optimizer runs before the first
