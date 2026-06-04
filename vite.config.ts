@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { readFileSync } from 'node:fs'
@@ -10,11 +10,27 @@ const pkg = JSON.parse(
   readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'),
 ) as { version: string }
 
+// Emit a static `version.json` into the build so the deployed CDN advertises
+// the live version. `useDeployedVersionPoll` fetches it (no-store) to detect a
+// new deploy and reload stale tabs — works in every mode, no Firebase needed.
+function emitVersionJson(version: string): Plugin {
+  return {
+    name: 'yallah-emit-version-json',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: `${JSON.stringify({ version })}\n`,
+      })
+    },
+  }
+}
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react()],
+  plugins: [react(), emitVersionJson(pkg.version)],
   build: {
     rollupOptions: {
       output: {

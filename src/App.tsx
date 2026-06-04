@@ -32,6 +32,7 @@ import {
 } from './services/firebase/api.ts'
 import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
 import { useVersionGate } from './hooks/useVersionGate.ts'
+import { useDeployedVersionPoll } from './hooks/useDeployedVersionPoll.ts'
 import { useGroupData } from './hooks/useGroupData.ts'
 import { useRemoteVoteHydration } from './hooks/useRemoteVoteHydration.ts'
 import { userActivityToDoc } from './utils/activityDoc.ts'
@@ -123,6 +124,12 @@ export default function App({ activities }: AppProps) {
   // the version gate compares the running build against the global
   // config/app.version in Firestore). No-op in demo / without Firebase.
   useVersionGate(googleUser !== null)
+
+  // Deploy-driven update detection that works in EVERY mode: poll the static
+  // version.json the CDN serves and reload when a newer build is live. Covers
+  // the demo case (no Firebase) and the cold case where no client has yet
+  // published the new version to Firestore.
+  useDeployedVersionPoll()
 
   // Real signed-in members + their votes (Google mode) — drives the Groupe tab
   // and the detail "Le groupe" panel. Empty in demo mode / without Firebase.

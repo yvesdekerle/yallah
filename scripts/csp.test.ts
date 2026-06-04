@@ -8,10 +8,16 @@ import { join } from 'node:path'
 // can't post its token back under COOP same-origin.)
 const vercel = JSON.parse(
   readFileSync(join(process.cwd(), 'vercel.json'), 'utf8'),
-) as { headers: { headers: { key: string; value: string }[] }[] }
+) as {
+  headers: { source: string; headers: { key: string; value: string }[] }[]
+}
 
+// Look the rule up by its catch-all source rather than by index — other,
+// path-specific header rules (e.g. no-store on /version.json) may precede it.
+const catchAll = vercel.headers.find((h) => h.source === '/(.*)')
+if (!catchAll) throw new Error('vercel.json: missing catch-all header rule')
 const headers = Object.fromEntries(
-  vercel.headers[0].headers.map((h) => [h.key, h.value]),
+  catchAll.headers.map((h) => [h.key, h.value]),
 )
 const csp = headers['Content-Security-Policy']
 

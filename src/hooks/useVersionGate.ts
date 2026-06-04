@@ -4,10 +4,7 @@ import {
   publishAppVersion,
 } from '../services/firebase/api.ts'
 import { APP_VERSION } from '../constants/version.ts'
-import { compareVersions } from '../utils/version.ts'
-
-/** sessionStorage key: the version we already reloaded for (loop guard). */
-const RELOADED_KEY = 'yallah.reloadedFor.v1'
+import { compareVersions, reloadIfOutdated } from '../utils/version.ts'
 
 /**
  * Force-reload stale tabs when a newer build is published.
@@ -34,21 +31,7 @@ export function useVersionGate(enabled: boolean): void {
         return
       }
       // Published version is newer → this tab is stale → reload (once).
-      if (compareVersions(remote, APP_VERSION) > 0) {
-        let already: string | null = null
-        try {
-          already = sessionStorage.getItem(RELOADED_KEY)
-        } catch {
-          already = null
-        }
-        if (already === remote) return
-        try {
-          sessionStorage.setItem(RELOADED_KEY, remote)
-        } catch {
-          /* private mode — proceed without the guard */
-        }
-        window.location.reload()
-      }
+      reloadIfOutdated(remote, APP_VERSION)
     })
   }, [enabled])
 }
