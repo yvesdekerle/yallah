@@ -7,10 +7,10 @@ Yallah — mobile-first swipe app for picking activities in a group, Tinder-styl
 ## Tech Stack
 
 - **Frontend**: React 19, TypeScript 5.9 (strict), Vite 8
-- **Styling**: Tailwind CSS 3.4 with a custom `yallah-*` palette and named keyframes (`yallahDeckExit`, `yallahSparkleFly`, `yallahHaloPulse`, `yallahBadgePop`, `yallahFlash`, `yallahToast`)
+- **Styling**: Tailwind CSS 3.4 with a custom `yallah-*` palette and named keyframes (`yallahDeckExit`, `yallahSparkleFly`, `yallahHaloPulse`, `yallahBadgePop`, `yallahFlash`, `yallahToast`, `yallahTigerPop`, `yallahFadeUp`)
 - **State**: React hooks; `useLocalStorage` for persistent vote history. No global store.
 - **Image processing** (dev only): `sharp` — runs locally in `npm run download:photos` to resize Pexels originals before commit.
-- **Testing**: Vitest + @testing-library/react (420 unit/component tests across 60 files; coverage ratchet enforced in CI — floors L93/F88/B87/S90, measured ~L95/B90), Playwright e2e (iPhone 13 viewport, `chromium`)
+- **Testing**: Vitest + @testing-library/react (~560 unit/component tests across 80+ files; coverage ratchet enforced in CI — floors L93/F88/B87/S90, measured ~L91/B87), Playwright e2e (iPhone 13 viewport, `chromium`)
 - **Lint**: ESLint flat config — `typescript-eslint` **type-checked** rules on app source (`no-floating-promises`, `no-misused-promises`, `no-unnecessary-condition`); `no-explicit-any` / `no-unused-vars` are errors; Node globals scoped to tooling only
 - **Deploy**: Vercel static SPA. Photos served from `public/photos/` via Vercel's edge CDN.
 
@@ -26,7 +26,8 @@ src/
 ├── components/            # ~45 components + colocated tests (Foo.tsx + Foo.test.tsx)
 │   ├── Chrome
 │   │   ├── Phone, StatusBar, TopBar, BottomNav    (top + bottom bars, tab nav)
-│   │   └── UndoButton, Toast                      (floating UI)
+│   │   ├── UndoButton, Toast                      (floating UI)
+│   │   └── TigerPop                               (one-time "Tié un tigre !" pop on the very first sign-in)
 │   ├── Swipe screen
 │   │   ├── Card                                   (photo-XL swipe card)
 │   │   ├── SwipeDeck                              (pointer gestures, exit animations, reviewMode banner)
@@ -60,9 +61,11 @@ src/
 ├── utils/
 │   ├── swipe.ts                                   (pure drag math: dragVerdict, exitOffset, rotation, intensity)
 │   ├── theme.ts                                   (YB palette `as const`)
+│   ├── geocode.ts                                 (reverseGeocodeCity — coords → city via Nominatim, for the add form)
+│   ├── groupFormat.ts                             (groupModeOf + groupFormatLabel — defaults + display for the group format)
 │   └── photos.ts                                  (heroPhotoUrl, detailPhotos — reads src/data/photos.json)
 ├── types/
-│   ├── activity.ts                                (Activity, Difficulty)
+│   ├── activity.ts                                (Activity, Difficulty, GroupMode)
 │   └── verdict.ts                                 (Verdict, VoteEntry)
 ├── data/
 │   ├── activities.ts                              (re-exports activities.json typed as Activity[])
@@ -129,7 +132,7 @@ public/
 
 `BottomNav` exposes 3 tabs:
 
-1. **Swipe** (`active: 0`) — SwipeDeck, ActionRow, UndoButton, optional DeckDone when finished.
+1. **Swipe** (`active: 0`) — SwipeDeck, ActionRow, UndoButton. When every activity is voted the deck enters **review mode** (see below), not an empty deck.
 2. **Résultats** (`active: 1`) — Flat sorted list of voted activities + 5 verdict counters + "Revoir mes votes" + "Remplir aléatoirement" + "Réinitialiser".
 3. **Groupe** (`active: 2`) — 9 hard-coded participants with progress bars (real for Yves from `history.length`, fake stable for the others).
 
@@ -155,6 +158,11 @@ When `reviewMode === true`:
 - `App.handleVerdict` **upserts** by `activity.id` instead of appending — the user editing a vote replaces it in place, no duplicates accumulate.
 - Top-right of the swipe screen, a coral pill **"Mode révision · ✕"** lets the user exit mode (resumes normal swiping, history untouched).
 
+**Uniform end-of-deck** — whenever every activity is voted, the swipe screen lands in **review mode**, by the same path in every case:
+- finishing the forward pass (`handleComplete`) and bulk random-fill (`handleRandomFill`) call `setReviewMode(true)` (delayed by `EXIT_MS` for the last card's exit animation);
+- a reload / Firestore-hydration with a full history restores review mode via the `votedSyncLen` setState-during-render sync in `App.tsx` (a single `+1` history growth is treated as the in-session final swipe and left to `handleComplete`; any other transition to all-voted — mount, bulk, hydration — re-enters review mode).
+The `ReviewPrompt` ("Revoir les votes ?") now only shows at the **end of a review re-walk** (`reviewMode && done`) and after **explicitly exiting** review mode while still all-voted (`handleExitReview` → `setDone(allVoted)`).
+
 ## Photos pipeline
 
 Photos live in `public/photos/aXXX/N.jpg` (where `aXXX` is the activity id, `N` is 1..12). The app reads from `src/data/photos.json`, which maps activity id → array of paths (or remote URLs for activities not yet downloaded).
@@ -179,10 +187,13 @@ The maps themselves use **Leaflet 1.9 + react-leaflet 5** with **CartoDB Voyager
 
 ## Storage
 
-Two keys in `localStorage`:
+Keys in `localStorage` (see `STORAGE_KEYS` in `constants/swipe.ts`):
 
 - `yallah.history.v1` — `VoteEntry[]` = `{ id, verdict, quotaHit? }`. Last-write wins per `id` once review mode has touched it; otherwise raw chronological appends.
 - `yallah.userId.v1` — `string | null` — id of the participant the user picked at onboarding (`"chloe"`, `"yves"`, …). When `null`, the app shows the blocking `IdentityPicker` bottom-sheet at launch and wipes any pre-existing history on first pick (migration path for users upgraded from the pre-picker app). `useLocalStorage` calls `removeItem(key)` when set to `null`, so `getItem` returns `null` (not the string `"null"`) after a reset.
+- `yallah.googleUser.v1` — the Google SSO profile (Firebase Auth is the source of truth; this mirrors it). Exclusive with `yallah.userId.v1`.
+- `yallah.tagFilter.v1` — the persisted tag-facet filter (`string[]`).
+- `yallah.tigerSeen.v1` — `boolean`. True once the one-time **"Tié un tigre !"** welcome has played on the very first identification (Google sign-in **or** demo pick). A "seen once, ever" flag: **never cleared** — not on logout, not on reset — so the animation shows exactly once per device.
 
 **Legacy migration**: when `App.tsx` loads history, any entry with `verdict: 'neutre'` is rewritten to `'whynot'` (the id was renamed in the source tree). Existing users keep their votes.
 
@@ -214,6 +225,7 @@ Two keys in `localStorage`:
 ## Workflow
 
 - After implementing a feature, update or add tests (unit + e2e where appropriate).
+- **Keep this `CLAUDE.md` up to date after every feature.** Whenever you add/rename a component, hook, util, type, storage key, keyframe, script, env var, or change a user-facing behaviour, update the relevant section here in the same change. The doc is the project's source of truth for newcomers (and future Claude sessions) — treat a stale `CLAUDE.md` as a bug.
 - Run `npm test` and `npm run lint` before considering a task done.
 - For meaningful changes, also run `npm run build` (TS errors not always caught by vitest).
 - **Commit format** is Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`).
@@ -234,6 +246,10 @@ Source of truth is `activites-maurice.md` at the repo root — a hand-curated gu
 - `**Insolite** : …` (optional, surfaced in the DetailModal under "Anecdote")
 
 `💎` in tags → `pepite: true`. `🗝️` in tags → `secret: true`.
+
+**Group format** (`groupMode` / `groupSize` on `Activity`) — whether the activity is best done `'all'` (tous ensemble), `'subgroup'` (en sous-groupe), or `'limited'` (capped to `groupSize` participants). **Absent ⇒ `'subgroup'`** (the default); use `groupModeOf` / `groupFormatLabel` (`utils/groupFormat.ts`) rather than reading the raw field. Shown as a 👥 row in `DetailMetaTiles`, picked via chips (+ a number input for `'limited'`) in the add form, and persisted to both localStorage and Firestore. Curated activities have no markdown field for it yet → they all default to `'subgroup'`.
+
+**User-added "Lieu" is derived, not typed** — the add form has **no** free-text "Lieu" field. `location` (the city) is reverse-geocoded from the picked **Position** (`reverseGeocodeCity`, debounced 1.1 s for Nominatim's 1 req/s) and falls back to leaving the value untouched when offline. Clearing the position clears the derived city.
 
 ## Gotchas that cost time
 
