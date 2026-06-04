@@ -180,7 +180,7 @@ describe('App (integration)', () => {
     fireEvent.click(screen.getByLabelText('réinitialiser les votes'))
     expect(screen.getByText('Réinitialiser les votes ?')).toBeInTheDocument()
     fireEvent.click(
-      screen.getByRole('button', { name: 'Réinitialiser les votes' }),
+      screen.getByRole('button', { name: 'Réinitialiser' }),
     )
     expect(screen.getByText('0 / 198 activités swipées.')).toBeInTheDocument()
     expect(

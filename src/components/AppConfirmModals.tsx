@@ -40,7 +40,7 @@ export function AppConfirmModals({
         <ConfirmModal
           title="Réinitialiser les votes ?"
           message="Tous tes votes seront supprimés. Tu restes connecté(e) et ton profil est conservé. Cette action est irréversible."
-          confirmLabel="Réinitialiser les votes"
+          confirmLabel="Réinitialiser"
           cancelLabel="Annuler"
           variant="danger"
           onConfirm={onConfirmReset}
