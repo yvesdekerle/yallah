@@ -12,6 +12,8 @@ export interface ProfileMenuProps {
   onLogout: () => void
   /** Open the Réglages page (same target as the 5-taps-on-wordmark gesture). */
   onOpenSettings: () => void
+  /** Surface a toast after the link is copied (clipboard fallback path). */
+  onShared?: (message: string) => void
 }
 
 const AVATAR = 34
@@ -28,10 +30,36 @@ export function ProfileMenu({
   color,
   onLogout,
   onOpenSettings,
+  onShared,
 }: ProfileMenuProps) {
   const [open, setOpen] = useState(false)
   const [imgError, setImgError] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+
+  /** Share the current site URL: native share sheet on mobile, clipboard
+      copy (with toast) as the fallback elsewhere. */
+  const handleShare = async () => {
+    setOpen(false)
+    const url = window.location.href
+    // `navigator.share` is typed as always present, but is absent on most
+    // desktops — narrow to an optional shape so the runtime guard is honest.
+    const share = (navigator as { share?: (data: ShareData) => Promise<void> })
+      .share
+    if (share) {
+      try {
+        await share.call(navigator, { title: 'Yallah', url })
+      } catch {
+        // User dismissed the native sheet — nothing to do.
+      }
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      onShared?.('Lien copié')
+    } catch {
+      onShared?.(url)
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -135,6 +163,17 @@ export function ProfileMenu({
               style={itemStyle}
             >
               Paramètres
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                void handleShare()
+              }}
+              className="font-sans w-full text-left cursor-pointer"
+              style={itemStyle}
+            >
+              Partager
             </button>
             <button
               type="button"

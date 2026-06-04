@@ -23,8 +23,50 @@ describe('ProfileMenu', () => {
       screen.getByRole('menuitem', { name: 'Paramètres' }),
     ).toBeInTheDocument()
     expect(
+      screen.getByRole('menuitem', { name: 'Partager' }),
+    ).toBeInTheDocument()
+    expect(
       screen.getByRole('menuitem', { name: 'Se déconnecter' }),
     ).toBeInTheDocument()
+  })
+
+  it('shares via the native sheet when available', async () => {
+    const share = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { ...navigator, share })
+    render(
+      <ProfileMenu {...base} onLogout={() => {}} onOpenSettings={() => {}} />,
+    )
+    open()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Partager' }))
+    expect(share).toHaveBeenCalledWith(
+      expect.objectContaining({ url: window.location.href }),
+    )
+    vi.unstubAllGlobals()
+  })
+
+  it('copies the link and toasts when the native sheet is unavailable', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      share: undefined,
+      clipboard: { writeText },
+    })
+    const onShared = vi.fn()
+    render(
+      <ProfileMenu
+        {...base}
+        onLogout={() => {}}
+        onOpenSettings={() => {}}
+        onShared={onShared}
+      />,
+    )
+    open()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Partager' }))
+    await vi.waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(window.location.href)
+      expect(onShared).toHaveBeenCalledWith('Lien copié')
+    })
+    vi.unstubAllGlobals()
   })
 
   it('closes on Escape', () => {

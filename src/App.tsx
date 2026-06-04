@@ -499,6 +499,7 @@ export default function App({ activities }: AppProps) {
           profile={profile}
           onLogout={handleLogout}
           onOpenSettings={() => setSettingsOpen(true)}
+          onShared={(message) => showToast(message, '🔗')}
         />
 
         {/* Tabs stay MOUNTED — switching just toggles visibility. Avoids

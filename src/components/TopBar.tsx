@@ -23,6 +23,8 @@ interface TopBarProps {
   onLogout?: () => void
   /** Open the Réglages page (used by the menu's "Paramètres" entry). */
   onOpenSettings?: () => void
+  /** Toast after the share link is copied (forwarded to ProfileMenu). */
+  onShared?: (message: string) => void
 }
 
 // Max gap between two taps for them to still count as "consecutive".
@@ -47,6 +49,7 @@ export function TopBar({
   profile,
   onLogout,
   onOpenSettings,
+  onShared,
 }: TopBarProps) {
   const taps = useRef(0)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -95,6 +98,7 @@ export function TopBar({
             color={profile.color}
             onLogout={onLogout}
             onOpenSettings={onOpenSettings}
+            {...(onShared ? { onShared } : {})}
           />
         </div>
       )}
