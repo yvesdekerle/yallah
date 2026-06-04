@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
-import type { Activity, Difficulty } from '../types/activity.ts'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { Activity, Difficulty, GroupMode } from '../types/activity.ts'
 import type { StoredUserActivity } from '../types/userActivity.ts'
 import type { UserActivityInput } from './useUserActivities.ts'
 import { usePhotoLifecycle } from './usePhotoLifecycle.ts'
+import { reverseGeocodeCity } from '../utils/geocode.ts'
 
 // Re-exported so consumers (PhotoPickerPanel) keep a single import surface.
 export type { PhotoItem } from './usePhotoLifecycle.ts'
@@ -81,10 +82,42 @@ export function useAddActivityForm({
   const [categoryOther, setCategoryOther] = useState('')
   const [difficultyIdx, setDifficultyIdx] = useState(-1)
   const [coords, setCoords] = useState<LatLng | null>(null)
+  // Group format. Defaults to 'subgroup' (the implicit default everywhere).
+  // `groupSize` is only meaningful when `groupMode === 'limited'`.
+  const [groupMode, setGroupMode] = useState<GroupMode>('subgroup')
+  const [groupSize, setGroupSize] = useState<number | null>(null)
   const [submitError, setSubmitError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const photo = usePhotoLifecycle()
+
+  // The "Lieu" is no longer a manual field — it's the city derived from the
+  // picked Position. Setting/moving the pin schedules a reverse-geocode;
+  // clearing the pin clears the derived city (done here, synchronously in the
+  // event handler, so the effect below never does a synchronous setState —
+  // which the `react-hooks/set-state-in-effect` rule forbids).
+  const onCoordsChange = useCallback((next: LatLng | null) => {
+    setCoords(next)
+    if (!next) setFields((s) => (s.location === '' ? s : { ...s, location: '' }))
+  }, [])
+
+  // Reverse-geocode the city from the position, debounced to respect
+  // Nominatim's 1 req/s. async-then-setState (like useRemoteVoteHydration),
+  // guarded so a fast re-pick / unmount can't write a stale city, and only
+  // writing on a real hit so an offline lookup leaves the value untouched.
+  useEffect(() => {
+    if (!coords) return
+    let cancelled = false
+    const handle = window.setTimeout(() => {
+      void reverseGeocodeCity(coords.lat, coords.lng).then((city) => {
+        if (!cancelled && city) setFields((s) => ({ ...s, location: city }))
+      })
+    }, 1100)
+    return () => {
+      cancelled = true
+      window.clearTimeout(handle)
+    }
+  }, [coords])
 
   const resetForm = () => {
     photo.reset()
@@ -95,6 +128,8 @@ export function useAddActivityForm({
     setCategoryOther('')
     setDifficultyIdx(-1)
     setCoords(null)
+    setGroupMode('subgroup')
+    setGroupSize(null)
     setSubmitError('')
   }
 
@@ -130,6 +165,8 @@ export function useAddActivityForm({
     )
     photo.hydrate(record.photoRefs, urls)
     setCoords(record.coords ?? null)
+    setGroupMode(record.groupMode ?? 'subgroup')
+    setGroupSize(record.groupSize ?? null)
   }
 
   // Stable identity so the memoized TagPickerPanel doesn't re-render on every
@@ -197,6 +234,13 @@ export function useAddActivityForm({
       secret: fields.secret,
       insolite: fields.insolite.trim() || undefined,
       coords: coords ?? undefined,
+      groupMode,
+      // Only carry a cap for a valid 'limited' choice; the builder drops it
+      // otherwise so the stored record stays clean.
+      groupSize:
+        groupMode === 'limited' && groupSize && groupSize > 0
+          ? Math.floor(groupSize)
+          : undefined,
       photos: photo.photos.map((p) => p.draft),
     }
     try {
@@ -228,7 +272,11 @@ export function useAddActivityForm({
     setDifficultyIdx,
     photos: photo.photos,
     coords,
-    setCoords,
+    setCoords: onCoordsChange,
+    groupMode,
+    setGroupMode,
+    groupSize,
+    setGroupSize,
     urlInput: photo.urlInput,
     urlError: photo.urlError,
     onUrlInputChange: photo.onUrlInputChange,

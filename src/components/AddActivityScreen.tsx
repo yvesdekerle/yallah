@@ -93,12 +93,6 @@ export function AddActivityScreen({
           />
 
           <FieldText
-            label="Lieu"
-            value={f.fields.location}
-            onChange={(v) => f.setFields((s) => ({ ...s, location: v }))}
-            placeholder="Ex. Le Morne"
-          />
-          <FieldText
             label="Trajet depuis Tamarin"
             value={f.fields.transit}
             onChange={(v) => f.setFields((s) => ({ ...s, transit: v }))}
@@ -134,6 +128,59 @@ export function AddActivityScreen({
                 />
               ))}
             </div>
+          </Field>
+
+          <Field label="Format de groupe">
+            <div className="flex flex-wrap" style={{ gap: 6 }}>
+              <Chip
+                selected={f.groupMode === 'all'}
+                onClick={() => f.setGroupMode('all')}
+                label="Tous ensemble"
+              />
+              <Chip
+                selected={f.groupMode === 'subgroup'}
+                onClick={() => f.setGroupMode('subgroup')}
+                label="En sous-groupe"
+              />
+              <Chip
+                selected={f.groupMode === 'limited'}
+                onClick={() => f.setGroupMode('limited')}
+                label="Nombre limité"
+              />
+            </div>
+            {f.groupMode === 'limited' && (
+              <div
+                className="flex items-center"
+                style={{ gap: 8, marginTop: 8 }}
+              >
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  step={1}
+                  value={f.groupSize ?? ''}
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10)
+                    f.setGroupSize(Number.isFinite(n) && n > 0 ? n : null)
+                  }}
+                  placeholder="Ex. 6"
+                  aria-label="nombre maximum de personnes"
+                  style={{
+                    width: 96,
+                    height: 48,
+                    borderRadius: 14,
+                    border: `1px solid ${YB.bgSoft}`,
+                    background: YB.surface,
+                    padding: '0 14px',
+                    fontSize: 16,
+                    color: YB.ink,
+                  }}
+                />
+                <span style={{ fontSize: 13.5, color: YB.ink2 }}>
+                  personnes max.
+                </span>
+              </div>
+            )}
           </Field>
 
           <Field label="Note">
@@ -232,6 +279,20 @@ export function AddActivityScreen({
           />
 
           <Field label="Position">
+            <p
+              className="m-0"
+              style={{ fontSize: 12, color: YB.muted, marginBottom: 8, lineHeight: 1.4 }}
+            >
+              Le lieu (ville) est déduit automatiquement de la position.
+              {f.fields.location && (
+                <>
+                  {' '}
+                  <strong style={{ color: YB.ink2, fontWeight: 700 }}>
+                    📍 {f.fields.location}
+                  </strong>
+                </>
+              )}
+            </p>
             {active ? (
               <Suspense
                 fallback={<div style={{ height: 200, background: YB.bgSoft, borderRadius: 12 }} />}

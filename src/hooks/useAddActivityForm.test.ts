@@ -91,6 +91,86 @@ describe('useAddActivityForm — pépite / secret as the single source for 💎 
     expect(result.current.saving).toBe(false)
   })
 
+  it('defaults groupMode to subgroup and carries no size on submit', async () => {
+    const { result, onAdd } = setup()
+    act(() => {
+      result.current.setFields((s) => ({ ...s, title: 'Test' }))
+    })
+    await act(async () => {
+      await result.current.submit()
+    })
+    const input = onAdd.mock.calls[0]![0]
+    expect(input.groupMode).toBe('subgroup')
+    expect(input.groupSize).toBeUndefined()
+  })
+
+  it('carries a participant cap only for a limited format', async () => {
+    const { result, onAdd } = setup()
+    act(() => {
+      result.current.setFields((s) => ({ ...s, title: 'Plongée' }))
+      result.current.setGroupMode('limited')
+      result.current.setGroupSize(6)
+    })
+    await act(async () => {
+      await result.current.submit()
+    })
+    const input = onAdd.mock.calls[0]![0]
+    expect(input.groupMode).toBe('limited')
+    expect(input.groupSize).toBe(6)
+  })
+
+  it('drops the cap when the format is not limited', async () => {
+    const { result, onAdd } = setup()
+    act(() => {
+      result.current.setFields((s) => ({ ...s, title: 'Rando' }))
+      result.current.setGroupMode('all')
+      result.current.setGroupSize(6)
+    })
+    await act(async () => {
+      await result.current.submit()
+    })
+    const input = onAdd.mock.calls[0]![0]
+    expect(input.groupMode).toBe('all')
+    expect(input.groupSize).toBeUndefined()
+  })
+
+  it('derives the city (Lieu) from a newly picked position', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ address: { village: 'Tamarin' } }),
+      }),
+    )
+    try {
+      const { result } = setup()
+      act(() => {
+        result.current.setCoords({ lat: -20.32, lng: 57.37 })
+      })
+      // Debounced (1.1 s) reverse-geocode, then async fill.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1200)
+      })
+      expect(result.current.fields.location).toBe('Tamarin')
+    } finally {
+      vi.useRealTimers()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('clears the derived city when the position is cleared', () => {
+    const { result } = setup()
+    act(() => {
+      result.current.setFields((s) => ({ ...s, location: 'Tamarin' }))
+    })
+    expect(result.current.fields.location).toBe('Tamarin')
+    act(() => {
+      result.current.setCoords(null)
+    })
+    expect(result.current.fields.location).toBe('')
+  })
+
   it('strips a stale 💎 from tags when the pépite toggle is off', async () => {
     const { result, onAdd } = setup()
     act(() => {
