@@ -178,8 +178,10 @@ describe('App (integration)', () => {
     })
     fireEvent.click(screen.getByLabelText('résultats'))
     fireEvent.click(screen.getByLabelText('réinitialiser les votes'))
-    expect(screen.getByText('Tout effacer ?')).toBeInTheDocument()
-    fireEvent.click(screen.getByText('Tout effacer'))
+    expect(screen.getByText('Réinitialiser les votes ?')).toBeInTheDocument()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Réinitialiser les votes' }),
+    )
     expect(screen.getByText('0 / 198 activités swipées.')).toBeInTheDocument()
     expect(
       JSON.parse(window.localStorage.getItem('yallah.history.v1')!),

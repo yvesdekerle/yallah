@@ -37,18 +37,17 @@ service cloud.firestore {
     // unconditionally would wrongly deny it. `request.resource.data` is the
     // post-merge document state, so a normal saveVotes still carries all four.
     //
-    // `delete` (the "Réinitialiser" wipe) is a separate clause: on a delete
-    // `request.resource` is null, so the shape checks above can't run — only
-    // ownership is required.
+    // "Réinitialiser les votes" clears the `activities` map via a merge write
+    // (deleteField), NOT a doc delete — so it goes through this same validated
+    // update path and no `delete` permission is needed.
     match /votes/{uid} {
       allow read: if signedIn();
-      allow create, update: if signedIn()
+      allow write: if signedIn()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['uid', 'name', 'activities', 'updatedAt'])
         && (!('uid' in request.resource.data) || request.resource.data.uid == uid)
         && (!('name' in request.resource.data) || request.resource.data.name is string)
         && (!('activities' in request.resource.data) || request.resource.data.activities is map);
-      allow delete: if signedIn() && request.auth.uid == uid;
     }
 
     // config/app — global published app version (drives the force-reload gate).

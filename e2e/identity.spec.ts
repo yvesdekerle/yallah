@@ -96,7 +96,7 @@ test('the demo profile menu logs out (→ welcome) and opens Réglages', async (
   expect(stored).toBeNull()
 })
 
-test('Réinitialiser wipes the chosen identity and the welcome screen returns', async ({
+test('Réinitialiser les votes clears the votes but keeps the identity and stays in-app', async ({
   page,
 }) => {
   await startDemo(page)
@@ -106,17 +106,23 @@ test('Réinitialiser wipes the chosen identity and the welcome screen returns', 
   await page.waitForTimeout(700)
 
   await page.getByRole('button', { name: 'résultats' }).click()
-  await page.getByRole('button', { name: /réinitialiser les votes/i }).click()
-  await page.getByRole('button', { name: 'Tout effacer' }).click()
+  await page.getByLabel('réinitialiser les votes').click()
+  // Confirm in the dialog (scoped so we don't re-hit the Résultats button).
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Réinitialiser les votes' })
+    .click()
 
-  // Welcome screen is back; the picker is not shown directly.
-  await expect(page.getByRole('button', { name: 'Mode démo' })).toBeVisible()
-  await expect(
-    page.getByRole('dialog', { name: 'Tu es qui ?' }),
-  ).toHaveCount(0)
+  // Still in the app: no welcome screen, identity preserved, votes gone.
+  await expect(page.getByRole('button', { name: 'Mode démo' })).toHaveCount(0)
 
-  const stored = await page.evaluate(() =>
+  const userId = await page.evaluate(() =>
     window.localStorage.getItem('yallah.userId.v1'),
   )
-  expect(stored).toBeNull()
+  expect(userId).toBe('chloe')
+
+  const history = await page.evaluate(() =>
+    window.localStorage.getItem('yallah.history.v1'),
+  )
+  expect(JSON.parse(history ?? '[]')).toEqual([])
 })

@@ -21,7 +21,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  deleteDoc,
   collection,
   onSnapshot,
   serverTimestamp,
@@ -151,12 +150,17 @@ export async function removeVote(
 }
 
 /**
- * Wipe the user's entire `votes/{uid}` document ("Réinitialiser"). Must run
- * while the user is still authenticated — the rules require `auth.uid == uid` —
- * so callers delete BEFORE signing out.
+ * Clear the user's votes ("Réinitialiser les votes"): remove the whole
+ * `activities` map from `votes/{uid}` while KEEPING the profile fields
+ * (uid, name). `setDoc(merge)` + `deleteField()` so it's create-safe and leaves
+ * the doc in place — the user stays signed in.
  */
 export async function clearVotes(uid: string): Promise<void> {
-  await deleteDoc(doc(db(), 'votes', uid))
+  await setDoc(
+    doc(db(), 'votes', uid),
+    { activities: deleteField(), updatedAt: serverTimestamp() },
+    { merge: true },
+  )
 }
 
 /** One-shot read of the user's own verdicts, for rehydrating local history on sign-in. */

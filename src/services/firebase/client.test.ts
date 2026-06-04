@@ -16,7 +16,6 @@ const m = vi.hoisted(() => ({
   getDoc: vi.fn(),
   collection: vi.fn((_db: unknown, name: string) => ({ collection: name })),
   setDoc: vi.fn(async () => {}),
-  deleteDoc: vi.fn(async () => {}),
   onSnapshot: vi.fn((_ref: unknown, _cb: (s: unknown) => void) => () => {}),
   serverTimestamp: vi.fn(() => 'SERVER_TS'),
   deleteField: vi.fn(() => 'DELETE_FIELD'),
@@ -35,7 +34,6 @@ vi.mock('firebase/firestore', () => ({
   doc: m.doc,
   getDoc: m.getDoc,
   setDoc: m.setDoc,
-  deleteDoc: m.deleteDoc,
   collection: m.collection,
   onSnapshot: m.onSnapshot,
   serverTimestamp: m.serverTimestamp,
@@ -181,10 +179,14 @@ describe('firestore writes', () => {
     )
   })
 
-  it('clearVotes deletes the whole votes/{uid} document', async () => {
+  it('clearVotes drops the activities map but keeps the doc (merge + deleteField)', async () => {
     await clearVotes('u1')
     expect(m.doc).toHaveBeenCalledWith(expect.anything(), 'votes', 'u1')
-    expect(m.deleteDoc).toHaveBeenCalledWith({ path: 'votes/u1' })
+    expect(m.setDoc).toHaveBeenCalledWith(
+      { path: 'votes/u1' },
+      { activities: 'DELETE_FIELD', updatedAt: 'SERVER_TS' },
+      { merge: true },
+    )
   })
 
   it('getMyVotes reads votes/{uid} into VoteEntry[]', async () => {

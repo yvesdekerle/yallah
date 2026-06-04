@@ -286,24 +286,16 @@ export default function App({ activities }: AppProps) {
   }, [])
 
   const handleReset = useCallback(() => {
-    // Identity is cleared too → the welcome screen re-appears and covers the
-    // toast (z-overlay > toast z-chrome), so no toast here.
-    const uid = googleUser?.uid
+    // Wipe only the votes — the user stays signed in and on the Résultats tab.
+    // Locally that's the history; remotely it drops the `activities` map from
+    // votes/{uid} while keeping the profile fields (uid/name). Without the
+    // remote wipe the votes rehydrate on the next sign-in.
     clearHistory()
-    // Sequence the remote ops: delete the votes doc WHILE still authenticated
-    // (the rules require auth.uid == uid), THEN sign out. Without this the
-    // votes/{uid} doc survives and rehydrates on the next sign-in.
-    void (async () => {
-      if (uid) await clearVotes(uid)
-      await signOutFirebase()
-    })()
-    setUserId(null)
-    setGoogleUser(null)
-    setDemoStarted(false)
+    if (googleUser) void clearVotes(googleUser.uid)
     setDone(false)
     setReviewMode(false)
-    setChangingIdentity(false)
-  }, [googleUser, clearHistory, setUserId, setGoogleUser])
+    showToast('Votes réinitialisés', '🗑')
+  }, [googleUser, clearHistory, showToast])
 
   // Signed in via Google: adopt the profile as the active identity, start a
   // fresh session (history is per-device), and land on the swipe deck.

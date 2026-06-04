@@ -38,9 +38,9 @@ export function AppConfirmModals({
     <>
       {confirmingReset && (
         <ConfirmModal
-          title="Tout effacer ?"
-          message="Tes votes en cours et ton prénom seront supprimés. Cette action est irréversible."
-          confirmLabel="Tout effacer"
+          title="Réinitialiser les votes ?"
+          message="Tous tes votes seront supprimés. Tu restes connecté(e) et ton profil est conservé. Cette action est irréversible."
+          confirmLabel="Réinitialiser les votes"
           cancelLabel="Annuler"
           variant="danger"
           onConfirm={onConfirmReset}
