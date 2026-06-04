@@ -6,6 +6,7 @@ import { DetailModal } from './DetailModal.tsx'
 import { AppConfirmModals } from './AppConfirmModals.tsx'
 import { IdentityPicker } from './IdentityPicker.tsx'
 import { MapOverlay } from './MapOverlay.tsx'
+import type { GroupMember } from '../hooks/useGroupData.ts'
 import { SettingsModal } from './SettingsModal.tsx'
 import { TagFilterSheet } from './TagFilterSheet.tsx'
 
@@ -49,7 +50,6 @@ export interface SettingsOverlay {
   open: boolean
   version: string
   onClose: () => void
-  onGoHome: () => void
 }
 
 export interface FilterOverlay {
@@ -67,6 +67,10 @@ interface AppOverlaysProps {
   /** Curated + user activities — drives meDone, the random-fill count, the map pins. */
   activities: Activity[]
   userId: string | null
+  /** Active identity id (Google uid or demo id) — flags "créé par toi". */
+  currentUserId: string | null
+  /** Real signed-in members + votes (Google mode); null in demo mode. */
+  members: GroupMember[] | null
   superRemaining: number
   // Each overlay's state + callbacks, grouped to keep the wiring legible.
   detail: DetailOverlay
@@ -95,6 +99,8 @@ export function AppOverlays({
   history,
   activities,
   userId,
+  currentUserId,
+  members,
   superRemaining,
   detail,
   map,
@@ -119,8 +125,9 @@ export function AppOverlays({
           onVerdict={detail.onVerdict}
           onOpenMap={detail.onOpenMap}
           meDone={meDone}
-          userId={userId}
+          currentUserId={currentUserId}
           myVerdict={myVerdict}
+          members={members}
         />
       )}
 
@@ -157,11 +164,7 @@ export function AppOverlays({
       )}
 
       {settings.open && (
-        <SettingsModal
-          version={settings.version}
-          onClose={settings.onClose}
-          onGoHome={settings.onGoHome}
-        />
+        <SettingsModal version={settings.version} onClose={settings.onClose} />
       )}
 
       {filter.open && (

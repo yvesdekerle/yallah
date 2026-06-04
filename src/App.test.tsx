@@ -54,7 +54,7 @@ describe('App (integration)', () => {
     // Seed userId so the blocking IdentityPicker doesn't overlay the app
     // during these integration tests — mirrors the precondition of every
     // real user past their first launch.
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
     vi.useFakeTimers()
   })
   afterEach(() => {
@@ -152,7 +152,7 @@ describe('App (integration)', () => {
       vi.advanceTimersByTime(800)
     })
     fireEvent.click(screen.getByLabelText('résultats'))
-    // "1 / 198" string also appears in the GroupScreen (Yves' progress)
+    // "1 / 198" string also appears in the GroupScreen (Mathieu's progress)
     // since all tabs stay mounted — use a more specific match.
     expect(
       screen.getByText('1 / 198 activités swipées.'),
@@ -178,8 +178,10 @@ describe('App (integration)', () => {
     })
     fireEvent.click(screen.getByLabelText('résultats'))
     fireEvent.click(screen.getByLabelText('réinitialiser les votes'))
-    expect(screen.getByText('Tout effacer ?')).toBeInTheDocument()
-    fireEvent.click(screen.getByText('Tout effacer'))
+    expect(screen.getByText('Réinitialiser les votes ?')).toBeInTheDocument()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Réinitialiser les votes' }),
+    )
     expect(screen.getByText('0 / 198 activités swipées.')).toBeInTheDocument()
     expect(
       JSON.parse(window.localStorage.getItem('yallah.history.v1')!),
@@ -304,16 +306,21 @@ describe('App (integration)', () => {
     expect(stored[0]).toMatchObject({ id: 'a001', verdict: 'oui' })
   })
 
-  it('"Retour à l\'accueil" from Réglages returns to the welcome screen', () => {
+  it('logging out from the demo profile menu returns to the welcome screen', () => {
     renderApp()
-    // Open the hidden settings page via 5 taps on the wordmark.
-    const mark = screen.getByText('yallah')
-    for (let i = 0; i < 5; i++) fireEvent.click(mark)
-    expect(screen.getByRole('dialog', { name: 'Réglages' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Retour à l'accueil/ }))
+    // Demo mode now shows the profile avatar too (item 4).
+    fireEvent.click(screen.getByLabelText('Compte de Mathieu'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Se déconnecter' }))
     // Welcome screen is back and the demo identity has been cleared.
     expect(screen.getByRole('button', { name: 'Mode démo' })).toBeInTheDocument()
     expect(window.localStorage.getItem('yallah.userId.v1')).toBeNull()
+  })
+
+  it('opens Réglages from the demo profile menu "Paramètres" entry', () => {
+    renderApp()
+    fireEvent.click(screen.getByLabelText('Compte de Mathieu'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Paramètres' }))
+    expect(screen.getByRole('dialog', { name: 'Réglages' })).toBeInTheDocument()
   })
 
   it('the eye button toggles the detail modal closed when already open', () => {
@@ -354,8 +361,8 @@ describe('App — onboarding & identity', () => {
       screen.getByRole('dialog', { name: 'Tu es qui ?' }),
     ).toBeInTheDocument()
     expect(screen.queryByLabelText('fermer le sélecteur')).not.toBeInTheDocument()
-    await user.click(screen.getByTestId('picker-row-yves'))
-    expect(await screen.findByText('Salut Yves')).toBeInTheDocument()
+    await user.click(screen.getByTestId('picker-row-mathieu'))
+    expect(await screen.findByText('Salut Mathieu')).toBeInTheDocument()
     expect(
       screen.queryByRole('dialog', { name: 'Tu es qui ?' }),
     ).not.toBeInTheDocument()
@@ -382,7 +389,7 @@ describe('App — onboarding & identity', () => {
     // The OAuth popup isn't exercised; seed a stored profile as if signed in.
     window.localStorage.setItem(
       'yallah.googleUser.v1',
-      JSON.stringify({ sub: '1', name: 'Yves', email: 'yves@example.com' }),
+      JSON.stringify({ uid: '1', name: 'Mathieu', email: 'mathieu@example.com' }),
     )
     renderApp()
     // Straight to the app: no welcome, no picker.
@@ -392,17 +399,17 @@ describe('App — onboarding & identity', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Tu es qui ?' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByLabelText('Compte de Yves')).toBeInTheDocument()
+    expect(screen.getByLabelText('Compte de Mathieu')).toBeInTheDocument()
   })
 
   it('logging out from the avatar menu returns to the welcome screen', async () => {
     window.localStorage.setItem(
       'yallah.googleUser.v1',
-      JSON.stringify({ sub: '1', name: 'Yves', email: 'yves@example.com' }),
+      JSON.stringify({ uid: '1', name: 'Mathieu', email: 'mathieu@example.com' }),
     )
     const user = userEvent.setup()
     renderApp()
-    await user.click(screen.getByLabelText('Compte de Yves'))
+    await user.click(screen.getByLabelText('Compte de Mathieu'))
     await user.click(screen.getByRole('menuitem', { name: 'Se déconnecter' }))
     // Back on the welcome screen; profile cleared from storage.
     expect(screen.getByRole('button', { name: 'Mode démo' })).toBeInTheDocument()
@@ -410,7 +417,7 @@ describe('App — onboarding & identity', () => {
   })
 
   it('changing identity from the Groupe tab keeps the existing history', async () => {
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
     window.localStorage.setItem(
       'yallah.history.v1',
       JSON.stringify([{ id: 'a001', verdict: 'oui' }]),
@@ -433,7 +440,7 @@ describe('App — user activities (add / edit / delete)', () => {
   const SUBMIT = 'ajouter l’activité'
   beforeEach(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
   })
 
   it('adds an activity from the Ajouter tab and surfaces the toast', async () => {
@@ -486,7 +493,7 @@ describe('App — user activities (add / edit / delete)', () => {
 describe('App — deck completion & filtering (tiny deck)', () => {
   beforeEach(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
     vi.useFakeTimers()
   })
   afterEach(() => {
@@ -557,7 +564,7 @@ describe('App — deck completion & filtering (tiny deck)', () => {
 describe('App — version upgrade', () => {
   beforeEach(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
   })
 
   it('surfaces an upgrade toast when the stored app version is older', () => {

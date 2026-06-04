@@ -1,17 +1,33 @@
 import { memo } from 'react'
 import type { Activity } from '../types/activity.ts'
 import type { Verdict } from '../types/verdict.ts'
+import type { GroupMember } from '../hooks/useGroupData.ts'
 import { YB } from '../utils/theme.ts'
 import { SectionHeading } from './SectionHeading.tsx'
 import { AvatarPill } from './AvatarPill.tsx'
 import { PARTICIPANTS } from '../data/participants.ts'
 import { fakeVote } from '../utils/groupVotes.ts'
+import { avatarColor } from '../utils/avatarColor.ts'
 import { VERDICT_META } from '../constants/swipe.ts'
 
+interface VoteItem {
+  id: string
+  name: string
+  initial: string
+  color: string
+  isMe: boolean
+  verdict: Verdict
+}
+
 /**
- * "Le groupe" panel: gated behind `meDone` — a placeholder until the local
- * user has finished their own deck, then the 9 participants with their
- * (faked, except the local user's real) verdict.
+ * "Le groupe" panel: gated behind `meDone` — a placeholder until the local user
+ * has finished their own deck, then each person's verdict for this activity.
+ *
+ * Two modes:
+ * - **Demo** (`members` null): the 9 participants with faked verdicts (the local
+ *   user's own verdict is real).
+ * - **Google** (`members` provided): only the real signed-in users who actually
+ *   voted on this activity, with their real verdicts.
  *
  * `memo`'d: it lives in the always-mounted detail sheet and its props are
  * stable, so it skips the re-renders DetailModal does for its open/armed state.
@@ -19,18 +35,95 @@ import { VERDICT_META } from '../constants/swipe.ts'
 export const DetailGroupVotes = memo(function DetailGroupVotes({
   activity,
   meDone,
-  userId,
+  currentUserId,
   myVerdict,
+  members = null,
 }: {
   activity: Activity
   meDone: boolean
-  userId: string | null
+  currentUserId: string | null
   myVerdict: Verdict | null
+  /** Real signed-in members + votes (Google mode); null in demo mode. */
+  members?: GroupMember[] | null
 }) {
+  const items: VoteItem[] = members
+    ? members.flatMap((m) => {
+        const isMe = m.uid === currentUserId
+        const verdict =
+          isMe && myVerdict ? myVerdict : m.votes[activity.id]?.verdict
+        if (!verdict) return []
+        return [
+          {
+            id: m.uid,
+            name: m.name,
+            initial: (m.name[0] ?? '?').toUpperCase(),
+            color: isMe ? YB.coral : avatarColor(m.uid),
+            isMe,
+            verdict,
+          },
+        ]
+      })
+    : PARTICIPANTS.map((p) => {
+        const isMe = currentUserId !== null && p.id === currentUserId
+        return {
+          id: p.id,
+          name: p.name,
+          initial: p.initial,
+          color: p.color,
+          isMe,
+          verdict: isMe && myVerdict ? myVerdict : fakeVote(p.id, activity.id),
+        }
+      })
+
   return (
     <>
       <SectionHeading>Le groupe</SectionHeading>
-      {meDone ? (
+      {!meDone ? (
+        <div
+          className="flex items-center font-sans"
+          style={{
+            padding: 18,
+            background: YB.bgSoft,
+            borderRadius: 16,
+            fontSize: 14,
+            color: YB.ink2,
+            lineHeight: 1.55,
+            gap: 12,
+          }}
+        >
+          <span
+            className="inline-flex items-center justify-center"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 99,
+              background: YB.surface,
+              fontSize: 16,
+              flexShrink: 0,
+            }}
+            aria-hidden
+          >
+            🔒
+          </span>
+          <span>
+            Les votes du groupe apparaîtront ici une fois que tu auras fini ton
+            deck.
+          </span>
+        </div>
+      ) : items.length === 0 ? (
+        <div
+          className="font-sans"
+          style={{
+            padding: 18,
+            background: YB.bgSoft,
+            borderRadius: 16,
+            fontSize: 14,
+            color: YB.ink2,
+          }}
+        >
+          Personne n'a encore voté sur cette activité.
+        </div>
+      ) : (
         <ul
           data-testid="group-votes"
           className="font-sans"
@@ -46,14 +139,11 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
           }}
           aria-label="Votes du groupe pour cette activité"
         >
-          {PARTICIPANTS.map((p) => {
-            const isMe = userId !== null && p.id === userId
-            const verdict =
-              isMe && myVerdict ? myVerdict : fakeVote(p.id, activity.id)
-            const meta = VERDICT_META[verdict]
+          {items.map((it) => {
+            const meta = VERDICT_META[it.verdict]
             return (
               <li
-                key={p.id}
+                key={it.id}
                 className="flex items-center"
                 style={{
                   gap: 10,
@@ -62,11 +152,11 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
                   borderRadius: 12,
                   fontSize: 14,
                 }}
-                data-testid={`group-vote-${p.id}`}
+                data-testid={`group-vote-${it.id}`}
               >
                 <AvatarPill
-                  initial={p.initial}
-                  color={p.color}
+                  initial={it.initial}
+                  color={it.color}
                   size={28}
                   fontSize={12}
                 />
@@ -78,8 +168,8 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
                     color: YB.ink,
                   }}
                 >
-                  {p.name}
-                  {isMe && (
+                  {it.name}
+                  {it.isMe && (
                     <span
                       className="font-mono"
                       style={{
@@ -120,38 +210,6 @@ export const DetailGroupVotes = memo(function DetailGroupVotes({
             )
           })}
         </ul>
-      ) : (
-        <div
-          className="flex items-center font-sans"
-          style={{
-            padding: 18,
-            background: YB.bgSoft,
-            borderRadius: 16,
-            fontSize: 14,
-            color: YB.ink2,
-            lineHeight: 1.55,
-            gap: 12,
-          }}
-        >
-          <span
-            className="inline-flex items-center justify-center"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 99,
-              background: YB.surface,
-              fontSize: 16,
-              flexShrink: 0,
-            }}
-            aria-hidden
-          >
-            🔒
-          </span>
-          <span>
-            Les votes du groupe apparaîtront ici une fois que tu auras fini ton
-            deck.
-          </span>
-        </div>
       )}
     </>
   )

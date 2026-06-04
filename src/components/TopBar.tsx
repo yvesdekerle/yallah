@@ -1,8 +1,14 @@
 import { useRef } from 'react'
-import type { GoogleUser } from '../types/user.ts'
 import { YB } from '../utils/theme.ts'
 import { Wordmark } from './Wordmark.tsx'
 import { ProfileMenu } from './ProfileMenu.tsx'
+
+/** Minimal identity the TopBar needs to render the profile avatar + menu. */
+export interface TopBarProfile {
+  name: string
+  picture?: string
+  color: string
+}
 
 interface TopBarProps {
   /** When true, wordmark renders in white (for dark backgrounds). */
@@ -11,10 +17,12 @@ interface TopBarProps {
   bg?: string
   /** Hidden gesture: 5 consecutive taps on the wordmark fires this. */
   onSecretOpen?: () => void
-  /** When set (Google mode), shows the profile avatar + menu on the right. */
-  googleUser?: GoogleUser | null
-  /** Sign out of Google (only used when `googleUser` is set). */
+  /** Current identity (Google or demo). When set, shows the avatar + menu. */
+  profile?: TopBarProfile | null
+  /** Sign out (used by the menu's "Se déconnecter" — both modes). */
   onLogout?: () => void
+  /** Open the Réglages page (used by the menu's "Paramètres" entry). */
+  onOpenSettings?: () => void
 }
 
 // Max gap between two taps for them to still count as "consecutive".
@@ -36,8 +44,9 @@ export function TopBar({
   dark = false,
   bg = YB.bgSun,
   onSecretOpen,
-  googleUser,
+  profile,
   onLogout,
+  onOpenSettings,
 }: TopBarProps) {
   const taps = useRef(0)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -78,9 +87,15 @@ export function TopBar({
         <Wordmark dark={dark} />
       </div>
 
-      {googleUser && onLogout && (
+      {profile && onLogout && onOpenSettings && (
         <div className="absolute" style={{ right: 16, bottom: 13 }}>
-          <ProfileMenu user={googleUser} onLogout={onLogout} />
+          <ProfileMenu
+            name={profile.name}
+            {...(profile.picture ? { picture: profile.picture } : {})}
+            color={profile.color}
+            onLogout={onLogout}
+            onOpenSettings={onOpenSettings}
+          />
         </div>
       )}
     </div>

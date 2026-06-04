@@ -9,7 +9,7 @@ describe('GroupScreen', () => {
   it('shows the group headline', () => {
     render(
       <GroupScreen
-        currentUserId="yves"
+        currentUserId="mathieu"
         currentUserProgress={0}
         total={201}
         onChangeIdentity={noop}
@@ -24,7 +24,7 @@ describe('GroupScreen', () => {
   it('renders all 9 participants in alphabetical order', () => {
     render(
       <GroupScreen
-        currentUserId="yves"
+        currentUserId="mathieu"
         currentUserProgress={0}
         total={201}
         onChangeIdentity={noop}
@@ -116,7 +116,7 @@ describe('GroupScreen', () => {
   it('shows ✓ fini for a finished participant once everyone is revealed', () => {
     render(
       <GroupScreen
-        currentUserId="yves"
+        currentUserId="mathieu"
         currentUserProgress={201}
         total={201}
         onChangeIdentity={noop}
@@ -141,7 +141,7 @@ describe('GroupScreen', () => {
     const onChangeIdentity = vi.fn()
     render(
       <GroupScreen
-        currentUserId="yves"
+        currentUserId="mathieu"
         currentUserProgress={0}
         total={201}
         onChangeIdentity={onChangeIdentity}
@@ -152,9 +152,14 @@ describe('GroupScreen', () => {
   })
 
   describe('Google mode', () => {
-    const googleUser = { sub: '1', name: 'Yves', email: 'yves@example.com' }
+    const googleUser = { uid: 'u-mathieu', name: 'Mathieu', email: 'mathieu@example.com' }
+    const members = [
+      { uid: 'u-mathieu', name: 'Mathieu', voteCount: 12, votes: {} },
+      { uid: 'u-chloe', name: 'Chloé', voteCount: 80, votes: {} },
+      { uid: 'u-alex', name: 'Alex', voteCount: 50, votes: {} },
+    ]
 
-    it('prepends a "toi" row for the Google identity with real progress', () => {
+    it('shows the real signed-in members (not the hard-coded participants)', () => {
       render(
         <GroupScreen
           currentUserId={null}
@@ -162,30 +167,83 @@ describe('GroupScreen', () => {
           total={201}
           onChangeIdentity={noop}
           googleUser={googleUser}
+          members={members}
+        />,
+      )
+      // The demo participants are gone (e.g. Audrey, Mathieu are not Google members).
+      expect(screen.queryByTestId('participant-audrey')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('participant-mathieu')).not.toBeInTheDocument()
+      // Real members are listed.
+      expect(screen.getByText('Chloé')).toBeInTheDocument()
+      expect(screen.getByText('Alex')).toBeInTheDocument()
+      // Headline count reflects the real roster size.
+      expect(
+        screen.getByText('3 personnes pour Maurice — novembre 2026.'),
+      ).toBeInTheDocument()
+    })
+
+    it('marks the current user with "toi" + real local progress, hides "Changer d\'identité"', () => {
+      render(
+        <GroupScreen
+          currentUserId={null}
+          currentUserProgress={12}
+          total={201}
+          onChangeIdentity={noop}
+          googleUser={googleUser}
+          members={members}
         />,
       )
       const meRow = screen.getByTestId('participant-me-google')
-      expect(meRow).toHaveTextContent('Yves')
+      expect(meRow).toHaveTextContent('Mathieu')
       expect(meRow).toHaveTextContent('toi')
       expect(meRow).toHaveTextContent('12 / 201')
+      expect(
+        screen.queryByRole('button', { name: /changer d'identité/i }),
+      ).not.toBeInTheDocument()
     })
 
-    it('keeps the 9 hard-coded participants and hides "Changer d\'identité"', () => {
-      render(
+    it("masks other members' progress until the local user finishes", () => {
+      const { rerender } = render(
         <GroupScreen
           currentUserId={null}
           currentUserProgress={12}
           total={201}
           onChangeIdentity={noop}
           googleUser={googleUser}
+          members={members}
         />,
       )
-      for (const p of PARTICIPANTS) {
-        expect(screen.getByTestId(`participant-${p.id}`)).toBeInTheDocument()
-      }
-      expect(
-        screen.queryByRole('button', { name: /changer d'identité/i }),
-      ).not.toBeInTheDocument()
+      expect(screen.getByText('Chloé').closest('[data-testid]')).toHaveTextContent(
+        '🔒',
+      )
+      // Once the local user is done, the others' real counts are revealed.
+      rerender(
+        <GroupScreen
+          currentUserId={null}
+          currentUserProgress={201}
+          total={201}
+          onChangeIdentity={noop}
+          googleUser={googleUser}
+          members={members}
+        />,
+      )
+      expect(screen.getByText('Chloé').closest('[data-testid]')).toHaveTextContent(
+        '80 / 201',
+      )
+    })
+
+    it('still lists the current user even if the roster has not loaded them yet', () => {
+      render(
+        <GroupScreen
+          currentUserId={null}
+          currentUserProgress={5}
+          total={201}
+          onChangeIdentity={noop}
+          googleUser={googleUser}
+          members={[]}
+        />,
+      )
+      expect(screen.getByTestId('participant-me-google')).toHaveTextContent('Mathieu')
     })
   })
 })

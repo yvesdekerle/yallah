@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBundle, auditLeaflet, type Budgets } from './check-bundle-size.ts'
+import {
+  evaluateBundle,
+  auditLeaflet,
+  auditFirebase,
+  type Budgets,
+} from './check-bundle-size.ts'
 
 const B: Budgets = { mainKB: 135, lazyKB: 15, dataKB: 40 }
 
@@ -18,6 +23,10 @@ describe('evaluateBundle', () => {
 
   it('excludes the Leaflet (TileLayer) vendor chunk even when large', () => {
     expect(evaluateBundle([{ name: 'TileLayer-x.js', gzipKB: 90 }], B)).toEqual([])
+  })
+
+  it('excludes the Firebase vendor chunk even when large', () => {
+    expect(evaluateBundle([{ name: 'firebase-x.js', gzipKB: 120 }], B)).toEqual([])
   })
 
   it('judges the activities data chunk against the larger data budget', () => {
@@ -76,6 +85,38 @@ describe('auditLeaflet', () => {
 
   it('reports vendorFound=false when no chunk carries the fingerprint (stale regex / maps removed)', () => {
     const r = auditLeaflet([{ name: 'index-x.js', code: 'console.log(1)' }])
+    expect(r.vendorFound).toBe(false)
+    expect(r.leak).toBeNull()
+  })
+})
+
+describe('auditFirebase', () => {
+  // Firestore/Auth bake their API hosts into the bundle as string literals.
+  const VENDOR = {
+    name: 'firebase-x.js',
+    code: 'const H="firestore.googleapis.com"',
+  }
+
+  it('reports no leak when Firebase lives only in its vendor chunk', () => {
+    const r = auditFirebase([
+      { name: 'index-x.js', code: 'console.log(1)' },
+      VENDOR,
+    ])
+    expect(r.leak).toBeNull()
+    expect(r.vendorFound).toBe(true)
+  })
+
+  it('flags a leak when the eager entry chunk carries Firebase code', () => {
+    const r = auditFirebase([
+      { name: 'index-x.js', code: 'fetch("https://identitytoolkit.googleapis.com/v1")' },
+      VENDOR,
+    ])
+    expect(r.leak).toBe('index-x.js')
+    expect(r.vendorFound).toBe(true)
+  })
+
+  it('reports vendorFound=false when no chunk carries the fingerprint', () => {
+    const r = auditFirebase([{ name: 'index-x.js', code: 'console.log(1)' }])
     expect(r.vendorFound).toBe(false)
     expect(r.leak).toBeNull()
   })

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
   })
   await page.goto('/')
   // The deck is now code-split behind a loading splash — wait for the first

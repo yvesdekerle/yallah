@@ -27,6 +27,7 @@ export function evaluateBundle(chunks: Chunk[], budgets: Budgets): Violation[] {
   const violations: Violation[] = []
   for (const c of chunks) {
     if (c.name.startsWith('TileLayer-')) continue // Leaflet vendor — excluded
+    if (c.name.startsWith('firebase-')) continue // Firebase vendor — excluded
     if (c.name.startsWith('index-')) {
       if (c.gzipKB > budgets.mainKB) {
         violations.push({ ...c, budgetKB: budgets.mainKB, kind: 'main' })
@@ -75,6 +76,25 @@ export function auditLeaflet(chunks: NamedCode[]): LeafletAudit {
   return { leak, vendorFound }
 }
 
+// The Firebase SDK bakes its API hosts into the bundle as string literals that
+// survive minification — a reliable fingerprint for "Firebase code is in THIS
+// chunk". Auth + Firestore are reached ONLY through a dynamic import
+// (services/firebase/client.ts via api.ts), so Firebase must live in its own
+// `firebase-*` vendor chunk and NEVER in the eager `index-*` entry; a leak would
+// drag the (large) SDK into first paint.
+const FIREBASE_FINGERPRINT = /(?:firestore|identitytoolkit)\.googleapis\.com/
+
+export function auditFirebase(chunks: NamedCode[]): LeafletAudit {
+  let leak: string | null = null
+  let vendorFound = false
+  for (const c of chunks) {
+    if (!FIREBASE_FINGERPRINT.test(c.code)) continue
+    vendorFound = true
+    if (c.name.startsWith('index-')) leak = c.name
+  }
+  return { leak, vendorFound }
+}
+
 // Budgets are measured against this script's `gzipSync(level 9)` output, which
 // runs ~4 kB below Vite's build-log gzip number (different compressor effort).
 // THIS number is the source of truth — ignore the Vite log for the budget.
@@ -87,6 +107,7 @@ const ASSETS_DIR = 'dist/assets'
 
 function kindOf(name: string): string {
   if (name.startsWith('TileLayer-')) return 'leaflet(skip)'
+  if (name.startsWith('firebase-')) return 'firebase(skip)'
   if (name.startsWith('index-')) return 'main'
   if (name.startsWith('activities-')) return 'data'
   return 'lazy'
@@ -132,6 +153,16 @@ function main(): void {
     console.error(
       `\n✗ Leaflet leaked into the eager entry chunk (${audit.leak}) — it must stay ` +
         'lazy-only. A map component is likely imported statically instead of via React.lazy.',
+    )
+    process.exit(1)
+  }
+
+  const fb = auditFirebase(chunks)
+  if (fb.leak !== null) {
+    console.error(
+      `\n✗ Firebase leaked into the eager entry chunk (${fb.leak}) — it must stay ` +
+        'lazy-only. Something imports services/firebase/client.ts statically instead ' +
+        'of via the dynamic-import facade (services/firebase/api.ts).',
     )
     process.exit(1)
   }

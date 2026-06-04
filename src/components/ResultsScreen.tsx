@@ -249,7 +249,7 @@ export function ResultsScreen({
           }}
           aria-label="réinitialiser les votes"
         >
-          Réinitialiser
+          Réinitialiser les votes
         </button>
       </div>
     </div>

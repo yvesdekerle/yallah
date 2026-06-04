@@ -22,7 +22,20 @@ import { GroupScreen } from './components/GroupScreen.tsx'
 import { WelcomeScreen } from './components/WelcomeScreen.tsx'
 import { GoogleButton } from './components/GoogleButton.tsx'
 import { GoogleSignInButton } from './components/GoogleSignInButton.tsx'
-import { googleAvailable } from './utils/googleAuth.ts'
+import {
+  firebaseAvailable,
+  saveVotes,
+  removeVote,
+  clearVotes,
+  signOutFirebase,
+  upsertActivity,
+} from './services/firebase/api.ts'
+import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
+import { useVersionGate } from './hooks/useVersionGate.ts'
+import { useGroupData } from './hooks/useGroupData.ts'
+import { useRemoteVoteHydration } from './hooks/useRemoteVoteHydration.ts'
+import { userActivityToDoc } from './utils/activityDoc.ts'
+import type { ActivityCreator } from './types/activity.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
 import { TAG_LABELS } from './utils/tags.ts'
 import { filteredDeck } from './utils/deck.ts'
@@ -101,6 +114,20 @@ export default function App({ activities }: AppProps) {
   )
   useAppVersionCheck(onVersionUpgrade)
 
+  // Firebase Auth is the source of truth for the Google identity: adopt the
+  // signed-in profile on load / restore (and mirror it + the running version to
+  // Firestore), clear it on sign-out. No-op when Firebase isn't configured.
+  useFirebaseAuthSync(setGoogleUser)
+
+  // Force-reload this tab when a newer build is published (Google mode only —
+  // the version gate compares the running build against the global
+  // config/app.version in Firestore). No-op in demo / without Firebase.
+  useVersionGate(googleUser !== null)
+
+  // Real signed-in members + their votes (Google mode) — drives the Groupe tab
+  // and the detail "Le groupe" panel. Empty in demo mode / without Firebase.
+  const { members: groupMembers } = useGroupData(googleUser !== null)
+
   const {
     userActivities,
     stored: storedUserActivities,
@@ -137,8 +164,13 @@ export default function App({ activities }: AppProps) {
     undoVote,
     randomFillVotes,
     clearHistory,
+    replaceHistory,
     removeVotesFor,
   } = useVoteHistory(allActivities)
+
+  // On Google sign-in / reload, restore this user's votes from Firestore so they
+  // follow them across devices (the local-first write path keeps writing them).
+  useRemoteVoteHydration(googleUser?.uid ?? null, replaceHistory)
 
   const {
     detail,
@@ -179,6 +211,36 @@ export default function App({ activities }: AppProps) {
   // an already-identified demo user taps "Changer d'identité".
   const showPicker = (!signedIn && demoStarted) || changingIdentity
 
+  // The identity shown in the TopBar profile avatar + menu — Google profile
+  // (real picture) or, in demo mode, the chosen participant (coloured initial
+  // disc stands in for the photo).
+  const profile = useMemo(() => {
+    if (googleUser) {
+      return {
+        name: googleUser.name,
+        ...(googleUser.picture ? { picture: googleUser.picture } : {}),
+        color: YB.coral,
+      }
+    }
+    if (userId) {
+      const p = PARTICIPANTS.find((x) => x.id === userId)
+      if (p) return { name: p.name, color: p.color }
+    }
+    return null
+  }, [googleUser, userId])
+
+  // The active identity id (Google uid or demo participant id) — used to tag
+  // "créé par" and to flag the user's own contributions as "toi".
+  const currentUserId = googleUser?.uid ?? userId
+  const creator = useMemo<ActivityCreator | undefined>(() => {
+    if (googleUser) return { uid: googleUser.uid, name: googleUser.name }
+    if (userId) {
+      const p = PARTICIPANTS.find((x) => x.id === userId)
+      return { uid: userId, name: p?.name ?? userId }
+    }
+    return undefined
+  }, [googleUser, userId])
+
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
       if (reviewMode) {
@@ -192,35 +254,48 @@ export default function App({ activities }: AppProps) {
           ...(meta?.quotaHit ? { quotaHit: true } : {}),
         })
       }
+      // Mirror the verdict to Firestore when signed in via Google (no-op in
+      // demo mode / when Firebase isn't configured). Fire-and-forget: the local
+      // history stays the source of truth for the session.
+      if (googleUser) {
+        void saveVotes(googleUser.uid, googleUser.name, {
+          [activity.id]: {
+            verdict,
+            ...(meta?.quotaHit ? { quotaHit: true } : {}),
+          },
+        })
+      }
       if (meta?.quotaHit) {
         showToast('Plus de super-likes — converti en like', '⭐')
       }
     },
-    [reviewMode, upsertVote, appendVote, showToast],
+    [reviewMode, upsertVote, appendVote, showToast, googleUser],
   )
 
   const handleUndo = useCallback(() => {
     if (history.length === 0) return
+    const undone = history[history.length - 1]
     undoVote()
+    if (googleUser && undone) void removeVote(googleUser.uid, undone.id)
     setDone(false)
     showToast('Swipe annulé', '↩')
-  }, [history.length, undoVote, showToast])
+  }, [history, undoVote, showToast, googleUser])
 
   const handleAction = useCallback((verdict: Verdict) => {
     deckRef.current?.commit(verdict)
   }, [])
 
   const handleReset = useCallback(() => {
-    // Identity is cleared too → the welcome screen re-appears and covers the
-    // toast (z-overlay > toast z-chrome), so no toast here.
+    // Wipe only the votes — the user stays signed in and on the Résultats tab.
+    // Locally that's the history; remotely it drops the `activities` map from
+    // votes/{uid} while keeping the profile fields (uid/name). Without the
+    // remote wipe the votes rehydrate on the next sign-in.
     clearHistory()
-    setUserId(null)
-    setGoogleUser(null)
-    setDemoStarted(false)
+    if (googleUser) void clearVotes(googleUser.uid)
     setDone(false)
     setReviewMode(false)
-    setChangingIdentity(false)
-  }, [clearHistory, setUserId, setGoogleUser])
+    showToast('Votes réinitialisés', '🗑')
+  }, [googleUser, clearHistory, showToast])
 
   // Signed in via Google: adopt the profile as the active identity, start a
   // fresh session (history is per-device), and land on the swipe deck.
@@ -239,23 +314,11 @@ export default function App({ activities }: AppProps) {
 
   // Sign out of Google → back to the welcome screen. History is left as-is (the
   // next sign-in / demo pick clears it); use "Réinitialiser" to wipe votes too.
+  // Log out of whichever identity is active (Google OR demo) → back to the
+  // welcome screen. History is left as-is (the next sign-in / demo pick clears
+  // it); "Réinitialiser" wipes votes too.
   const handleLogout = useCallback(() => {
-    setGoogleUser(null)
-    setDemoStarted(false)
-    setDone(false)
-    setReviewMode(false)
-    setActiveTab(0)
-  }, [setGoogleUser])
-
-  const handleGoogleError = useCallback(() => {
-    showToast('Connexion Google échouée', '⚠️')
-  }, [showToast])
-
-  // "Retour à l'accueil" from Réglages: drop the current identity (Google or
-  // demo) and land back on the welcome screen. History is left intact (the next
-  // sign-in / demo pick clears it), matching logout semantics.
-  const handleReturnHome = useCallback(() => {
-    setSettingsOpen(false)
+    void signOutFirebase()
     setGoogleUser(null)
     setUserId(null)
     setDemoStarted(false)
@@ -264,6 +327,10 @@ export default function App({ activities }: AppProps) {
     setReviewMode(false)
     setActiveTab(0)
   }, [setGoogleUser, setUserId])
+
+  const handleGoogleError = useCallback(() => {
+    showToast('Connexion Google échouée', '⚠️')
+  }, [showToast])
 
   const handleReview = useCallback(() => {
     setDone(false)
@@ -283,28 +350,41 @@ export default function App({ activities }: AppProps) {
   const handleRandomFill = useCallback(() => {
     const added = randomFillVotes()
     if (added.length === 0) return
+    // Mirror the generated batch to Firestore in a single merge write.
+    if (googleUser) {
+      const values = Object.fromEntries(
+        added.map((e) => [
+          e.id,
+          { verdict: e.verdict, ...(e.quotaHit ? { quotaHit: true } : {}) },
+        ]),
+      )
+      void saveVotes(googleUser.uid, googleUser.name, values)
+    }
     // Everything's now voted → land on the "Revoir les votes ?" prompt.
     setDone(true)
     showToast(`${added.length} votes générés aléatoirement`, '🎲')
-  }, [randomFillVotes, showToast])
+  }, [randomFillVotes, showToast, googleUser])
 
   const handleAddActivity = useCallback(
     async (input: UserActivityInput) => {
-      await addUserActivity(input)
+      const record = await addUserActivity(input, creator)
+      // Mirror the new activity (with its creator) to Firestore when signed in.
+      if (googleUser) void upsertActivity(userActivityToDoc(record))
       // A new card now exists past the curated deck — make it reachable even
       // if the user had already finished swiping everything else.
       setDone(false)
       showToast('Activité ajoutée', '➕')
     },
-    [addUserActivity, showToast],
+    [addUserActivity, showToast, creator, googleUser],
   )
 
   const handleUpdateActivity = useCallback(
     async (id: string, input: UserActivityInput) => {
-      await updateUserActivity(id, input)
+      const record = await updateUserActivity(id, input)
+      if (record && googleUser) void upsertActivity(userActivityToDoc(record))
       showToast('Activité mise à jour', '✏️')
     },
-    [updateUserActivity, showToast],
+    [updateUserActivity, showToast, googleUser],
   )
 
   const handleConfirmDeleteActivity = useCallback(async () => {
@@ -313,6 +393,7 @@ export default function App({ activities }: AppProps) {
     await removeUserActivity(id)
     // Drop the vote that referenced this activity so it doesn't linger.
     removeVotesFor(id)
+    if (googleUser) void removeVote(googleUser.uid, id)
     setConfirmingDeleteActivity(null)
     showToast('Activité supprimée', '🗑')
   }, [
@@ -321,6 +402,7 @@ export default function App({ activities }: AppProps) {
     removeVotesFor,
     setConfirmingDeleteActivity,
     showToast,
+    googleUser,
   ])
 
   const handlePickIdentity = useCallback(
@@ -414,8 +496,9 @@ export default function App({ activities }: AppProps) {
         <StatusBar />
         <TopBar
           onSecretOpen={() => setSettingsOpen(true)}
-          googleUser={googleUser}
+          profile={profile}
           onLogout={handleLogout}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
 
         {/* Tabs stay MOUNTED — switching just toggles visibility. Avoids
@@ -473,6 +556,7 @@ export default function App({ activities }: AppProps) {
             currentUserProgress={history.length}
             total={allActivities.length}
             onChangeIdentity={() => setChangingIdentity(true)}
+            members={groupMembers}
           />
         </div>
 
@@ -511,7 +595,7 @@ export default function App({ activities }: AppProps) {
           <WelcomeScreen
             onDemo={() => setDemoStarted(true)}
             googleSlot={
-              googleAvailable ? (
+              firebaseAvailable ? (
                 <GoogleSignInButton
                   onUser={handleGoogleUser}
                   onError={handleGoogleError}
@@ -527,6 +611,8 @@ export default function App({ activities }: AppProps) {
           history={history}
           activities={allActivities}
           userId={userId}
+          currentUserId={currentUserId}
+          members={googleUser ? groupMembers : null}
           superRemaining={superRemaining}
           detail={{
             state: detail,
@@ -581,7 +667,6 @@ export default function App({ activities }: AppProps) {
             open: settingsOpen,
             version: APP_VERSION,
             onClose: () => setSettingsOpen(false),
-            onGoHome: handleReturnHome,
           }}
           filter={{
             open: filterOpen,

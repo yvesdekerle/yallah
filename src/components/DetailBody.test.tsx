@@ -43,4 +43,26 @@ describe('DetailBody', () => {
     )
     expect(screen.getByText('Un fait surprenant')).toBeInTheDocument()
   })
+
+  it('shows no "Créé par" line for a curated activity', () => {
+    render(<DetailBody activity={activity} photos={[]} onOpenPhoto={() => {}} />)
+    expect(screen.queryByText(/Créé par/)).not.toBeInTheDocument()
+  })
+
+  it('shows the creator name, or "toi" when it\'s the current user', () => {
+    const created = { ...activity, createdBy: { uid: 'chloe', name: 'Chloé' } }
+    const { rerender } = render(
+      <DetailBody activity={created} photos={[]} onOpenPhoto={() => {}} />,
+    )
+    expect(screen.getByText('Créé par Chloé')).toBeInTheDocument()
+    rerender(
+      <DetailBody
+        activity={created}
+        photos={[]}
+        onOpenPhoto={() => {}}
+        createdByMe
+      />,
+    )
+    expect(screen.getByText('Créé par toi')).toBeInTheDocument()
+  })
 })

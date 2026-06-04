@@ -1,21 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
-import type { GoogleUser } from '../types/user.ts'
 import { YB } from '../utils/theme.ts'
 import { AvatarPill } from './AvatarPill.tsx'
 
-interface ProfileMenuProps {
-  user: GoogleUser
+export interface ProfileMenuProps {
+  /** Display name (shown in the popover header — never the email). */
+  name: string
+  /** Avatar URL. Omitted in demo mode ⇒ the coloured initial disc stands in. */
+  picture?: string
+  /** Avatar disc colour used for the initial fallback. */
+  color: string
   onLogout: () => void
+  /** Open the Réglages page (same target as the 5-taps-on-wordmark gesture). */
+  onOpenSettings: () => void
 }
 
 const AVATAR = 34
 
 /**
- * Round profile avatar (top-right of the TopBar) for a Google-signed-in user.
- * Tapping it opens a small popover with "Se déconnecter". Closes on outside
- * click or Escape. Shown only in Google mode (the demo flow has no avatar).
+ * Round profile avatar (top-right of the TopBar) with a popover menu:
+ * "Paramètres" + "Se déconnecter". Used in BOTH modes — a Google-signed-in user
+ * (real `picture`) and a demo participant (no picture ⇒ a coloured initial disc
+ * as the stand-in "photo"). Closes on outside click or Escape.
  */
-export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
+export function ProfileMenu({
+  name,
+  picture,
+  color,
+  onLogout,
+  onOpenSettings,
+}: ProfileMenuProps) {
   const [open, setOpen] = useState(false)
   const [imgError, setImgError] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -29,8 +42,18 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
     return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
-  const initial = (user.name[0] ?? '?').toUpperCase()
-  const showImg = user.picture && !imgError
+  const initial = (name[0] ?? '?').toUpperCase()
+  const showImg = picture && !imgError
+
+  const itemStyle = {
+    padding: '9px 10px',
+    borderRadius: 10,
+    border: 'none',
+    background: 'transparent',
+    color: YB.ink,
+    fontSize: 14,
+    fontWeight: 600,
+  } as const
 
   return (
     <div ref={rootRef} className="relative">
@@ -39,7 +62,7 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Compte de ${user.name}`}
+        aria-label={`Compte de ${name}`}
         className="cursor-pointer"
         style={{
           width: AVATAR,
@@ -55,7 +78,7 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
       >
         {showImg ? (
           <img
-            src={user.picture}
+            src={picture}
             alt=""
             referrerPolicy="no-referrer"
             onError={() => setImgError(true)}
@@ -67,12 +90,7 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
             }}
           />
         ) : (
-          <AvatarPill
-            initial={initial}
-            color={YB.coral}
-            size={AVATAR - 4}
-            fontSize={13}
-          />
+          <AvatarPill initial={initial} color={color} size={AVATAR - 4} fontSize={13} />
         )}
       </button>
 
@@ -91,26 +109,33 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
             role="menu"
             aria-label="Menu du compte"
             className="absolute font-sans yallah-card"
-            style={{
-              top: AVATAR + 8,
-              right: 0,
-              zIndex: 2,
-              minWidth: 180,
-              padding: 6,
-            }}
+            style={{ top: AVATAR + 8, right: 0, zIndex: 2, minWidth: 180, padding: 6 }}
           >
             <div
               className="font-sans"
               style={{
                 padding: '6px 10px 8px',
-                fontSize: 12,
-                color: YB.muted,
-                lineHeight: 1.35,
+                fontSize: 14,
+                fontWeight: 700,
+                color: YB.ink,
+                lineHeight: 1.3,
                 wordBreak: 'break-word',
               }}
             >
-              {user.email}
+              {name}
             </div>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                onOpenSettings()
+              }}
+              className="font-sans w-full text-left cursor-pointer"
+              style={itemStyle}
+            >
+              Paramètres
+            </button>
             <button
               type="button"
               role="menuitem"
@@ -119,15 +144,7 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
                 onLogout()
               }}
               className="font-sans w-full text-left cursor-pointer"
-              style={{
-                padding: '9px 10px',
-                borderRadius: 10,
-                border: 'none',
-                background: 'transparent',
-                color: YB.ink,
-                fontSize: 14,
-                fontWeight: 600,
-              }}
+              style={itemStyle}
             >
               Se déconnecter
             </button>

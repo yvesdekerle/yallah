@@ -1,23 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
-// Mock the OAuth hook: calling the returned `login` synchronously invokes the
-// success callback with a fake access token (no real popup / provider needed).
-vi.mock('@react-oauth/google', () => ({
-  useGoogleLogin: (opts: {
-    onSuccess: (r: { access_token: string }) => void
-    onError?: () => void
-  }) => {
-    ;(globalThis as Record<string, unknown>).__triggerError = opts.onError
-    return () => opts.onSuccess({ access_token: 'fake-token' })
-  },
+// Mock the Firebase facade so no SDK / popup is needed.
+const signInWithGoogle = vi.fn()
+vi.mock('../services/firebase/api.ts', () => ({
+  signInWithGoogle: () => signInWithGoogle(),
 }))
 
 import { GoogleSignInButton } from './GoogleSignInButton.tsx'
 
-const userinfo = {
-  sub: '42',
-  given_name: 'Yves',
+const profile = {
+  uid: '42',
   name: 'Yves Dekerle',
   email: 'yves@example.com',
   picture: 'https://lh3.googleusercontent.com/a/abc',
@@ -25,36 +18,19 @@ const userinfo = {
 
 describe('GoogleSignInButton', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn())
-  })
-  afterEach(() => {
-    vi.unstubAllGlobals()
+    signInWithGoogle.mockReset()
   })
 
   it('resolves the profile and calls onUser on success', async () => {
-    ;(fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-      ok: true,
-      json: async () => userinfo,
-    })
+    signInWithGoogle.mockResolvedValue(profile)
     const onUser = vi.fn()
     render(<GoogleSignInButton onUser={onUser} />)
     fireEvent.click(screen.getByRole('button', { name: /Se connecter/ }))
-    await waitFor(() =>
-      expect(onUser).toHaveBeenCalledWith({
-        sub: '42',
-        name: 'Yves',
-        email: 'yves@example.com',
-        picture: 'https://lh3.googleusercontent.com/a/abc',
-      }),
-    )
+    await waitFor(() => expect(onUser).toHaveBeenCalledWith(profile))
   })
 
-  it('calls onError when the userinfo request fails', async () => {
-    ;(fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: async () => ({}),
-    })
+  it('calls onError when the sign-in fails', async () => {
+    signInWithGoogle.mockRejectedValue(new Error('popup closed'))
     const onUser = vi.fn()
     const onError = vi.fn()
     render(<GoogleSignInButton onUser={onUser} onError={onError} />)

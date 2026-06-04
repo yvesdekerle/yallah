@@ -1,14 +1,14 @@
 /**
- * Profile of a user signed in through Google SSO (client-side, no backend).
- * Derived from the Google `userinfo` endpoint after an implicit-flow login.
- * Stored locally under `yallah.googleUser.v1`. `name` holds the *first name*
- * (Google `given_name`), matching the demo participants which are first-name
- * only.
+ * Profile of a user signed in through Firebase Auth (Google provider).
+ * Stored locally under `yallah.googleUser.v1` for instant session restore, and
+ * mirrored to `users/{uid}` in Firestore on connect. `name` holds the *first
+ * name* where Google provides a `displayName` (falling back to the email local
+ * part), matching the demo participants which are first-name only.
  */
 export interface GoogleUser {
-  /** Stable Google account id (`sub` claim). */
-  sub: string
-  /** First name (Google `given_name`, falling back to the full `name`). */
+  /** Stable Firebase Auth user id (`auth.currentUser.uid`). */
+  uid: string
+  /** Display first name (from Google `displayName`, falling back to email). */
   name: string
   email: string
   /** Avatar URL. Optional — Google doesn't always return one. */

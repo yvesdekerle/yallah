@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Activity, Difficulty } from '../types/activity.ts'
+import type { Activity, ActivityCreator, Difficulty } from '../types/activity.ts'
 import type { PhotoRef, StoredUserActivity } from '../types/userActivity.ts'
 import {
   loadUserActivities,
@@ -37,8 +37,16 @@ export interface UseUserActivities {
   userActivities: Activity[]
   /** The persisted records — handy for pre-filling the edit form. */
   stored: StoredUserActivity[]
-  add: (input: UserActivityInput) => Promise<void>
-  update: (id: string, input: UserActivityInput) => Promise<void>
+  /** Add a new activity, tagging it with its creator. Returns the saved record. */
+  add: (
+    input: UserActivityInput,
+    creator?: ActivityCreator,
+  ) => Promise<StoredUserActivity>
+  /** Edit an existing activity (creator is preserved). Returns the saved record. */
+  update: (
+    id: string,
+    input: UserActivityInput,
+  ) => Promise<StoredUserActivity | null>
   remove: (id: string) => Promise<void>
 }
 
@@ -78,7 +86,12 @@ function orphanedUploadIds(refs: PhotoRef[], keep: PhotoRef[]): string[] {
 function buildRecord(
   input: UserActivityInput,
   photoRefs: PhotoRef[],
-  base: { id: string; number: number; createdAt: number },
+  base: {
+    id: string
+    number: number
+    createdAt: number
+    createdBy?: ActivityCreator
+  },
 ): StoredUserActivity {
   return {
     id: base.id,
@@ -97,6 +110,7 @@ function buildRecord(
     secret: input.secret,
     ...(input.insolite ? { insolite: input.insolite } : {}),
     ...(input.coords ? { coords: input.coords } : {}),
+    ...(base.createdBy ? { createdBy: base.createdBy } : {}),
     userAdded: true,
     photoRefs,
     createdAt: base.createdAt,
@@ -169,14 +183,16 @@ export function useUserActivities(): UseUserActivities {
   }, [])
 
   const add = useCallback(
-    async (input: UserActivityInput) => {
+    async (input: UserActivityInput, creator?: ActivityCreator) => {
       const photoRefs = await materializePhotos(input.photos)
       const record = buildRecord(input, photoRefs, {
         id: makeUserId(),
         number: 900 + stored.length,
         createdAt: Date.now(),
+        ...(creator ? { createdBy: creator } : {}),
       })
       persist([...stored, record])
+      return record
     },
     [stored, persist],
   )
@@ -184,7 +200,7 @@ export function useUserActivities(): UseUserActivities {
   const update = useCallback(
     async (id: string, input: UserActivityInput) => {
       const existing = stored.find((s) => s.id === id)
-      if (!existing) return
+      if (!existing) return null
       const photoRefs = await materializePhotos(input.photos)
       for (const orphan of orphanedUploadIds(existing.photoRefs, photoRefs)) {
         await deletePhoto(orphan)
@@ -193,8 +209,11 @@ export function useUserActivities(): UseUserActivities {
         id: existing.id,
         number: existing.number,
         createdAt: existing.createdAt,
+        // Creator is set once at creation and preserved across edits.
+        ...(existing.createdBy ? { createdBy: existing.createdBy } : {}),
       })
       persist(stored.map((s) => (s.id === id ? record : s)))
+      return record
     },
     [stored, persist],
   )

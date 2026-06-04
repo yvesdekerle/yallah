@@ -16,6 +16,12 @@ dist-ssr
 .env.local
 .env.production.local
 
+# Firebase service account / admin SDK credentials — NEVER commit
+serviceAccount.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+*-adminsdk-*.json
+
 # Temp files
 tmp/
 

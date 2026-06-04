@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
   })
   await page.goto('/')
 })
@@ -33,11 +33,14 @@ test('adds an activity (URL photo) and shows it in the list + résultats', async
   await page.getByRole('button', { name: 'Remplir', exact: true }).click()
   // The voted row exposes the activity via its accessible name (the vote-row-*
   // testid was dropped in d56aa3c in favour of role/name queries).
-  await expect(
-    page.getByRole('button', {
-      name: 'Voir le détail de Pique-nique secret au Morne',
-    }),
-  ).toBeVisible()
+  const row = page.getByRole('button', {
+    name: 'Voir le détail de Pique-nique secret au Morne',
+  })
+  await expect(row).toBeVisible()
+
+  // The detail shows the creator — "toi" in demo mode (item 8).
+  await row.click()
+  await expect(page.getByTestId('detail-sheet')).toContainText('Créé par toi')
 })
 
 test('edits and deletes an added activity', async ({ page }) => {

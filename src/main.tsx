@@ -1,29 +1,18 @@
-import { StrictMode, type ReactNode } from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import App from './App.tsx'
 import { Splash } from './components/Splash.tsx'
 import { loadActivities } from './data/activities.ts'
-import { GOOGLE_CLIENT_ID, googleAvailable } from './utils/googleAuth.ts'
 
 const root = createRoot(document.getElementById('root')!)
 
-// Wrap the tree in the Google OAuth provider only when a Client ID is set, so
-// the GIS script isn't pulled in (and no warning is logged) when Google sign-in
-// is unavailable — the app then runs demo-only.
-function withGoogle(children: ReactNode) {
-  return googleAvailable ? (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      {children}
-    </GoogleOAuthProvider>
-  ) : (
-    children
-  )
-}
-
 // Paint the branded splash immediately, then swap in the app once the
 // code-split activities chunk resolves — no white flash, no layout jump.
+//
+// Auth is Firebase Auth (Google provider) — it needs no React provider; the SDK
+// is lazy-loaded on first use via `services/firebase/api.ts`, so it stays out of
+// the eager entry chunk.
 function start() {
   root.render(
     <StrictMode>
@@ -33,7 +22,9 @@ function start() {
   loadActivities()
     .then((activities) => {
       root.render(
-        <StrictMode>{withGoogle(<App activities={activities} />)}</StrictMode>,
+        <StrictMode>
+          <App activities={activities} />
+        </StrictMode>,
       )
     })
     .catch(() => {

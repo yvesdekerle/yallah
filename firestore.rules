@@ -1,0 +1,76 @@
+rules_version = '2';
+
+// Yallah Firestore security rules.
+//
+// Auth is Firebase Auth (Google provider). The trip is a small, trusted group,
+// so any signed-in user may READ the shared data (the group screen shows
+// everyone's votes), but a user may only WRITE their own profile, their own
+// votes, and activities they created. Curated activities are seeded with the
+// Admin SDK (scripts/seed-firestore.ts), which bypasses these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // users/{uid} — profile + the app version this account last ran.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // votes/{uid} — one document per user holding all their verdicts, keyed by
+    // activity id under `activities`. A user may only write their own doc.
+    //
+    // The top-level SHAPE is validated here so a buggy/hostile client can't
+    // smuggle stray fields or wrong types into the shared collection (the group
+    // screen reads every doc). Firestore rules CANNOT iterate a map's keys, so
+    // the verdict values inside `activities` can't be validated server-side —
+    // that invariant is enforced client-side in `services/firebase/votesConverter.ts`
+    // (coerceVoteValue drops unknown verdicts on read, sanitizeVoteValues on
+    // write). Keep the verdict ids in sync with `src/types/verdict.ts`.
+    //
+    // Each field clause is guarded by `<field> in data` because writes are
+    // partial `setDoc(merge)`: removeVote() on a never-voted activity creates a
+    // doc with only { activities, updatedAt }, so requiring uid/name
+    // unconditionally would wrongly deny it. `request.resource.data` is the
+    // post-merge document state, so a normal saveVotes still carries all four.
+    //
+    // "Réinitialiser les votes" clears the `activities` map via a merge write
+    // (deleteField), NOT a doc delete — so it goes through this same validated
+    // update path and no `delete` permission is needed.
+    match /votes/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'activities', 'updatedAt'])
+        && (!('uid' in request.resource.data) || request.resource.data.uid == uid)
+        && (!('name' in request.resource.data) || request.resource.data.name is string)
+        && (!('activities' in request.resource.data) || request.resource.data.activities is map);
+    }
+
+    // config/app — global published app version (drives the force-reload gate).
+    // Scoped to the single `app` doc, and the payload is restricted to exactly
+    // {version: string, updatedAt} so a member can't create stray config docs or
+    // smuggle extra fields. Any signed-in client may publish (trusted group);
+    // the client-side loop guard bounds reloads if a bad version ever lands.
+    match /config/app {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && request.resource.data.version is string
+        && request.resource.data.keys().hasOnly(['version', 'updatedAt']);
+    }
+
+    // activities/{id} — curated (seeded) + user-added. A user may only create
+    // or modify activities they own (createdBy.uid == their uid). Curated docs
+    // have no createdBy, so they're read-only to clients.
+    match /activities/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy.uid == request.auth.uid;
+      allow update, delete: if signedIn()
+        && resource.data.createdBy.uid == request.auth.uid;
+    }
+  }
+}

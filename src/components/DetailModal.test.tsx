@@ -410,17 +410,17 @@ describe('DetailModal', () => {
         onVerdict={() => {}}
         superRemaining={5}
         meDone
-        userId="yves"
+        currentUserId="mathieu"
         myVerdict="oui"
       />,
     )
     const panel = screen.getByTestId('group-votes')
     expect(panel).toBeInTheDocument()
     expect(panel.querySelectorAll('li')).toHaveLength(9)
-    // Yves' row carries the "toi" badge and his real verdict (LIKE).
-    const yvesRow = screen.getByTestId('group-vote-yves')
-    expect(yvesRow).toHaveTextContent('toi')
-    expect(yvesRow).toHaveTextContent('LIKE')
+    // Mathieu's row carries the "toi" badge and his real verdict (LIKE).
+    const mathieuRow = screen.getByTestId('group-vote-mathieu')
+    expect(mathieuRow).toHaveTextContent('toi')
+    expect(mathieuRow).toHaveTextContent('LIKE')
   })
 
   it('calls onOpenMap with single mode when the mini-map is tapped', async () => {

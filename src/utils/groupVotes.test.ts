@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { fakeVote } from './groupVotes.ts'
+import { VERDICT_VALUES } from '../types/verdict.ts'
 
 describe('fakeVote', () => {
   it('returns the same verdict for the same (participant, activity) pair', () => {
@@ -18,7 +19,7 @@ describe('fakeVote', () => {
   })
 
   it('returns one of the four known verdicts', () => {
-    const valid = new Set(['oui', 'non', 'whynot', 'top'])
+    const valid = new Set<string>(VERDICT_VALUES)
     for (let i = 0; i < 50; i++) {
       expect(valid.has(fakeVote(`p${i}`, 'a042'))).toBe(true)
     }

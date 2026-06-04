@@ -91,6 +91,28 @@ describe('useUserActivities', () => {
     expect(after.createdAt).toBe(before.createdAt)
   })
 
+  it('tags a new activity with its creator and preserves it across edits', async () => {
+    const { result } = renderHook(() => useUserActivities())
+    const creator = { uid: 'yves', name: 'Yves' }
+    let added: { createdBy?: { uid: string; name: string } } | undefined
+    await act(async () => {
+      added = await result.current.add(
+        baseInput({ title: 'V1', photos: [urlPhoto('https://x/1.jpg')] }),
+        creator,
+      )
+    })
+    expect(added?.createdBy).toEqual(creator)
+    await waitFor(() => expect(result.current.stored[0]?.createdBy).toEqual(creator))
+
+    // Editing the activity keeps the original creator (no creator passed).
+    const id = result.current.stored[0]!.id
+    await act(async () => {
+      await result.current.update(id, baseInput({ title: 'V2' }))
+    })
+    await waitFor(() => expect(result.current.stored[0]?.title).toBe('V2'))
+    expect(result.current.stored[0]?.createdBy).toEqual(creator)
+  })
+
   it('remove deletes the activity from state and localStorage', async () => {
     const { result } = renderHook(() => useUserActivities())
     await act(async () => {
