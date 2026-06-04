@@ -107,6 +107,13 @@ export function useVoteHistory(allActivities: Activity[]) {
 
   const clearHistory = useCallback(() => setHistory([]), [setHistory])
 
+  // Replace the whole history — used to rehydrate from Firestore on Google
+  // sign-in so a returning user / fresh device gets their votes back.
+  const replaceHistory = useCallback(
+    (entries: VoteEntry[]) => setHistory(entries),
+    [setHistory],
+  )
+
   const removeVotesFor = useCallback(
     (id: string) => {
       setHistory((h) => h.filter((e) => e.id !== id))
@@ -123,6 +130,7 @@ export function useVoteHistory(allActivities: Activity[]) {
     undoVote,
     randomFillVotes,
     clearHistory,
+    replaceHistory,
     removeVotesFor,
   }
 }

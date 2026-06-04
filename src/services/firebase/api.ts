@@ -9,6 +9,7 @@
  */
 import { firebaseAvailable } from './config.ts'
 import type { GoogleUser } from '../../types/user.ts'
+import type { VoteEntry } from '../../types/verdict.ts'
 import type {
   ActivityDoc,
   UserDoc,
@@ -86,18 +87,16 @@ export async function removeVote(
   await (await loadClient()).removeVote(uid, activityId)
 }
 
+export async function getMyVotes(uid: string): Promise<VoteEntry[]> {
+  if (!firebaseAvailable) return []
+  return (await loadClient()).getMyVotes(uid)
+}
+
 export async function upsertActivity(
   activity: Omit<ActivityDoc, 'updatedAt'>,
 ): Promise<void> {
   if (!firebaseAvailable) return
   await (await loadClient()).upsertActivity(activity)
-}
-
-export function subscribeUserVersion(
-  uid: string,
-  cb: (appVersion: string | null) => void,
-): () => void {
-  return lazySubscribe((c) => c.subscribeUserVersion(uid, cb))
 }
 
 export function subscribeGroupVotes(cb: (votes: VotesDoc[]) => void): () => void {

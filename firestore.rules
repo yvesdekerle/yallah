@@ -27,11 +27,15 @@ service cloud.firestore {
     }
 
     // config/app — global published app version (drives the force-reload gate).
-    // Any signed-in client may publish (trusted group); a non-string version is
-    // rejected. The client-side loop guard bounds reloads if a bad value lands.
-    match /config/{doc} {
+    // Scoped to the single `app` doc, and the payload is restricted to exactly
+    // {version: string, updatedAt} so a member can't create stray config docs or
+    // smuggle extra fields. Any signed-in client may publish (trusted group);
+    // the client-side loop guard bounds reloads if a bad version ever lands.
+    match /config/app {
       allow read: if signedIn();
-      allow write: if signedIn() && request.resource.data.version is string;
+      allow write: if signedIn()
+        && request.resource.data.version is string
+        && request.resource.data.keys().hasOnly(['version', 'updatedAt']);
     }
 
     // activities/{id} — curated (seeded) + user-added. A user may only create

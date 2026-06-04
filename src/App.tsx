@@ -32,6 +32,7 @@ import {
 import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
 import { useVersionGate } from './hooks/useVersionGate.ts'
 import { useGroupData } from './hooks/useGroupData.ts'
+import { useRemoteVoteHydration } from './hooks/useRemoteVoteHydration.ts'
 import { userActivityToDoc } from './utils/activityDoc.ts'
 import type { ActivityCreator } from './types/activity.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
@@ -162,8 +163,13 @@ export default function App({ activities }: AppProps) {
     undoVote,
     randomFillVotes,
     clearHistory,
+    replaceHistory,
     removeVotesFor,
   } = useVoteHistory(allActivities)
+
+  // On Google sign-in / reload, restore this user's votes from Firestore so they
+  // follow them across devices (the local-first write path keeps writing them).
+  useRemoteVoteHydration(googleUser?.uid ?? null, replaceHistory)
 
   const {
     detail,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   subscribeRoster,
   subscribeGroupVotes,
@@ -47,23 +47,26 @@ export function useGroupData(enabled: boolean): GroupData {
   // Disabled (demo / logged out) ⇒ no members. We gate the derived value rather
   // than clearing `users`/`votes` in the effect (which would trip
   // react-hooks/set-state-in-effect); the stale raw state is simply ignored and
-  // refreshed by the next subscription when re-enabled.
-  const votesByUid = new Map(votes.map((v) => [v.uid, v]))
-  const members: GroupMember[] = !enabled
-    ? []
-    : users
-        .map((u) => {
-      const v = votesByUid.get(u.uid)
-      const activities = v?.activities ?? {}
-      return {
-        uid: u.uid,
-        name: u.name,
-        ...(u.picture ? { picture: u.picture } : {}),
-        voteCount: Object.keys(activities).length,
-        votes: activities,
-      }
-    })
-    .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }))
+  // refreshed by the next subscription when re-enabled. Memoised so the array
+  // identity is stable between renders (keeps DetailGroupVotes' memo effective).
+  const members = useMemo<GroupMember[]>(() => {
+    if (!enabled) return []
+    const votesByUid = new Map(votes.map((v) => [v.uid, v]))
+    return users
+      .map((u) => {
+        const activities = votesByUid.get(u.uid)?.activities ?? {}
+        return {
+          uid: u.uid,
+          name: u.name,
+          ...(u.picture ? { picture: u.picture } : {}),
+          voteCount: Object.keys(activities).length,
+          votes: activities,
+        }
+      })
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }),
+      )
+  }, [enabled, users, votes])
 
   return { members }
 }

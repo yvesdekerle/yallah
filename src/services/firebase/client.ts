@@ -19,8 +19,8 @@ import {
 import {
   getFirestore,
   doc,
+  getDoc,
   setDoc,
-  updateDoc,
   collection,
   onSnapshot,
   serverTimestamp,
@@ -29,6 +29,7 @@ import {
 } from 'firebase/firestore'
 import { firebaseConfig } from './config.ts'
 import type { GoogleUser } from '../../types/user.ts'
+import type { VoteEntry } from '../../types/verdict.ts'
 import type {
   ActivityDoc,
   UserDoc,
@@ -123,15 +124,32 @@ export async function saveVotes(
   )
 }
 
-/** Remove a single verdict from the user's `votes/{uid}` document (undo / delete). */
+/**
+ * Remove a single verdict from the user's `votes/{uid}` document (undo /
+ * delete). `setDoc(merge)` rather than `updateDoc` so it can't throw if the doc
+ * doesn't exist yet (e.g. deleting an activity that was never voted on).
+ */
 export async function removeVote(
   uid: string,
   activityId: string,
 ): Promise<void> {
-  await updateDoc(doc(db(), 'votes', uid), {
-    [`activities.${activityId}`]: deleteField(),
-    updatedAt: serverTimestamp(),
-  })
+  await setDoc(
+    doc(db(), 'votes', uid),
+    { activities: { [activityId]: deleteField() }, updatedAt: serverTimestamp() },
+    { merge: true },
+  )
+}
+
+/** One-shot read of the user's own verdicts, for rehydrating local history on sign-in. */
+export async function getMyVotes(uid: string): Promise<VoteEntry[]> {
+  const snap = await getDoc(doc(db(), 'votes', uid))
+  const data = snap.data() as VotesDoc | undefined
+  if (!data?.activities) return []
+  return Object.entries(data.activities).map(([id, v]) => ({
+    id,
+    verdict: v.verdict,
+    ...(v.quotaHit ? { quotaHit: true } : {}),
+  }))
 }
 
 /** Mirror an activity's full detail into `activities/{id}`. */
@@ -143,17 +161,6 @@ export async function upsertActivity(
     { ...activity, updatedAt: serverTimestamp() },
     { merge: true },
   )
-}
-
-/** Listen to the app version recorded for this user (version-check / force reload). */
-export function subscribeUserVersion(
-  uid: string,
-  cb: (appVersion: string | null) => void,
-): () => void {
-  return onSnapshot(doc(db(), 'users', uid), (snap) => {
-    const data = snap.data() as UserDoc | undefined
-    cb(data?.appVersion ?? null)
-  })
 }
 
 /** Listen to every user's votes (group screen). */

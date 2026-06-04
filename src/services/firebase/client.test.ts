@@ -13,9 +13,9 @@ const m = vi.hoisted(() => ({
     (_auth: unknown, _cb: (u: unknown) => void) => () => {},
   ),
   doc: vi.fn((_db: unknown, ...path: string[]) => ({ path: path.join('/') })),
+  getDoc: vi.fn(),
   collection: vi.fn((_db: unknown, name: string) => ({ collection: name })),
   setDoc: vi.fn(async () => {}),
-  updateDoc: vi.fn(async () => {}),
   onSnapshot: vi.fn((_ref: unknown, _cb: (s: unknown) => void) => () => {}),
   serverTimestamp: vi.fn(() => 'SERVER_TS'),
   deleteField: vi.fn(() => 'DELETE_FIELD'),
@@ -32,8 +32,8 @@ vi.mock('firebase/auth', () => ({
 vi.mock('firebase/firestore', () => ({
   getFirestore: m.getFirestore,
   doc: m.doc,
+  getDoc: m.getDoc,
   setDoc: m.setDoc,
-  updateDoc: m.updateDoc,
   collection: m.collection,
   onSnapshot: m.onSnapshot,
   serverTimestamp: m.serverTimestamp,
@@ -49,7 +49,7 @@ import {
   saveVotes,
   removeVote,
   upsertActivity,
-  subscribeUserVersion,
+  getMyVotes,
   subscribeGroupVotes,
   subscribeRoster,
   subscribeAppVersion,
@@ -169,12 +169,33 @@ describe('firestore writes', () => {
     )
   })
 
-  it('removeVote deletes a single activity field from votes/{uid}', async () => {
+  it('removeVote deletes a single activity field via setDoc merge (create-safe)', async () => {
     await removeVote('u1', 'a042')
-    expect(m.updateDoc).toHaveBeenCalledWith(
+    expect(m.setDoc).toHaveBeenCalledWith(
       { path: 'votes/u1' },
-      { 'activities.a042': 'DELETE_FIELD', updatedAt: 'SERVER_TS' },
+      { activities: { a042: 'DELETE_FIELD' }, updatedAt: 'SERVER_TS' },
+      { merge: true },
     )
+  })
+
+  it('getMyVotes reads votes/{uid} into VoteEntry[]', async () => {
+    m.getDoc.mockResolvedValueOnce({
+      data: () => ({
+        activities: {
+          a001: { verdict: 'oui' },
+          a002: { verdict: 'top', quotaHit: true },
+        },
+      }),
+    })
+    expect(await getMyVotes('u1')).toEqual([
+      { id: 'a001', verdict: 'oui' },
+      { id: 'a002', verdict: 'top', quotaHit: true },
+    ])
+  })
+
+  it('getMyVotes returns [] when the doc is missing', async () => {
+    m.getDoc.mockResolvedValueOnce({ data: () => undefined })
+    expect(await getMyVotes('u1')).toEqual([])
   })
 
   it('publishAppVersion writes config/app with merge', async () => {
@@ -211,22 +232,6 @@ describe('firestore writes', () => {
 })
 
 describe('firestore listeners', () => {
-  it('subscribeUserVersion reports the stored appVersion', () => {
-    let emit: (snap: unknown) => void = () => {}
-    m.onSnapshot.mockImplementationOnce(
-      (_ref: unknown, cb: (s: unknown) => void) => {
-        emit = cb
-        return () => {}
-      },
-    )
-    const cb = vi.fn()
-    subscribeUserVersion('u1', cb)
-    emit({ data: () => ({ appVersion: '9.9.9' }) })
-    expect(cb).toHaveBeenCalledWith('9.9.9')
-    emit({ data: () => undefined })
-    expect(cb).toHaveBeenLastCalledWith(null)
-  })
-
   it('subscribeGroupVotes maps every votes doc', () => {
     let emit: (snap: unknown) => void = () => {}
     m.onSnapshot.mockImplementationOnce(

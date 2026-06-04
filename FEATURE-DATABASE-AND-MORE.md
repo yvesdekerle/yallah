@@ -140,6 +140,18 @@ principale toujours sous le budget 105 kB.
 ---
 
 ## Clôture
-- Review du code produit (perf / sécurité / a11y) + itération sur les points faibles.
+- ✅ **Review du code** (sécurité / perf / correctness) + itération. Corrigé :
+  - **CSP `vercel.json`** : ajout des hôtes Firebase Auth + Firestore
+    (`identitytoolkit`/`securetoken`/`firestore.googleapis.com`/`*.firebaseapp.com`)
+    en `connect-src` + `frame-src` — sans ça, sign-in et Firestore seraient bloqués en prod.
+  - **Rehydratation des votes** (`useRemoteVoteHydration`) : à la connexion/reload Google,
+    les votes de l'utilisateur sont relus depuis `votes/{uid}` et réinjectés dans l'historique
+    local — sinon les votes persistés étaient invisibles (deck vide après connexion).
+  - **Règle `config`** resserrée à `config/app` + `hasOnly(['version','updatedAt'])`.
+  - `removeVote` via `setDoc(merge)` (ne throw plus si le doc n'existe pas) ; suppression du
+    code mort `subscribeUserVersion` ; `useGroupData.members` mémoïsé.
 - Bump du numéro de version + push.
 - Demain : Yves crée le projet Firebase, on teste en prod.
+
+> ℹ️ Si l'`authDomain` Firebase est un domaine personnalisé (pas `*.firebaseapp.com`),
+> ajouter ce domaine dans la CSP (`connect-src` + `frame-src`).
