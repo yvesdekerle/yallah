@@ -33,6 +33,8 @@ export function userActivityToDoc(
     ...(a.journee ? { journee: a.journee } : {}),
     ...(a.insolite ? { insolite: a.insolite } : {}),
     ...(a.coords ? { coords: a.coords } : {}),
+    ...(a.groupMode ? { groupMode: a.groupMode } : {}),
+    ...(a.groupSize ? { groupSize: a.groupSize } : {}),
     ...(a.createdBy ? { createdBy: a.createdBy } : {}),
     ...(photoUrls.length ? { photoUrls } : {}),
   }

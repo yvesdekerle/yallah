@@ -5,6 +5,7 @@ import { Clock, Wallet, StarFilled } from '../icons/index.tsx'
 import { ratingComment } from '../utils/rating.ts'
 import { getReviewSummary } from '../utils/reviewSummary.ts'
 import { shortPrice, formatRating } from '../utils/format.ts'
+import { groupFormatLabel } from '../utils/groupFormat.ts'
 import { DifficultyWarning } from './DifficultyWarning.tsx'
 import { DriveTimes } from './DriveTimes.tsx'
 
@@ -134,6 +135,46 @@ export function DetailMetaTiles({ activity }: { activity: Activity }) {
           label="Prix"
           value={shortPrice(activity.price)}
         />
+      </div>
+
+      {/* Group format — every activity has one (defaults to sub-group). */}
+      <div
+        className="flex items-center font-sans"
+        style={{
+          gap: 10,
+          marginBottom: 18,
+          padding: '12px 14px',
+          background: YB.surface,
+          borderRadius: 14,
+          boxShadow: '0 2px 10px -4px rgba(20,30,50,0.08)',
+        }}
+        aria-label="Format de groupe"
+      >
+        <span aria-hidden style={{ fontSize: 20, lineHeight: 1 }}>
+          👥
+        </span>
+        <span
+          className="font-mono"
+          style={{
+            fontSize: 9.5,
+            letterSpacing: 0.9,
+            color: YB.muted,
+            textTransform: 'uppercase',
+            fontWeight: 700,
+          }}
+        >
+          Format
+        </span>
+        <span
+          style={{
+            marginLeft: 'auto',
+            fontSize: 14,
+            fontWeight: 700,
+            color: YB.ink,
+          }}
+        >
+          {groupFormatLabel(activity)}
+        </span>
       </div>
 
       {(() => {

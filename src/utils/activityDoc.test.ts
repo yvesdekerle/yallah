@@ -40,7 +40,37 @@ describe('userActivityToDoc', () => {
     expect('duration' in doc).toBe(false)
     expect('difficulty' in doc).toBe(false)
     expect('coords' in doc).toBe(false)
+    expect('groupMode' in doc).toBe(false)
+    expect('groupSize' in doc).toBe(false)
     expect('createdBy' in doc).toBe(false)
     expect('photoUrls' in doc).toBe(false)
+  })
+
+  it('mirrors every optional field when present', () => {
+    const doc = userActivityToDoc({
+      ...base,
+      duration: '2 h',
+      difficulty: { dot: '🟢', label: 'Facile' },
+      journee: true,
+      insolite: 'Un détail',
+      coords: { lat: -20.4, lng: 57.3 },
+      groupMode: 'limited',
+      groupSize: 6,
+      createdBy: { uid: 'yves', name: 'Yves' },
+      photoRefs: [{ kind: 'url', url: 'https://x/1.jpg' }],
+    })
+    expect(doc.duration).toBe('2 h')
+    expect(doc.difficulty).toEqual({ dot: '🟢', label: 'Facile' })
+    expect(doc.journee).toBe(true)
+    expect(doc.insolite).toBe('Un détail')
+    expect(doc.coords).toEqual({ lat: -20.4, lng: 57.3 })
+    expect(doc.groupMode).toBe('limited')
+    expect(doc.groupSize).toBe(6)
+  })
+
+  it('mirrors groupMode without a size for non-limited formats', () => {
+    const doc = userActivityToDoc({ ...base, groupMode: 'all' })
+    expect(doc.groupMode).toBe('all')
+    expect('groupSize' in doc).toBe(false)
   })
 })

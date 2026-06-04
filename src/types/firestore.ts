@@ -1,5 +1,5 @@
 import type { Verdict } from './verdict.ts'
-import type { ActivityCreator, Difficulty } from './activity.ts'
+import type { ActivityCreator, Difficulty, GroupMode } from './activity.ts'
 
 export type { ActivityCreator }
 
@@ -55,6 +55,8 @@ export interface ActivityDoc {
   insolite?: string
   photoUrls?: string[]
   coords?: { lat: number; lng: number }
+  groupMode?: GroupMode
+  groupSize?: number
   /** Absent ⇒ curated house pick; present ⇒ added by this user. */
   createdBy?: ActivityCreator
   updatedAt: number | null

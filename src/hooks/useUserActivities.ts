@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Activity, ActivityCreator, Difficulty } from '../types/activity.ts'
+import type {
+  Activity,
+  ActivityCreator,
+  Difficulty,
+  GroupMode,
+} from '../types/activity.ts'
 import type { PhotoRef, StoredUserActivity } from '../types/userActivity.ts'
 import {
   loadUserActivities,
@@ -29,6 +34,8 @@ export interface UserActivityInput {
   secret: boolean
   insolite?: string | undefined
   coords?: { lat: number; lng: number } | undefined
+  groupMode?: GroupMode | undefined
+  groupSize?: number | undefined
   photos: PhotoDraft[]
 }
 
@@ -110,6 +117,17 @@ function buildRecord(
     secret: input.secret,
     ...(input.insolite ? { insolite: input.insolite } : {}),
     ...(input.coords ? { coords: input.coords } : {}),
+    // Persist the group format only when it's non-default (`'all'`/`'limited'`)
+    // — an unset/`'subgroup'` activity stays clean and resolves to the default
+    // via `groupModeOf`. `groupSize` rides along only for a `'limited'` cap.
+    ...(input.groupMode && input.groupMode !== 'subgroup'
+      ? {
+          groupMode: input.groupMode,
+          ...(input.groupMode === 'limited' && input.groupSize
+            ? { groupSize: input.groupSize }
+            : {}),
+        }
+      : {}),
     ...(base.createdBy ? { createdBy: base.createdBy } : {}),
     userAdded: true,
     photoRefs,

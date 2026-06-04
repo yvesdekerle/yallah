@@ -4,6 +4,13 @@ export interface Difficulty {
   detail?: string
 }
 
+/**
+ * Whether the whole trip group should do the activity together, or it can be
+ * split. `'all'` = tous ensemble, `'subgroup'` = en sous-groupe (the default
+ * when unset), `'limited'` = capped to `groupSize` participants.
+ */
+export type GroupMode = 'all' | 'subgroup' | 'limited'
+
 /** Who added a user activity. Curated house picks omit this. */
 export interface ActivityCreator {
   /** Firebase uid (Google) or demo participant id. */
@@ -46,4 +53,8 @@ export interface Activity {
   coords?: { lat: number; lng: number }
   /** Who added it. Absent ⇒ curated house pick. */
   createdBy?: ActivityCreator
+  /** Group format. Absent ⇒ `'subgroup'` (see `groupModeOf`). */
+  groupMode?: GroupMode
+  /** Max participants when `groupMode === 'limited'`. */
+  groupSize?: number
 }
