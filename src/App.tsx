@@ -179,6 +179,31 @@ export default function App({ activities }: AppProps) {
   // follow them across devices (the local-first write path keeps writing them).
   useRemoteVoteHydration(googleUser?.uid ?? null, replaceHistory)
 
+  // Restore the end-of-deck *review* state across reloads / remote hydration.
+  // `reviewMode` and `done` are session-only React state, so a returning user
+  // whose persisted (or Firestore-hydrated) history already covers every
+  // activity would otherwise land on an empty forward deck: topIdx ===
+  // activities.length makes SwipeDeck render null, and `done` defaulting to
+  // false hides the ReviewPrompt too — leaving no card AND no way back to the
+  // votes. We re-enter review mode so the deck comes up walking the votes.
+  //
+  // React 19 setState-during-render (same pattern as SwipeDeck's topIdx sync) —
+  // deliberately not useEffect (avoids the flicker AND the
+  // react-hooks/set-state-in-effect rule). We track the history length and
+  // treat a single +1 growth as the in-session final swipe, left untouched so
+  // the last card keeps its delayed completion animation (→ ReviewPrompt); any
+  // other transition to "all voted" (initial mount, bulk random-fill, Firestore
+  // hydration) restores review mode.
+  const [votedSyncLen, setVotedSyncLen] = useState<number | null>(null)
+  if (votedSyncLen !== history.length) {
+    const isSingleAppend =
+      votedSyncLen !== null && history.length === votedSyncLen + 1
+    setVotedSyncLen(history.length)
+    if (!isSingleAppend && allVoted && !reviewMode && !done) {
+      setReviewMode(true)
+    }
+  }
+
   const {
     detail,
     setDetail,

@@ -256,6 +256,32 @@ describe('App (integration)', () => {
     expect(screen.getByRole('region', { name: /Tu as voté/ })).toBeInTheDocument()
   })
 
+  it('restores review mode on reload when every activity is already voted', () => {
+    // A returning user whose persisted history already covers the whole deck
+    // (e.g. after "remplir aléatoirement" then relaunch). `done`/`reviewMode`
+    // are session-only state, so without restoration the forward deck is empty
+    // (topIdx === activities.length → SwipeDeck renders null) AND the
+    // ReviewPrompt never shows — leaving no card and no way back to the votes.
+    // The deck must come up in review mode instead.
+    window.localStorage.setItem(
+      'yallah.history.v1',
+      JSON.stringify(ACTIVITIES.map((a) => ({ id: a.id, verdict: 'oui' }))),
+    )
+    renderApp()
+    // The review-mode exit pill is present…
+    expect(screen.getByText('Mode révision')).toBeInTheDocument()
+    // …a card is on screen (topIdx reset to 0), not an empty deck…
+    expect(
+      screen.getByRole('heading', {
+        name: 'Snorkeling à Blue Bay Marine Park',
+      }),
+    ).toBeInTheDocument()
+    // …with its previous-vote affordance.
+    expect(
+      screen.getByRole('region', { name: /Tu as voté/ }),
+    ).toBeInTheDocument()
+  })
+
   it('the eye in review mode opens the current card, not allActivities[history.length]', () => {
     renderApp()
     fireEvent.click(screen.getByLabelText('like'))
