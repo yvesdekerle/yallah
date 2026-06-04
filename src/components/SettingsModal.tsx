@@ -11,12 +11,9 @@ import { useModalA11y } from '../hooks/useModalA11y.ts'
 export function SettingsModal({
   version,
   onClose,
-  onGoHome,
 }: {
   version: string
   onClose: () => void
-  /** Return to the welcome screen (clears the current identity / session). */
-  onGoHome: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
   useModalA11y(ref, { onClose })
@@ -103,24 +100,6 @@ export function SettingsModal({
             Ouvrir ↗
           </span>
         </a>
-
-        <button
-          type="button"
-          onClick={onGoHome}
-          className="font-sans cursor-pointer w-full"
-          style={{
-            marginTop: 24,
-            padding: '13px 0',
-            borderRadius: 99,
-            background: YB.coral,
-            color: '#fff',
-            fontWeight: 700,
-            fontSize: 15,
-            border: 'none',
-          }}
-        >
-          ← Retour à l'accueil
-        </button>
       </div>
     </div>
   )

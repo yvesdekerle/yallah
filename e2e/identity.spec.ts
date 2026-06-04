@@ -73,6 +73,29 @@ test('"Changer d\'identité" reopens the dismissable picker', async ({
   await expect(page.getByTestId('participant-ade')).toContainText('toi')
 })
 
+test('the demo profile menu logs out (→ welcome) and opens Réglages', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.getByTestId('picker-row-chloe').click()
+  await expect(page.getByRole('dialog', { name: 'Tu es qui ?' })).toHaveCount(0)
+
+  // Demo mode now shows the profile avatar (item 4). "Paramètres" opens Réglages.
+  await page.getByLabel('Compte de Chloé').click()
+  await page.getByRole('menuitem', { name: 'Paramètres' }).click()
+  await expect(page.getByRole('dialog', { name: 'Réglages' })).toBeVisible()
+  await page.getByLabel('fermer les réglages').click()
+
+  // "Se déconnecter" returns to the welcome screen and clears the identity.
+  await page.getByLabel('Compte de Chloé').click()
+  await page.getByRole('menuitem', { name: 'Se déconnecter' }).click()
+  await expect(page.getByRole('button', { name: 'Mode démo' })).toBeVisible()
+  const stored = await page.evaluate(() =>
+    window.localStorage.getItem('yallah.userId.v1'),
+  )
+  expect(stored).toBeNull()
+})
+
 test('Réinitialiser wipes the chosen identity and the welcome screen returns', async ({
   page,
 }) => {

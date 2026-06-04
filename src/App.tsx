@@ -190,6 +190,24 @@ export default function App({ activities }: AppProps) {
   // an already-identified demo user taps "Changer d'identité".
   const showPicker = (!signedIn && demoStarted) || changingIdentity
 
+  // The identity shown in the TopBar profile avatar + menu — Google profile
+  // (real picture) or, in demo mode, the chosen participant (coloured initial
+  // disc stands in for the photo).
+  const profile = useMemo(() => {
+    if (googleUser) {
+      return {
+        name: googleUser.name,
+        ...(googleUser.picture ? { picture: googleUser.picture } : {}),
+        color: YB.coral,
+      }
+    }
+    if (userId) {
+      const p = PARTICIPANTS.find((x) => x.id === userId)
+      if (p) return { name: p.name, color: p.color }
+    }
+    return null
+  }, [googleUser, userId])
+
   const handleVerdict = useCallback(
     (activity: Activity, verdict: Verdict, meta?: { quotaHit?: boolean }) => {
       if (reviewMode) {
@@ -264,24 +282,10 @@ export default function App({ activities }: AppProps) {
 
   // Sign out of Google → back to the welcome screen. History is left as-is (the
   // next sign-in / demo pick clears it); use "Réinitialiser" to wipe votes too.
+  // Log out of whichever identity is active (Google OR demo) → back to the
+  // welcome screen. History is left as-is (the next sign-in / demo pick clears
+  // it); "Réinitialiser" wipes votes too.
   const handleLogout = useCallback(() => {
-    void signOutFirebase()
-    setGoogleUser(null)
-    setDemoStarted(false)
-    setDone(false)
-    setReviewMode(false)
-    setActiveTab(0)
-  }, [setGoogleUser])
-
-  const handleGoogleError = useCallback(() => {
-    showToast('Connexion Google échouée', '⚠️')
-  }, [showToast])
-
-  // "Retour à l'accueil" from Réglages: drop the current identity (Google or
-  // demo) and land back on the welcome screen. History is left intact (the next
-  // sign-in / demo pick clears it), matching logout semantics.
-  const handleReturnHome = useCallback(() => {
-    setSettingsOpen(false)
     void signOutFirebase()
     setGoogleUser(null)
     setUserId(null)
@@ -291,6 +295,10 @@ export default function App({ activities }: AppProps) {
     setReviewMode(false)
     setActiveTab(0)
   }, [setGoogleUser, setUserId])
+
+  const handleGoogleError = useCallback(() => {
+    showToast('Connexion Google échouée', '⚠️')
+  }, [showToast])
 
   const handleReview = useCallback(() => {
     setDone(false)
@@ -453,8 +461,9 @@ export default function App({ activities }: AppProps) {
         <StatusBar />
         <TopBar
           onSecretOpen={() => setSettingsOpen(true)}
-          googleUser={googleUser}
+          profile={profile}
           onLogout={handleLogout}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
 
         {/* Tabs stay MOUNTED — switching just toggles visibility. Avoids
@@ -620,7 +629,6 @@ export default function App({ activities }: AppProps) {
             open: settingsOpen,
             version: APP_VERSION,
             onClose: () => setSettingsOpen(false),
-            onGoHome: handleReturnHome,
           }}
           filter={{
             open: filterOpen,

@@ -28,10 +28,10 @@ Suivi du chantier. **On traite point par point**, un commit par feature, tests �
 | # | Item | Statut |
 |---|------|--------|
 | **1** | Fondation Firebase : config + Auth Google + modèle de données Firestore + script de seed + règles de sécurité + récap des données | ✅ fait |
-| **3** | Profil : afficher le **nom** (pas le mail) + entrée **« Paramètres »** (→ page réglages) | ⏳ |
-| **4** | Fausse photo de profil + même menu en **mode démo** | ⏳ |
-| **5** | « Se déconnecter » → **page d'accueil** pour les 2 types de profil | ⏳ |
-| **6** | Réglages : **supprimer** le bouton « Retour à l'accueil » | ⏳ |
+| **3** | Profil : afficher le **nom** (pas le mail) + entrée **« Paramètres »** (→ page réglages) | ✅ |
+| **4** | Fausse photo de profil + même menu en **mode démo** | ✅ |
+| **5** | « Se déconnecter » → **page d'accueil** pour les 2 types de profil | ✅ |
+| **6** | Réglages : **supprimer** le bouton « Retour à l'accueil » | ✅ |
 | **8** | Activités : champ **« créé par »** (nom/prénom conservé) | ⏳ |
 | **2** | Version par utilisateur en BDD : comparer vs version app, **recharger** si différent | ⏳ |
 | **9** | Groupe (mode Google) : **vrais** utilisateurs (tri alpha par prénom) + **vrais** votes ; idem écran fullscreen votes-sous-carte. Règle « révélés quand ton deck est fini » conservée | ⏳ |

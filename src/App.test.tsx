@@ -304,16 +304,21 @@ describe('App (integration)', () => {
     expect(stored[0]).toMatchObject({ id: 'a001', verdict: 'oui' })
   })
 
-  it('"Retour à l\'accueil" from Réglages returns to the welcome screen', () => {
+  it('logging out from the demo profile menu returns to the welcome screen', () => {
     renderApp()
-    // Open the hidden settings page via 5 taps on the wordmark.
-    const mark = screen.getByText('yallah')
-    for (let i = 0; i < 5; i++) fireEvent.click(mark)
-    expect(screen.getByRole('dialog', { name: 'Réglages' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Retour à l'accueil/ }))
+    // Demo mode now shows the profile avatar too (item 4).
+    fireEvent.click(screen.getByLabelText('Compte de Yves'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Se déconnecter' }))
     // Welcome screen is back and the demo identity has been cleared.
     expect(screen.getByRole('button', { name: 'Mode démo' })).toBeInTheDocument()
     expect(window.localStorage.getItem('yallah.userId.v1')).toBeNull()
+  })
+
+  it('opens Réglages from the demo profile menu "Paramètres" entry', () => {
+    renderApp()
+    fireEvent.click(screen.getByLabelText('Compte de Yves'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Paramètres' }))
+    expect(screen.getByRole('dialog', { name: 'Réglages' })).toBeInTheDocument()
   })
 
   it('the eye button toggles the detail modal closed when already open', () => {
