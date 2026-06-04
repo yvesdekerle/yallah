@@ -20,6 +20,7 @@ import { SwipeScreen } from './components/SwipeScreen.tsx'
 import { ResultsScreen } from './components/ResultsScreen.tsx'
 import { GroupScreen } from './components/GroupScreen.tsx'
 import { WelcomeScreen } from './components/WelcomeScreen.tsx'
+import { TigerPop } from './components/TigerPop.tsx'
 import { GoogleButton } from './components/GoogleButton.tsx'
 import { GoogleSignInButton } from './components/GoogleSignInButton.tsx'
 import {
@@ -79,6 +80,14 @@ export default function App({ activities }: AppProps) {
   // except via logout/reset, which reset this).
   const [demoStarted, setDemoStarted] = useState(false)
   const [changingIdentity, setChangingIdentity] = useState(false)
+  // One-time "Tié un tigre !" welcome — plays on the very first identification
+  // (Google sign-in OR demo pick), then never again. `tigerSeen` is a
+  // persistent "seen once, ever" flag; `showTiger` is the session toggle.
+  const [tigerSeen, setTigerSeen] = useLocalStorage<boolean>(
+    STORAGE_KEYS.tigerSeen,
+    false,
+  )
+  const [showTiger, setShowTiger] = useState(false)
   // The swipe screen's mode is two *independent* flags, deliberately not a
   // `'swiping' | 'review' | 'done'` union (ARCH-09): `done` (the current pass
   // reached the end → show the ReviewPrompt) and `reviewMode` (re-walking to
@@ -317,6 +326,14 @@ export default function App({ activities }: AppProps) {
     deckRef.current?.commit(verdict)
   }, [])
 
+  // Fire the one-time tiger welcome the first time the user identifies (either
+  // path). The persistent flag makes it a no-op on every subsequent sign-in.
+  const maybeRoarTiger = useCallback(() => {
+    if (tigerSeen) return
+    setTigerSeen(true)
+    setShowTiger(true)
+  }, [tigerSeen, setTigerSeen])
+
   const handleReset = useCallback(() => {
     // Wipe only the votes — the user stays signed in and on the Résultats tab.
     // Locally that's the history; remotely it drops the `activities` map from
@@ -340,8 +357,9 @@ export default function App({ activities }: AppProps) {
       setReviewMode(false)
       setActiveTab(0)
       showToast(`Salut ${user.name}`, '👋')
+      maybeRoarTiger()
     },
-    [clearHistory, setUserId, setGoogleUser, showToast],
+    [clearHistory, setUserId, setGoogleUser, showToast, maybeRoarTiger],
   )
 
   // Sign out of Google → back to the welcome screen. History is left as-is (the
@@ -392,8 +410,10 @@ export default function App({ activities }: AppProps) {
       )
       void saveVotes(googleUser.uid, googleUser.name, values)
     }
-    // Everything's now voted → land on the "Revoir les votes ?" prompt.
-    setDone(true)
+    // Everything's now voted → drop into review mode (uniform with finishing
+    // the forward pass and with a reload-restore), so the user can re-walk and
+    // adjust the freshly generated votes.
+    setReviewMode(true)
     showToast(`${added.length} votes générés aléatoirement`, '🎲')
   }, [randomFillVotes, showToast, googleUser])
 
@@ -456,8 +476,9 @@ export default function App({ activities }: AppProps) {
         wasOnboarding ? `Salut ${name}` : `Tu es maintenant ${name}`,
         wasOnboarding ? '👋' : '✨',
       )
+      maybeRoarTiger()
     },
-    [userId, clearHistory, setUserId, setGoogleUser, showToast],
+    [userId, clearHistory, setUserId, setGoogleUser, showToast, maybeRoarTiger],
   )
 
   // Vote handler that's wired into the detail modal. Behaviour depends on
@@ -479,11 +500,21 @@ export default function App({ activities }: AppProps) {
   )
 
   // Deck exhausted. Exhausting a *filtered* subset doesn't mean every activity
-  // is voted — don't trigger the global "Revoir les votes ?" in that case.
+  // is voted — don't trigger the end-of-deck behaviour in that case.
+  //
+  // Uniform end-of-deck: finishing the *forward* pass drops straight into
+  // review mode — the exact state a reload/hydration restores (see the
+  // votedSyncLen sync above) — instead of the ReviewPrompt. Finishing a
+  // *review* re-walk instead surfaces the ReviewPrompt ("tout revu"). Delayed
+  // by EXIT_MS so the last card finishes its exit animation before the deck
+  // flips to the review layout (topIdx → 0).
   const handleComplete = useCallback(() => {
     if (filterActive) return
-    window.setTimeout(() => setDone(true), EXIT_MS)
-  }, [filterActive])
+    window.setTimeout(() => {
+      if (reviewMode) setDone(true)
+      else setReviewMode(true)
+    }, EXIT_MS)
+  }, [filterActive, reviewMode])
 
   const handleOpenDetailFromSwipe = useCallback(
     (a: Activity) => setDetail({ activity: a, source: 'swipe' }),
@@ -623,6 +654,8 @@ export default function App({ activities }: AppProps) {
         )}
 
         <BottomNav active={activeTab} onChange={setActiveTab} />
+
+        {showTiger && <TigerPop onDone={() => setShowTiger(false)} />}
 
         {showWelcome && (
           <WelcomeScreen

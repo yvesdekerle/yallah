@@ -541,16 +541,23 @@ describe('App — deck completion & filtering (tiny deck)', () => {
     })
   }
 
-  it('completing the whole deck lands on the review prompt', () => {
+  it('completing the whole forward deck drops straight into review mode', () => {
+    // Uniform end-of-deck: finishing the forward pass enters review mode
+    // (matching a reload-restore), NOT the ReviewPrompt. The exit pill + the
+    // re-walked card 1 + its "tu as voté" affordance prove we're in review.
     renderTiny()
     voteBoth()
-    expect(screen.getByTestId('review-prompt')).toBeInTheDocument()
+    expect(screen.queryByTestId('review-prompt')).not.toBeInTheDocument()
+    expect(screen.getByText('Mode révision')).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: /Tu as voté/ }),
+    ).toBeInTheDocument()
   })
 
   it('exiting review mode while everything is voted returns to the review prompt', () => {
     renderTiny()
     voteBoth()
-    fireEvent.click(screen.getByLabelText('revoir les votes'))
+    // Completion already dropped us into review mode (no prompt to dismiss).
     expect(screen.getByText('Mode révision')).toBeInTheDocument()
     fireEvent.click(screen.getByLabelText('quitter le mode révision'))
     expect(screen.getByText('Mode révision terminé')).toBeInTheDocument()
@@ -584,6 +591,45 @@ describe('App — deck completion & filtering (tiny deck)', () => {
       vi.advanceTimersByTime(1200)
     })
     expect(screen.queryByTestId('review-prompt')).not.toBeInTheDocument()
+  })
+})
+
+describe('App — first-sign-in tiger', () => {
+  beforeEach(() => {
+    // No userId seeded → the app starts on the onboarding (welcome) flow.
+    window.localStorage.clear()
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('plays the tiger pop on the first demo identity pick, then never again', () => {
+    render(<App activities={TINY} />)
+    // Welcome → start demo → pick an identity (first ever identification).
+    fireEvent.click(screen.getByText('Mode démo'))
+    fireEvent.click(screen.getByTestId('picker-row-yves'))
+    expect(screen.getByText('Tié un tigre !')).toBeInTheDocument()
+    // The "seen once, ever" flag is persisted.
+    expect(window.localStorage.getItem('yallah.tigerSeen.v1')).toBe('true')
+    // It auto-dismisses.
+    act(() => {
+      vi.advanceTimersByTime(2600)
+    })
+    expect(screen.queryByText('Tié un tigre !')).not.toBeInTheDocument()
+    // Changing identity later does NOT roar again.
+    fireEvent.click(screen.getByLabelText('groupe'))
+    fireEvent.click(screen.getByText("Changer d'identité"))
+    fireEvent.click(screen.getByTestId('picker-row-chloe'))
+    expect(screen.queryByText('Tié un tigre !')).not.toBeInTheDocument()
+  })
+
+  it('does not play the tiger when it has already been seen', () => {
+    window.localStorage.setItem('yallah.tigerSeen.v1', 'true')
+    render(<App activities={TINY} />)
+    fireEvent.click(screen.getByText('Mode démo'))
+    fireEvent.click(screen.getByTestId('picker-row-yves'))
+    expect(screen.queryByText('Tié un tigre !')).not.toBeInTheDocument()
   })
 })
 
