@@ -20,6 +20,13 @@ describe('vercel.json security headers — Google SSO', () => {
     expect(csp).toContain('https://accounts.google.com/gsi/client')
   })
 
+  it('allows loading the gapi script that Firebase Auth signInWithPopup needs', () => {
+    // Firebase Auth's popup flow loads https://apis.google.com/js/api.js to
+    // build its auth iframe — without this in script-src the popup is CSP-blocked.
+    const scriptSrc = /script-src ([^;]*)/.exec(csp)?.[1] ?? ''
+    expect(scriptSrc).toContain('https://apis.google.com')
+  })
+
   it('allows connecting to Google for the token + userinfo fetch', () => {
     expect(csp).toContain('https://accounts.google.com')
     expect(csp).toContain('https://www.googleapis.com')
