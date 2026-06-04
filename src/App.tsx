@@ -31,6 +31,7 @@ import {
 } from './services/firebase/api.ts'
 import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
 import { useVersionGate } from './hooks/useVersionGate.ts'
+import { useGroupData } from './hooks/useGroupData.ts'
 import { userActivityToDoc } from './utils/activityDoc.ts'
 import type { ActivityCreator } from './types/activity.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
@@ -120,6 +121,10 @@ export default function App({ activities }: AppProps) {
   // the version gate compares the running build against the global
   // config/app.version in Firestore). No-op in demo / without Firebase.
   useVersionGate(googleUser !== null)
+
+  // Real signed-in members + their votes (Google mode) — drives the Groupe tab
+  // and the detail "Le groupe" panel. Empty in demo mode / without Firebase.
+  const { members: groupMembers } = useGroupData(googleUser !== null)
 
   const {
     userActivities,
@@ -545,6 +550,7 @@ export default function App({ activities }: AppProps) {
             currentUserProgress={history.length}
             total={allActivities.length}
             onChangeIdentity={() => setChangingIdentity(true)}
+            members={groupMembers}
           />
         </div>
 
@@ -600,6 +606,7 @@ export default function App({ activities }: AppProps) {
           activities={allActivities}
           userId={userId}
           currentUserId={currentUserId}
+          members={googleUser ? groupMembers : null}
           superRemaining={superRemaining}
           detail={{
             state: detail,

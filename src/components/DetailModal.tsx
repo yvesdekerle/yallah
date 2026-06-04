@@ -11,6 +11,7 @@ import { DetailMetaTiles } from './DetailMetaTiles.tsx'
 import { DetailBody } from './DetailBody.tsx'
 import { DetailMap } from './DetailMap.tsx'
 import { DetailGroupVotes } from './DetailGroupVotes.tsx'
+import type { GroupMember } from '../hooks/useGroupData.ts'
 import type { MapView } from '../types/map.ts'
 
 interface DetailModalProps {
@@ -26,12 +27,13 @@ interface DetailModalProps {
   /** True once the local user has voted on every activity. Gates the
       "Le groupe" votes panel — placeholder before, reveal after. */
   meDone?: boolean
-  /** Id of the local user — used to slot the real verdict in the group panel. */
-  userId?: string | null
-  /** Active identity id (Google uid or demo id) — flags "créé par toi". */
+  /** Active identity id (Google uid or demo id) — slots the real verdict in the
+      group panel + flags "créé par toi". */
   currentUserId?: string | null
   /** Local user's verdict for this activity, if any. */
   myVerdict?: Verdict | null
+  /** Real signed-in members + votes (Google mode); null in demo mode. */
+  members?: GroupMember[] | null
 }
 
 /**
@@ -47,9 +49,9 @@ export function DetailModal({
   superRemaining,
   onOpenMap,
   meDone = false,
-  userId = null,
   currentUserId = null,
   myVerdict = null,
+  members = null,
 }: DetailModalProps) {
   const [open, setOpen] = useState(false)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
@@ -145,8 +147,9 @@ export function DetailModal({
           <DetailGroupVotes
             activity={activity}
             meDone={meDone}
-            userId={userId}
+            currentUserId={currentUserId}
             myVerdict={myVerdict}
+            members={members}
           />
         </div>
 

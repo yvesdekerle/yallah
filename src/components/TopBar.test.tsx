@@ -30,7 +30,7 @@ describe('TopBar — hidden settings gesture', () => {
 
 describe('TopBar — profile avatar', () => {
   const profile = {
-    name: 'Yves',
+    name: 'Mathieu',
     color: '#FF8A00',
     picture: 'https://lh3.googleusercontent.com/a/abc',
   }
@@ -50,7 +50,7 @@ describe('TopBar — profile avatar', () => {
         onOpenSettings={onOpenSettings}
       />,
     )
-    const avatar = screen.getByLabelText('Compte de Yves')
+    const avatar = screen.getByLabelText('Compte de Mathieu')
     expect(avatar).toBeInTheDocument()
     // Menu hidden until opened.
     expect(screen.queryByText('Se déconnecter')).not.toBeInTheDocument()

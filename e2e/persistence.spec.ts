@@ -7,7 +7,7 @@ test('votes survive a page reload', async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('yves'))
+    window.localStorage.setItem('yallah.userId.v1', JSON.stringify('mathieu'))
   })
   await page.reload({ waitUntil: 'domcontentloaded' })
 

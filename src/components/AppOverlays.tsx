@@ -6,6 +6,7 @@ import { DetailModal } from './DetailModal.tsx'
 import { AppConfirmModals } from './AppConfirmModals.tsx'
 import { IdentityPicker } from './IdentityPicker.tsx'
 import { MapOverlay } from './MapOverlay.tsx'
+import type { GroupMember } from '../hooks/useGroupData.ts'
 import { SettingsModal } from './SettingsModal.tsx'
 import { TagFilterSheet } from './TagFilterSheet.tsx'
 
@@ -68,6 +69,8 @@ interface AppOverlaysProps {
   userId: string | null
   /** Active identity id (Google uid or demo id) — flags "créé par toi". */
   currentUserId: string | null
+  /** Real signed-in members + votes (Google mode); null in demo mode. */
+  members: GroupMember[] | null
   superRemaining: number
   // Each overlay's state + callbacks, grouped to keep the wiring legible.
   detail: DetailOverlay
@@ -97,6 +100,7 @@ export function AppOverlays({
   activities,
   userId,
   currentUserId,
+  members,
   superRemaining,
   detail,
   map,
@@ -121,9 +125,9 @@ export function AppOverlays({
           onVerdict={detail.onVerdict}
           onOpenMap={detail.onOpenMap}
           meDone={meDone}
-          userId={userId}
           currentUserId={currentUserId}
           myVerdict={myVerdict}
+          members={members}
         />
       )}
 

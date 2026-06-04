@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
 import { PARTICIPANTS } from '../data/participants.ts'
 import type { GoogleUser } from '../types/user.ts'
+import type { GroupMember } from '../hooks/useGroupData.ts'
 import { YB } from '../utils/theme.ts'
+import { avatarColor } from '../utils/avatarColor.ts'
 import { AvatarPill } from './AvatarPill.tsx'
 
 interface GroupScreenProps {
@@ -13,9 +16,11 @@ interface GroupScreenProps {
   total: number
   /** Open the IdentityPicker (demo mode only). */
   onChangeIdentity: () => void
-  /** When set (Google mode), prepends a "toi" row with the Google identity and
-      hides the "Changer d'identité" button. */
+  /** When set (Google mode), the screen shows the real signed-in users (no
+      hard-coded participants) and hides "Changer d'identité". */
   googleUser?: GoogleUser | null
+  /** Real signed-in members + their votes (Google mode). */
+  members?: GroupMember[]
 }
 
 /** One participant/identity row: avatar, name, optional "toi" badge, progress
@@ -124,11 +129,14 @@ function ProgressRow({
 }
 
 /**
- * "Groupe" tab — hard-coded list of the 9 participants. Each row shows a
- * per-person progress bar: real for the local user, faked-but-stable for the
- * others. When signed in with Google, a "toi" row for the Google identity is
- * prepended (the 9 hard-coded names stay unchanged) and "Changer d'identité"
- * is hidden — identity switching is a demo-only affordance.
+ * "Groupe" tab. Two modes:
+ * - **Demo**: the 9 hard-coded participants, progress real for the local user
+ *   and faked-but-stable for the others; "Changer d'identité" is shown.
+ * - **Google**: the real signed-in users (from the Firestore roster), sorted
+ *   alphabetically by first name, with their real vote counts; no hard-coded
+ *   names, no "Changer d'identité".
+ * Both keep the reveal rule: others' progress is masked until the local user
+ * finishes their own deck.
  */
 export function GroupScreen({
   currentUserId,
@@ -136,8 +144,32 @@ export function GroupScreen({
   total,
   onChangeIdentity,
   googleUser,
+  members = [],
 }: GroupScreenProps) {
   const meDone = total > 0 && currentUserProgress >= total
+
+  // Google mode: the real signed-in users, sorted alpha by first name, with the
+  // current user guaranteed present (the roster write may lag the first render).
+  const googleRows = useMemo(() => {
+    if (!googleUser) return []
+    const withMe = members.some((m) => m.uid === googleUser.uid)
+      ? members
+      : [
+          ...members,
+          {
+            uid: googleUser.uid,
+            name: googleUser.name,
+            voteCount: currentUserProgress,
+            votes: {},
+          },
+        ]
+    return [...withMe].sort((a, b) =>
+      a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }),
+    )
+  }, [googleUser, members, currentUserProgress])
+
+  const peopleCount = googleUser ? googleRows.length : PARTICIPANTS.length
+
   return (
     <div
       className="absolute inset-0 z-[1] overflow-y-auto font-sans"
@@ -164,7 +196,7 @@ export function GroupScreen({
             lineHeight: 1.45,
           }}
         >
-          {PARTICIPANTS.length} personnes pour Maurice — novembre 2026.
+          {peopleCount} personnes pour Maurice — novembre 2026.
         </p>
 
         {!meDone && (
@@ -190,34 +222,41 @@ export function GroupScreen({
         )}
 
         <div className="flex flex-col" style={{ gap: 8 }}>
-          {googleUser && (
-            <ProgressRow
-              testId="participant-me-google"
-              initial={(googleUser.name[0] ?? '?').toUpperCase()}
-              color={YB.coral}
-              name={googleUser.name}
-              isMe
-              reveal
-              progress={currentUserProgress}
-              total={total}
-            />
-          )}
-          {PARTICIPANTS.map((p) => {
-            const isMe = currentUserId !== null && p.id === currentUserId
-            return (
-              <ProgressRow
-                key={p.id}
-                testId={`participant-${p.id}`}
-                initial={p.initial}
-                color={p.color}
-                name={p.name}
-                isMe={isMe}
-                reveal={isMe || meDone}
-                progress={isMe ? currentUserProgress : (p.fakeProgress ?? 0)}
-                total={total}
-              />
-            )
-          })}
+          {googleUser
+            ? googleRows.map((m) => {
+                const isMe = m.uid === googleUser.uid
+                return (
+                  <ProgressRow
+                    key={m.uid}
+                    testId={
+                      isMe ? 'participant-me-google' : `participant-g-${m.uid}`
+                    }
+                    initial={(m.name[0] ?? '?').toUpperCase()}
+                    color={isMe ? YB.coral : avatarColor(m.uid)}
+                    name={m.name}
+                    isMe={isMe}
+                    reveal={isMe || meDone}
+                    progress={isMe ? currentUserProgress : m.voteCount}
+                    total={total}
+                  />
+                )
+              })
+            : PARTICIPANTS.map((p) => {
+                const isMe = currentUserId !== null && p.id === currentUserId
+                return (
+                  <ProgressRow
+                    key={p.id}
+                    testId={`participant-${p.id}`}
+                    initial={p.initial}
+                    color={p.color}
+                    name={p.name}
+                    isMe={isMe}
+                    reveal={isMe || meDone}
+                    progress={isMe ? currentUserProgress : (p.fakeProgress ?? 0)}
+                    total={total}
+                  />
+                )
+              })}
         </div>
 
         {!googleUser && (

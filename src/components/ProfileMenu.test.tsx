@@ -3,10 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { ProfileMenu } from './ProfileMenu.tsx'
 import { YB } from '../utils/theme.ts'
 
-const base = { name: 'Yves', color: YB.coral }
+const base = { name: 'Mathieu', color: YB.coral }
 
 function open() {
-  fireEvent.click(screen.getByLabelText('Compte de Yves'))
+  fireEvent.click(screen.getByLabelText('Compte de Mathieu'))
 }
 
 describe('ProfileMenu', () => {
@@ -17,7 +17,7 @@ describe('ProfileMenu', () => {
     open()
     expect(
       screen.getByRole('menu', { name: 'Menu du compte' }),
-    ).toHaveTextContent('Yves')
+    ).toHaveTextContent('Mathieu')
     expect(screen.queryByText(/@/)).not.toBeInTheDocument()
     expect(
       screen.getByRole('menuitem', { name: 'Paramètres' }),
@@ -41,7 +41,7 @@ describe('ProfileMenu', () => {
       <ProfileMenu {...base} onLogout={() => {}} onOpenSettings={() => {}} />,
     )
     expect(document.querySelector('img')).toBeNull()
-    expect(screen.getByText('Y')).toBeInTheDocument()
+    expect(screen.getByText('M')).toBeInTheDocument()
   })
 
   it('falls back to the initial when the picture fails to load', () => {
@@ -57,7 +57,7 @@ describe('ProfileMenu', () => {
     expect(img).toBeInTheDocument()
     fireEvent.error(img)
     expect(document.querySelector('img')).toBeNull()
-    expect(screen.getByText('Y')).toBeInTheDocument()
+    expect(screen.getByText('M')).toBeInTheDocument()
   })
 
   it('fires onOpenSettings and onLogout from the menu items', () => {

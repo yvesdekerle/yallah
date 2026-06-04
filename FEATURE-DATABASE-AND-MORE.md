@@ -34,7 +34,7 @@ Suivi du chantier. **On traite point par point**, un commit par feature, tests �
 | **6** | Réglages : **supprimer** le bouton « Retour à l'accueil » | ✅ |
 | **8** | Activités : champ **« créé par »** (nom/prénom conservé) | ✅ |
 | **2** | Version par utilisateur en BDD : comparer vs version app, **recharger** si différent | ✅ |
-| **9** | Groupe (mode Google) : **vrais** utilisateurs (tri alpha par prénom) + **vrais** votes ; idem écran fullscreen votes-sous-carte. Règle « révélés quand ton deck est fini » conservée | ⏳ |
+| **9** | Groupe (mode Google) : **vrais** utilisateurs (tri alpha par prénom) + **vrais** votes ; idem écran fullscreen votes-sous-carte. Règle « révélés quand ton deck est fini » conservée | ✅ |
 
 > L'item 1 est fait en premier car tout le reste s'appuie sur l'identité (uid) et la DB.
 > L'auth switch (`@react-oauth/google` → Firebase Auth) est inclus dans l'item 1.
