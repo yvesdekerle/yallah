@@ -120,12 +120,27 @@ export default {
           '0%': { transform: 'translate(-50%, 8px)', opacity: '0' },
           '100%': { transform: 'translate(-50%, 0)', opacity: '1' },
         },
+        // "Comes from far away and pops": tiny + transparent → overshoot →
+        // settle. Used by the one-time TigerPop welcome.
+        yallahTigerPop: {
+          '0%': { transform: 'scale(0.08)', opacity: '0' },
+          '55%': { transform: 'scale(1.18)', opacity: '1' },
+          '72%': { transform: 'scale(0.92)', opacity: '1' },
+          '86%': { transform: 'scale(1.05)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        yallahFadeUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
       },
       animation: {
         yallahHaloPulse: 'yallahHaloPulse 600ms cubic-bezier(.2,.7,.3,1) forwards',
         yallahBadgePop: 'yallahBadgePop 850ms cubic-bezier(.2,.9,.3,1) forwards',
         yallahFlash: 'yallahFlash 700ms ease-out forwards',
         yallahToast: 'yallahToast 0.3s ease-out',
+        yallahTigerPop: 'yallahTigerPop 720ms cubic-bezier(.2,.7,.3,1) forwards',
+        yallahFadeUp: 'yallahFadeUp 360ms ease-out 420ms both',
       },
     },
   },

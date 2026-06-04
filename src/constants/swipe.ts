@@ -29,4 +29,7 @@ export const STORAGE_KEYS = {
   userId: 'yallah.userId.v1',
   tagFilter: 'yallah.tagFilter.v1',
   googleUser: 'yallah.googleUser.v1',
+  // True once the one-time "Tié un tigre !" welcome has played. Never cleared
+  // (not on logout/reset) — it's a "seen once, ever" flag per device.
+  tigerSeen: 'yallah.tigerSeen.v1',
 } as const
