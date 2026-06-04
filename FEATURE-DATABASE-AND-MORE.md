@@ -33,7 +33,7 @@ Suivi du chantier. **On traite point par point**, un commit par feature, tests �
 | **5** | « Se déconnecter » → **page d'accueil** pour les 2 types de profil | ✅ |
 | **6** | Réglages : **supprimer** le bouton « Retour à l'accueil » | ✅ |
 | **8** | Activités : champ **« créé par »** (nom/prénom conservé) | ✅ |
-| **2** | Version par utilisateur en BDD : comparer vs version app, **recharger** si différent | ⏳ |
+| **2** | Version par utilisateur en BDD : comparer vs version app, **recharger** si différent | ✅ |
 | **9** | Groupe (mode Google) : **vrais** utilisateurs (tri alpha par prénom) + **vrais** votes ; idem écran fullscreen votes-sous-carte. Règle « révélés quand ton deck est fini » conservée | ⏳ |
 
 > L'item 1 est fait en premier car tout le reste s'appuie sur l'identité (uid) et la DB.
@@ -52,10 +52,16 @@ Suivi du chantier. **On traite point par point**, un commit par feature, tests �
 - `firestore.rules` (chacun n'écrit que ses votes / le doc version de son uid).
 - **Récap des données en BDD** (voir ci-dessous, livrable de l'item).
 
-### 2. Version par utilisateur
-- Doc Firestore `users/{uid}.appVersion`. À la connexion + via listener temps réel
-  (`onSnapshot`) : si version serveur ≠ version app embarquée ⇒ reload (recommandation :
-  écouter en continu plutôt qu'au changement de page, couvre tous les cas).
+### 2. Version par utilisateur ✅
+- **Par utilisateur** : `users/{uid}.appVersion` écrit à chaque connexion (item 1, audit).
+- **Force-reload (recommandation suivie)** : doc global `config/app.version`. Chaque
+  client connecté l'écoute en **temps réel** (`onSnapshot`, `useVersionGate`) :
+  - version DB > build courant ⇒ l'onglet est périmé ⇒ `reload()` (1× par version cible,
+    garde anti-boucle en sessionStorage) ;
+  - build courant > DB (ou DB vide) ⇒ on **publie** notre version (le 1er onglet sur le
+    nouveau build publie, les autres se rechargent).
+  Couvre tous les cas sans dépendre d'un changement de page. Comparaison via
+  `utils/version.compareVersions` (numérique par segment). Mode Google uniquement.
 
 ### 3. Profil affiche le nom + entrée Paramètres
 - `ProfileMenu` : remplacer `user.email` par `user.name`. Ajouter une entrée « Paramètres »

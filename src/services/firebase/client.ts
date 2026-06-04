@@ -171,3 +171,22 @@ export function subscribeRoster(cb: (users: UserDoc[]) => void): () => void {
     cb(snap.docs.map((d) => d.data() as UserDoc))
   })
 }
+
+/** Listen to the global published app version (`config/app.version`). */
+export function subscribeAppVersion(
+  cb: (version: string | null) => void,
+): () => void {
+  return onSnapshot(doc(db(), 'config', 'app'), (snap) => {
+    const data = snap.data() as { version?: string } | undefined
+    cb(data?.version ?? null)
+  })
+}
+
+/** Publish this build's version as the global latest (`config/app.version`). */
+export async function publishAppVersion(version: string): Promise<void> {
+  await setDoc(
+    doc(db(), 'config', 'app'),
+    { version, updatedAt: serverTimestamp() },
+    { merge: true },
+  )
+}

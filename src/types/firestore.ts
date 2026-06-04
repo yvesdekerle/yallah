@@ -60,6 +60,16 @@ export interface ActivityDoc {
   updatedAt: number | null
 }
 
+/**
+ * `config/app` — a single global document holding the latest published app
+ * version. Every signed-in client watches it: the one running the newest build
+ * publishes its version here; tabs on an older build reload (see version gate).
+ */
+export interface ConfigDoc {
+  version: string
+  updatedAt: number | null
+}
+
 /** A single verdict inside a {@link VotesDoc}. */
 export interface VoteValue {
   verdict: Verdict

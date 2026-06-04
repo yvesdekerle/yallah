@@ -52,6 +52,8 @@ import {
   subscribeUserVersion,
   subscribeGroupVotes,
   subscribeRoster,
+  subscribeAppVersion,
+  publishAppVersion,
 } from './client.ts'
 
 beforeEach(() => {
@@ -175,6 +177,16 @@ describe('firestore writes', () => {
     )
   })
 
+  it('publishAppVersion writes config/app with merge', async () => {
+    await publishAppVersion('1.2.3')
+    expect(m.doc).toHaveBeenCalledWith(expect.anything(), 'config', 'app')
+    expect(m.setDoc).toHaveBeenCalledWith(
+      { path: 'config/app' },
+      { version: '1.2.3', updatedAt: 'SERVER_TS' },
+      { merge: true },
+    )
+  })
+
   it('upsertActivity mirrors an activity into activities/{id}', async () => {
     await upsertActivity({
       id: 'a200',
@@ -243,5 +255,21 @@ describe('firestore listeners', () => {
     subscribeRoster(cb)
     emit({ docs: [{ data: () => ({ uid: 'u1', name: 'Yves' }) }] })
     expect(cb).toHaveBeenCalledWith([{ uid: 'u1', name: 'Yves' }])
+  })
+
+  it('subscribeAppVersion reports the published config version', () => {
+    let emit: (snap: unknown) => void = () => {}
+    m.onSnapshot.mockImplementationOnce(
+      (_ref: unknown, cb: (s: unknown) => void) => {
+        emit = cb
+        return () => {}
+      },
+    )
+    const cb = vi.fn()
+    subscribeAppVersion(cb)
+    emit({ data: () => ({ version: '2.0.0' }) })
+    expect(cb).toHaveBeenCalledWith('2.0.0')
+    emit({ data: () => undefined })
+    expect(cb).toHaveBeenLastCalledWith(null)
   })
 })

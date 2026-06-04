@@ -30,6 +30,7 @@ import {
   upsertActivity,
 } from './services/firebase/api.ts'
 import { useFirebaseAuthSync } from './hooks/useFirebaseAuthSync.ts'
+import { useVersionGate } from './hooks/useVersionGate.ts'
 import { userActivityToDoc } from './utils/activityDoc.ts'
 import type { ActivityCreator } from './types/activity.ts'
 import { AppOverlays } from './components/AppOverlays.tsx'
@@ -114,6 +115,11 @@ export default function App({ activities }: AppProps) {
   // signed-in profile on load / restore (and mirror it + the running version to
   // Firestore), clear it on sign-out. No-op when Firebase isn't configured.
   useFirebaseAuthSync(setGoogleUser)
+
+  // Force-reload this tab when a newer build is published (Google mode only —
+  // the version gate compares the running build against the global
+  // config/app.version in Firestore). No-op in demo / without Firebase.
+  useVersionGate(googleUser !== null)
 
   const {
     userActivities,

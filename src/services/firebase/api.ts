@@ -107,3 +107,14 @@ export function subscribeGroupVotes(cb: (votes: VotesDoc[]) => void): () => void
 export function subscribeRoster(cb: (users: UserDoc[]) => void): () => void {
   return lazySubscribe((c) => c.subscribeRoster(cb))
 }
+
+export function subscribeAppVersion(
+  cb: (version: string | null) => void,
+): () => void {
+  return lazySubscribe((c) => c.subscribeAppVersion(cb))
+}
+
+export async function publishAppVersion(version: string): Promise<void> {
+  if (!firebaseAvailable) return
+  await (await loadClient()).publishAppVersion(version)
+}
