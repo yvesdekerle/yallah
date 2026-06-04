@@ -19,6 +19,7 @@ describe('api facade — Firebase unavailable', () => {
       api.saveVotes('u1', 'Y', { a001: { verdict: 'oui' } }),
     ).resolves.toBeUndefined()
     await expect(api.removeVote('u1', 'a001')).resolves.toBeUndefined()
+    await expect(api.clearVotes('u1')).resolves.toBeUndefined()
     await expect(
       api.upsertUserProfile({ uid: 'u', name: 'n', email: 'e' }, '1.0.0'),
     ).resolves.toBeUndefined()

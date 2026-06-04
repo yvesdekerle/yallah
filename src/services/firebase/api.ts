@@ -87,6 +87,11 @@ export async function removeVote(
   await (await loadClient()).removeVote(uid, activityId)
 }
 
+export async function clearVotes(uid: string): Promise<void> {
+  if (!firebaseAvailable) return
+  await (await loadClient()).clearVotes(uid)
+}
+
 export async function getMyVotes(uid: string): Promise<VoteEntry[]> {
   if (!firebaseAvailable) return []
   return (await loadClient()).getMyVotes(uid)

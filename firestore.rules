@@ -20,10 +20,35 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid;
     }
 
-    // votes/{uid} — one document per user holding all their verdicts.
+    // votes/{uid} — one document per user holding all their verdicts, keyed by
+    // activity id under `activities`. A user may only write their own doc.
+    //
+    // The top-level SHAPE is validated here so a buggy/hostile client can't
+    // smuggle stray fields or wrong types into the shared collection (the group
+    // screen reads every doc). Firestore rules CANNOT iterate a map's keys, so
+    // the verdict values inside `activities` can't be validated server-side —
+    // that invariant is enforced client-side in `services/firebase/votesConverter.ts`
+    // (coerceVoteValue drops unknown verdicts on read, sanitizeVoteValues on
+    // write). Keep the verdict ids in sync with `src/types/verdict.ts`.
+    //
+    // Each field clause is guarded by `<field> in data` because writes are
+    // partial `setDoc(merge)`: removeVote() on a never-voted activity creates a
+    // doc with only { activities, updatedAt }, so requiring uid/name
+    // unconditionally would wrongly deny it. `request.resource.data` is the
+    // post-merge document state, so a normal saveVotes still carries all four.
+    //
+    // `delete` (the "Réinitialiser" wipe) is a separate clause: on a delete
+    // `request.resource` is null, so the shape checks above can't run — only
+    // ownership is required.
     match /votes/{uid} {
       allow read: if signedIn();
-      allow write: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'activities', 'updatedAt'])
+        && (!('uid' in request.resource.data) || request.resource.data.uid == uid)
+        && (!('name' in request.resource.data) || request.resource.data.name is string)
+        && (!('activities' in request.resource.data) || request.resource.data.activities is map);
+      allow delete: if signedIn() && request.auth.uid == uid;
     }
 
     // config/app — global published app version (drives the force-reload gate).

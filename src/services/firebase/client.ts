@@ -21,6 +21,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   collection,
   onSnapshot,
   serverTimestamp,
@@ -36,6 +37,10 @@ import type {
   VotesDoc,
   VoteValue,
 } from '../../types/firestore.ts'
+import {
+  parseVotesDoc,
+  sanitizeVoteValues,
+} from './votesConverter.ts'
 
 let app: FirebaseApp | undefined
 let authInstance: Auth | undefined
@@ -119,7 +124,12 @@ export async function saveVotes(
 ): Promise<void> {
   await setDoc(
     doc(db(), 'votes', uid),
-    { uid, name, activities: values, updatedAt: serverTimestamp() },
+    {
+      uid,
+      name,
+      activities: sanitizeVoteValues(values),
+      updatedAt: serverTimestamp(),
+    },
     { merge: true },
   )
 }
@@ -140,11 +150,19 @@ export async function removeVote(
   )
 }
 
+/**
+ * Wipe the user's entire `votes/{uid}` document ("Réinitialiser"). Must run
+ * while the user is still authenticated — the rules require `auth.uid == uid` —
+ * so callers delete BEFORE signing out.
+ */
+export async function clearVotes(uid: string): Promise<void> {
+  await deleteDoc(doc(db(), 'votes', uid))
+}
+
 /** One-shot read of the user's own verdicts, for rehydrating local history on sign-in. */
 export async function getMyVotes(uid: string): Promise<VoteEntry[]> {
   const snap = await getDoc(doc(db(), 'votes', uid))
-  const data = snap.data() as VotesDoc | undefined
-  if (!data?.activities) return []
+  const data = parseVotesDoc(uid, snap.data() as Record<string, unknown> | undefined)
   return Object.entries(data.activities).map(([id, v]) => ({
     id,
     verdict: v.verdict,
@@ -168,7 +186,11 @@ export function subscribeGroupVotes(
   cb: (votes: VotesDoc[]) => void,
 ): () => void {
   return onSnapshot(collection(db(), 'votes'), (snap) => {
-    cb(snap.docs.map((d) => d.data() as VotesDoc))
+    cb(
+      snap.docs.map((d) =>
+        parseVotesDoc(d.id, d.data() as Record<string, unknown> | undefined),
+      ),
+    )
   })
 }
 

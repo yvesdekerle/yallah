@@ -16,6 +16,7 @@ const m = vi.hoisted(() => ({
   getDoc: vi.fn(),
   collection: vi.fn((_db: unknown, name: string) => ({ collection: name })),
   setDoc: vi.fn(async () => {}),
+  deleteDoc: vi.fn(async () => {}),
   onSnapshot: vi.fn((_ref: unknown, _cb: (s: unknown) => void) => () => {}),
   serverTimestamp: vi.fn(() => 'SERVER_TS'),
   deleteField: vi.fn(() => 'DELETE_FIELD'),
@@ -34,6 +35,7 @@ vi.mock('firebase/firestore', () => ({
   doc: m.doc,
   getDoc: m.getDoc,
   setDoc: m.setDoc,
+  deleteDoc: m.deleteDoc,
   collection: m.collection,
   onSnapshot: m.onSnapshot,
   serverTimestamp: m.serverTimestamp,
@@ -48,6 +50,7 @@ import {
   upsertUserProfile,
   saveVotes,
   removeVote,
+  clearVotes,
   upsertActivity,
   getMyVotes,
   subscribeGroupVotes,
@@ -178,6 +181,12 @@ describe('firestore writes', () => {
     )
   })
 
+  it('clearVotes deletes the whole votes/{uid} document', async () => {
+    await clearVotes('u1')
+    expect(m.doc).toHaveBeenCalledWith(expect.anything(), 'votes', 'u1')
+    expect(m.deleteDoc).toHaveBeenCalledWith({ path: 'votes/u1' })
+  })
+
   it('getMyVotes reads votes/{uid} into VoteEntry[]', async () => {
     m.getDoc.mockResolvedValueOnce({
       data: () => ({
@@ -243,9 +252,29 @@ describe('firestore listeners', () => {
     const cb = vi.fn()
     subscribeGroupVotes(cb)
     emit({
-      docs: [{ data: () => ({ uid: 'u1' }) }, { data: () => ({ uid: 'u2' }) }],
+      docs: [
+        {
+          id: 'u1',
+          data: () => ({
+            uid: 'u1',
+            name: 'Yves',
+            // `bogus` is an unknown verdict written by some other client — it
+            // must be dropped on read (rules can't validate the verdict map).
+            activities: { a001: { verdict: 'oui' }, a002: { verdict: 'bogus' } },
+          }),
+        },
+        { id: 'u2', data: () => ({ uid: 'u2', name: 'Chloé', activities: {} }) },
+      ],
     })
-    expect(cb).toHaveBeenCalledWith([{ uid: 'u1' }, { uid: 'u2' }])
+    expect(cb).toHaveBeenCalledWith([
+      {
+        uid: 'u1',
+        name: 'Yves',
+        activities: { a001: { verdict: 'oui' } },
+        updatedAt: null,
+      },
+      { uid: 'u2', name: 'Chloé', activities: {}, updatedAt: null },
+    ])
   })
 
   it('subscribeRoster maps every user doc', () => {
