@@ -32,6 +32,7 @@ playwright-report/
 # Generated preview pages
 preview-photos.html
 preview-epaves.html
+activites-doublons.html
 
 # Editor / OS
 .vscode/*
