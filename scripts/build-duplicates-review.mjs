@@ -279,12 +279,6 @@ const html = String.raw`<!doctype html>
     align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
   #auth-gate h1 { font-size: 22px; margin: 0; }
   #auth-gate .btn-primary { font-size: 15px; padding: 11px 20px; }
-  .w-row { display: flex; align-items: center; gap: 10px; padding: 6px 9px; border: 1px solid var(--line);
-    border-radius: 9px; margin-bottom: 6px; font-size: 13px; }
-  .w-row b { color: var(--gold); }
-  .w-del { margin-left: auto; background: transparent; border: 1px solid var(--line); color: var(--mut);
-    border-radius: 7px; padding: 2px 8px; font-size: 12px; line-height: 1; }
-  .w-del:hover { border-color: var(--coral); color: var(--coral); }
 </style>
 </head>
 <body>
@@ -300,7 +294,6 @@ const html = String.raw`<!doctype html>
     <span class="spacer"></span>
     <span class="stat" id="cloud-status">☁ connexion…</span>
     <button class="btn-ghost" id="btn-undo" style="display:none">↩ Annuler</button>
-    <button class="btn-ghost" id="btn-weight" title="Suivi de poids — ajouter une pesée">⚖ Poids</button>
     <button class="btn-ghost" id="btn-signout" style="display:none">Se déconnecter</button>
     <button class="btn-ghost" id="btn-reset">Réinitialiser</button>
   </div>
@@ -374,22 +367,6 @@ const html = String.raw`<!doctype html>
     <button class="btn-primary" id="add-save">Ajouter l'activité</button>
   </div>
 </dialog>
-<dialog id="weight-dlg">
-  <div class="dlg-head">⚖ Suivi de poids</div>
-  <div class="dlg-body">
-    <div class="form-grid">
-      <div class="field"><label for="w-date">Date</label><input id="w-date" type="date" /></div>
-      <div class="field"><label for="w-value">Poids</label><input id="w-value" inputmode="decimal" placeholder="ex. 152,8" /></div>
-    </div>
-    <p class="hint" id="w-err" style="color:#ff6b6b"></p>
-    <div id="w-list"></div>
-  </div>
-  <div class="dlg-foot">
-    <button id="w-close">Fermer</button>
-    <button class="btn-primary" id="w-save">Ajouter</button>
-  </div>
-</dialog>
-
 <div id="auth-gate">
   <h1>Yallah — Tri des activités</h1>
   <p class="sub">Le tri est partagé et enregistré en base de données.<br>Connecte-toi pour charger la dernière version.</p>
@@ -980,10 +957,10 @@ window.__applyRemote = (remoteState) => {
 <script type="module">
 // Firebase (CDN, modular build) — Google sign-in gate + shared persistence of
 // the tri in Firestore (activityTriage/current) behind an optimistic version
-// lock, plus the personal weigh-in log (weights/{uid_date}).
+// lock.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 
 const CFG = __FIREBASE_CONFIG__;
 const qs = (s) => document.querySelector(s);
@@ -1126,63 +1103,6 @@ qs('#btn-signin').onclick = () => {
   signInWithPopup(auth, new GoogleAuthProvider()).catch((e) => gateErr((e && e.message) || String(e)));
 };
 qs('#btn-signout').onclick = () => { void signOut(auth).then(() => location.reload()); };
-
-// ---- Personal weigh-in log (weights/{uid_date}) ----
-// "152,8" and "152.8" both parse to the number 152.8 — stored as a Firestore
-// number, never a string. One doc per user per day (same-day entry replaces).
-const parseWeight = (raw) => {
-  const n = parseFloat(String(raw).trim().replace(',', '.'));
-  return Number.isFinite(n) && n > 0 && n < 1000 ? Math.round(n * 100) / 100 : null;
-};
-async function renderWeights() {
-  const host = qs('#w-list');
-  host.innerHTML = '<p class="hint">Chargement…</p>';
-  try {
-    const snap = await getDocs(query(collection(db, 'weights'), where('uid', '==', auth.currentUser.uid)));
-    const rows = snap.docs.map((d) => d.data()).sort((a, b) => (a.date < b.date ? 1 : -1));
-    host.innerHTML = rows.length
-      ? rows.map((r) => '<div class="w-row" data-date="' + escT(r.date) + '"><span>' + escT(r.date) + '</span><b>' + r.weight + '</b><button class="w-del" title="Supprimer cette pesée">✕</button></div>').join('')
-      : '<p class="hint">Aucune pesée enregistrée.</p>';
-    host.querySelectorAll('.w-del').forEach((btn) => {
-      btn.onclick = async () => {
-        const date = btn.parentElement.dataset.date;
-        try {
-          await deleteDoc(doc(db, 'weights', auth.currentUser.uid + '_' + date));
-          void renderWeights();
-        } catch (e) { qs('#w-err').textContent = 'Suppression impossible : ' + ((e && e.message) || e); }
-      };
-    });
-  } catch (e) {
-    host.innerHTML = '<p class="hint" style="color:#ff6b6b">Lecture impossible : ' + escT((e && e.message) || String(e)) + '</p>';
-  }
-}
-qs('#btn-weight').onclick = () => {
-  if (!auth.currentUser) return;
-  qs('#w-err').textContent = '';
-  qs('#w-value').value = '';
-  qs('#w-date').value = new Date().toISOString().slice(0, 10);
-  qs('#weight-dlg').showModal();
-  void renderWeights();
-};
-qs('#w-close').onclick = () => qs('#weight-dlg').close();
-qs('#w-save').onclick = async () => {
-  const date = qs('#w-date').value;
-  const weight = parseWeight(qs('#w-value').value);
-  if (!date) { qs('#w-err').textContent = 'Choisis une date.'; return; }
-  if (weight == null) { qs('#w-err').textContent = 'Poids invalide — ex. 152.8 ou 152,8.'; return; }
-  qs('#w-err').textContent = '';
-  try {
-    await setDoc(doc(db, 'weights', auth.currentUser.uid + '_' + date), {
-      uid: auth.currentUser.uid,
-      name: myName(),
-      date,
-      weight,
-      updatedAt: serverTimestamp(),
-    });
-    qs('#w-value').value = '';
-    void renderWeights();
-  } catch (e) { qs('#w-err').textContent = 'Enregistrement impossible : ' + ((e && e.message) || e); }
-};
 </script>
 </body>
 </html>`;

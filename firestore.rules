@@ -86,24 +86,6 @@ service cloud.firestore {
         && request.resource.data.updatedBy.name is string;
     }
 
-    // weights/{uid_date} — personal weigh-in log (one doc per user per day,
-    // canonical id enforced so a same-day entry replaces instead of piling up).
-    // `weight` must be a real Firestore number (152.8), never a string.
-    match /weights/{id} {
-      allow read: if signedIn();
-      allow create, update: if signedIn()
-        && request.resource.data.uid == request.auth.uid
-        && id == request.auth.uid + '_' + request.resource.data.date
-        && request.resource.data.keys().hasOnly(['uid', 'name', 'date', 'weight', 'updatedAt'])
-        && request.resource.data.name is string
-        && request.resource.data.date is string
-        && request.resource.data.date.matches('\\d{4}-\\d{2}-\\d{2}')
-        && request.resource.data.weight is number
-        && request.resource.data.weight > 0
-        && request.resource.data.weight < 1000;
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
-    }
-
     // activities/{id} — curated (seeded) + user-added. A user may only create
     // or modify activities they own (createdBy.uid == their uid). Curated docs
     // have no createdBy, so they're read-only to clients.

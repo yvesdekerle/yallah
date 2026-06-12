@@ -192,7 +192,6 @@ A standalone, generated HTML tool (NOT part of the React tree) to merge/split lo
 - **Google sign-in required** (same Firebase project as the app). The shared triage state lives in Firestore doc **`activityTriage/current`**: `{ version, state (JSON string), updatedAt, updatedBy }`.
 - **Optimistic version lock** — every save runs in a transaction and must write exactly `version + 1` (also enforced in `firestore.rules`), so two editors can't silently overwrite each other. The loser gets a conflict banner with a "Charger sa version" button (their own tri stays recoverable via « ↩ Annuler »). Saves are debounced 1.2 s; `localStorage` (`yallah.dedup.v1`) is only a local cache + single-level undo.
 - **Import/Export buttons were removed** — the DB is the single source. Initial import / forced restore of a JSON export: `npm run seed:triage` (reads `workdir/yallah-tri-partage.json`, `--file=…` / `--force` flags). `workdir/` is gitignored.
-- **Pesées (`⚖ Poids`)** — personal weigh-in log on the same page: date + weight (accepts `152.8` or `152,8`, stored as a Firestore **number**) in collection **`weights/{uid_date}`**, one doc per user per day (same-day entry replaces), owner-only writes.
 
 ## Storage
 
