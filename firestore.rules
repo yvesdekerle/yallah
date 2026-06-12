@@ -62,6 +62,48 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['version', 'updatedAt']);
     }
 
+    // activityTriage/current — the shared, work-in-progress triage of the
+    // activity list (the /admin/activities tool). Single doc, guarded by an
+    // optimistic version lock: every write must carry exactly version + 1 of
+    // the stored doc, so two editors can't silently overwrite each other (the
+    // page reads the doc in a transaction, sees the mismatch, and surfaces a
+    // conflict instead). The state itself is an opaque JSON string — rules
+    // can't validate inside it, the page re-validates on parse.
+    match /activityTriage/current {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && validTriage()
+        && request.resource.data.version == 1;
+      allow update: if signedIn()
+        && validTriage()
+        && request.resource.data.version == resource.data.version + 1;
+    }
+    function validTriage() {
+      return request.resource.data.keys().hasOnly(['version', 'state', 'updatedAt', 'updatedBy'])
+        && request.resource.data.version is int
+        && request.resource.data.state is string
+        && request.resource.data.updatedBy is map
+        && request.resource.data.updatedBy.name is string;
+    }
+
+    // weights/{uid_date} — personal weigh-in log (one doc per user per day,
+    // canonical id enforced so a same-day entry replaces instead of piling up).
+    // `weight` must be a real Firestore number (152.8), never a string.
+    match /weights/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && id == request.auth.uid + '_' + request.resource.data.date
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'date', 'weight', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('\\d{4}-\\d{2}-\\d{2}')
+        && request.resource.data.weight is number
+        && request.resource.data.weight > 0
+        && request.resource.data.weight < 1000;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
     // activities/{id} — curated (seeded) + user-added. A user may only create
     // or modify activities they own (createdBy.uid == their uid). Curated docs
     // have no createdBy, so they're read-only to clients.

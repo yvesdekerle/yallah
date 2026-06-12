@@ -53,3 +53,36 @@ describe('vercel.json security headers — Google SSO', () => {
     )
   })
 })
+
+// /admin/activities loads the Firebase SDK from the gstatic CDN and talks to
+// Auth + Firestore directly — its scoped CSP must keep allowing all of that,
+// or the page silently loses its sign-in gate and cloud persistence.
+const adminRule = vercel.headers.find((h) => h.source === '/admin/(.*)')
+if (!adminRule) throw new Error('vercel.json: missing /admin/(.*) header rule')
+const adminCsp =
+  adminRule.headers.find((h) => h.key === 'Content-Security-Policy')?.value ??
+  ''
+
+describe('vercel.json security headers — /admin Firebase', () => {
+  it('allows the Firebase SDK ESM modules from the gstatic CDN', () => {
+    const scriptSrc = /script-src ([^;]*)/.exec(adminCsp)?.[1] ?? ''
+    expect(scriptSrc).toContain('https://www.gstatic.com')
+  })
+
+  it('allows connecting to Firebase Auth + Firestore', () => {
+    const connectSrc = /connect-src ([^;]*)/.exec(adminCsp)?.[1] ?? ''
+    for (const host of [
+      'https://identitytoolkit.googleapis.com',
+      'https://securetoken.googleapis.com',
+      'https://firestore.googleapis.com',
+    ]) {
+      expect(connectSrc).toContain(host)
+    }
+  })
+
+  it('allows the auth iframe hosts used by signInWithPopup', () => {
+    const frameSrc = /frame-src ([^;]*)/.exec(adminCsp)?.[1] ?? ''
+    expect(frameSrc).toContain('https://*.firebaseapp.com')
+    expect(frameSrc).toContain('https://accounts.google.com')
+  })
+})

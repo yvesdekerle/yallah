@@ -151,6 +151,19 @@
     border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 9px; }
   .section-head:first-child { margin-top: 0; }
   .sh-stars { color: var(--gold); letter-spacing: 1px; font-size: 17px; }
+  #cloud-status b { color: var(--gold); }
+  #conflict-bar { margin-top: 10px; background: #e11d2a22; border: 1px solid #e11d2a; color: #ffd7da;
+    border-radius: 10px; padding: 9px 12px; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #auth-gate { position: fixed; inset: 0; z-index: 100; background: #14101af5; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
+  #auth-gate h1 { font-size: 22px; margin: 0; }
+  #auth-gate .btn-primary { font-size: 15px; padding: 11px 20px; }
+  .w-row { display: flex; align-items: center; gap: 10px; padding: 6px 9px; border: 1px solid var(--line);
+    border-radius: 9px; margin-bottom: 6px; font-size: 13px; }
+  .w-row b { color: var(--gold); }
+  .w-del { margin-left: auto; background: transparent; border: 1px solid var(--line); color: var(--mut);
+    border-radius: 7px; padding: 2px 8px; font-size: 12px; line-height: 1; }
+  .w-del:hover { border-color: var(--coral); color: var(--coral); }
 </style>
 </head>
 <body>
@@ -164,10 +177,17 @@
     <span class="stat">Gain estimé : <b id="st-gain">0</b> activités en moins</span>
     <span class="stat">Total après tri : <b id="st-final">0</b></span>
     <span class="spacer"></span>
+    <span class="stat" id="cloud-status">☁ connexion…</span>
     <button class="btn-ghost" id="btn-undo" style="display:none">↩ Annuler</button>
-    <button class="btn-ghost" id="btn-import">Importer</button>
-    <button class="btn-primary" id="btn-export-state">Exporter</button>
+    <button class="btn-ghost" id="btn-weight" title="Suivi de poids — ajouter une pesée">⚖ Poids</button>
+    <button class="btn-ghost" id="btn-signout" style="display:none">Se déconnecter</button>
     <button class="btn-ghost" id="btn-reset">Réinitialiser</button>
+  </div>
+  <div id="conflict-bar" style="display:none">
+    ⚠ <b id="conflict-who"></b> a enregistré une version plus récente du tri — tes modifications ne seront
+    plus enregistrées tant que tu n'as pas chargé sa version.
+    <button class="btn-primary" id="conflict-reload">Charger sa version</button>
+    <span class="pill">ton tri actuel restera annulable via « ↩ Annuler »</span>
   </div>
 </header>
 <div class="layout">
@@ -233,35 +253,28 @@
     <button class="btn-primary" id="add-save">Ajouter l'activité</button>
   </div>
 </dialog>
-<dialog id="export-state-dlg">
-  <div class="dlg-head">Exporter le tri</div>
+<dialog id="weight-dlg">
+  <div class="dlg-head">⚖ Suivi de poids</div>
   <div class="dlg-body">
-    <div id="export-alert"></div>
-    <p class="hint">Un seul fichier, en 2 parties :<br>
-      • <b>activites</b> = ton tri (catégories, décisions, écartés) + le résultat final → sert au travail final <i>et</i> à reprendre le tri.<br>
-      • <b>presentation</b> = l'affichage du site (tri du panneau, filtres) → temporaire, juste pour que la personne voie pareil.<br>
-      Envoie-le : elle l'ouvre via <b>« Importer »</b> et retrouve exactement ta vue.</p>
-    <textarea id="share-text" readonly style="height:230px"></textarea>
+    <div class="form-grid">
+      <div class="field"><label for="w-date">Date</label><input id="w-date" type="date" /></div>
+      <div class="field"><label for="w-value">Poids</label><input id="w-value" inputmode="decimal" placeholder="ex. 152,8" /></div>
+    </div>
+    <p class="hint" id="w-err" style="color:#ff6b6b"></p>
+    <div id="w-list"></div>
   </div>
   <div class="dlg-foot">
-    <button id="share-copy">Copier</button>
-    <button id="share-dl">Télécharger .json</button>
-    <button class="btn-primary" id="share-close">Fermer</button>
+    <button id="w-close">Fermer</button>
+    <button class="btn-primary" id="w-save">Ajouter</button>
   </div>
 </dialog>
-<dialog id="import-dlg">
-  <div class="dlg-head">Importer un tri</div>
-  <div class="dlg-body">
-    <p class="hint">Choisis un fichier <b>.json</b> reçu, ou colle son contenu. ⚠️ Charger <b>remplace</b> ton tri actuel — mais une sauvegarde est faite et tu pourras l'annuler avec <b>« ↩ Annuler »</b>.</p>
-    <input id="import-file" type="file" accept="application/json,.json" style="margin-bottom:10px" />
-    <textarea id="import-text" placeholder="…ou colle ici le JSON d'un tri partagé" style="height:200px"></textarea>
-    <p class="hint" id="import-err" style="color:#ff6b6b"></p>
-  </div>
-  <div class="dlg-foot">
-    <button id="import-close">Annuler</button>
-    <button class="btn-primary" id="import-load">Charger ce tri</button>
-  </div>
-</dialog>
+
+<div id="auth-gate">
+  <h1>Yallah — Tri des activités</h1>
+  <p class="sub">Le tri est partagé et enregistré en base de données.<br>Connecte-toi pour charger la dernière version.</p>
+  <button class="btn-primary" id="btn-signin">Se connecter avec Google</button>
+  <p class="hint" id="auth-err" style="color:#ff6b6b;max-width:480px"></p>
+</div>
 
 <script id="seed" type="application/json">{
   "groups": [
@@ -575,8 +588,11 @@ function computeDrops() {
   });
   return [...map.values()];
 }
-let state = load();
-function save() { localStorage.setItem(LS, JSON.stringify(state)); }
+let state = null; // set by window.__boot once auth + the Firestore read are done
+function save() {
+  localStorage.setItem(LS, JSON.stringify(state));
+  if (window.__cloudSave) window.__cloudSave(JSON.stringify(state));
+}
 
 const $ = sel => document.querySelector(sel);
 const esc = s => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -633,6 +649,7 @@ function editName(g, spanEl) {
 }
 
 function renderPanel() {
+  if (!state) return;
   const list = $('#cat-list');
   list.innerHTML = '';
   const mode = ($('#cat-sort') && $('#cat-sort').value) || 'count';
@@ -672,6 +689,7 @@ function renderPanel() {
 }
 
 function render() {
+  if (!state) return; // not booted yet (auth gate still up)
   renderPanel();
   const q = $('#search').value.trim().toLowerCase();
   const onlyUndec = $('#only-undecided').checked;
@@ -884,46 +902,6 @@ $('#btn-undo').onclick = () => {
   render();
 };
 
-// ---- Export / share (the full tri; the btn-export-state click handler is defined below) ----
-$('#share-close').onclick = () => $('#export-state-dlg').close();
-$('#share-copy').onclick = async () => { await navigator.clipboard.writeText($('#share-text').value); $('#share-copy').textContent = 'Copié ✓'; setTimeout(() => $('#share-copy').textContent = 'Copier', 1500); };
-$('#share-dl').onclick = () => {
-  const blob = new Blob([$('#share-text').value], { type: 'application/json' });
-  const u = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = u; a.download = 'yallah-tri-partage.json'; a.click();
-  URL.revokeObjectURL(u);
-};
-
-// ---- Import a shared state ----
-$('#btn-import').onclick = () => { $('#import-text').value = ''; $('#import-err').textContent = ''; $('#import-file').value = ''; $('#import-dlg').showModal(); };
-$('#import-close').onclick = () => $('#import-dlg').close();
-$('#import-file').onchange = e => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  const r = new FileReader();
-  r.onload = () => { $('#import-text').value = String(r.result || ''); };
-  r.readAsText(f);
-};
-function applyPresentation(pres) {
-  if (!pres) return;
-  if (pres.sort && $('#cat-sort')) $('#cat-sort').value = pres.sort;
-  if (typeof pres.search === 'string') $('#search').value = pres.search;
-  if (typeof pres.onlyUndecided === 'boolean') $('#only-undecided').checked = pres.onlyUndecided;
-}
-$('#import-load').onclick = () => {
-  let obj;
-  try { obj = JSON.parse($('#import-text').value); } catch { $('#import-err').textContent = 'JSON invalide.'; return; }
-  // Accept new format ({ activites: { state }, presentation }) or a raw state ({ groups }).
-  const st = obj && obj.activites && obj.activites.state ? obj.activites.state : obj;
-  if (!st || !Array.isArray(st.groups)) { $('#import-err').textContent = "Ce fichier n'est pas un tri valide (clé « groups » manquante)."; return; }
-  pushUndo();                       // back up current state before replacing
-  state = hydrate(st);
-  applyPresentation(obj && obj.presentation);
-  save();
-  $('#import-dlg').close();
-  render();
-};
-
 // ---- Add a new activity ----
 const DIFFS = [
   { label: 'Facile', dot: '#22C268' },
@@ -987,67 +965,233 @@ $('#btn-add-activity').onclick = openAdd;
 $('#add-cancel').onclick = () => $('#add-dlg').close();
 $('#add-save').onclick = addSave;
 
-// Strip page-only fields so exported objects match the activities.json schema.
-function cleanActivity(a) {
-  const { photo, userAdded, ...rest } = a;
-  return rest;
+// ---- Cloud boot (driven by the Firebase module script below) ----
+// Called once auth + the initial Firestore read are done. remoteState is the
+// parsed state from the DB, or null when the doc doesn't exist yet. Returns the
+// serialized state so a missing doc can be created from it (initial v1).
+window.__boot = (remoteState) => {
+  state = remoteState ? hydrate(remoteState) : load();
+  localStorage.setItem(LS, JSON.stringify(state)); // local cache, no cloud echo
+  render();
+  updateUndoBtn();
+  syncHeaderH();
+  return JSON.stringify(state);
+};
+// Replace the local tri with a newer version someone else saved (conflict
+// resolution). The current tri is backed up first → « ↩ Annuler ».
+window.__applyRemote = (remoteState) => {
+  pushUndo();
+  state = hydrate(remoteState);
+  localStorage.setItem(LS, JSON.stringify(state));
+  render();
+};
+</script>
+<script type="module">
+// Firebase (CDN, modular build) — Google sign-in gate + shared persistence of
+// the tri in Firestore (activityTriage/current) behind an optimistic version
+// lock, plus the personal weigh-in log (weights/{uid_date}).
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+
+const CFG = {"apiKey":"AIzaSyCobKTCb5QaWqEvEDOAw42pioPa_PS_l_k","authDomain":"yallah-3251c.firebaseapp.com","projectId":"yallah-3251c","storageBucket":"yallah-3251c.firebasestorage.app","messagingSenderId":"95504450103","appId":"1:95504450103:web:1abd69fdbf11ade8d635b2"};
+const qs = (s) => document.querySelector(s);
+const setStatus = (h) => { qs('#cloud-status').innerHTML = h; };
+const gateErr = (m) => { qs('#auth-err').textContent = m; };
+const escT = (s) => (s || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+if (!CFG.apiKey) {
+  setStatus('☁ hors ligne');
+  gateErr('Config Firebase absente du build — régénère la page avec les VITE_FIREBASE_* présents dans .env.local (node scripts/build-duplicates-review.mjs).');
+  throw new Error('missing firebase config');
 }
-// The final result (kept activities + vote remap) — the part useful for the real DB work.
-function buildDecision() {
-  const drop = computeDrops();
-  const dropped = new Set(drop.map(d => d.id));
-  const allIds = [...DATA.activities.map(a => a.id), ...state.userActivities.map(a => a.id)];
-  const kept = allIds.filter(id => !dropped.has(id)).map(id => {
-    const out = cleanActivity(BY[id]);
-    const g = findGroupOf(id);
-    if (g && g.id.indexOf('single-') !== 0) out.regroupement = g.name; // real categorizations only
-    return out;
-  });
-  const remap = {};
-  drop.forEach(d => { remap[d.id] = d.reason === 'merged' ? d.mergedInto : null; });
-  return {
-    summary: { source: DATA.generatedFrom, added: state.userActivities.length, removed: drop.length, kept: kept.length },
-    activities: kept,
-    remap,
-  };
+
+const app = initializeApp(CFG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const triRef = doc(db, 'activityTriage', 'current');
+
+let booted = false;
+let remoteVersion = 0;   // version of the doc our local state derives from
+let conflictData = null; // newer doc data, when our save was rejected
+let pending = null;      // latest serialized state awaiting a push
+let pushTimer = null;
+let saving = false;
+
+const whoOf = (d) => (d && d.updatedBy && d.updatedBy.name) || 'quelqu’un';
+const myName = () => (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) || '?';
+const okStatus = (suffix) => setStatus('☁ enregistré · <b>v' + remoteVersion + '</b>' + (suffix ? ' · ' + escT(suffix) : ''));
+
+function showConflict(d) {
+  conflictData = d;
+  qs('#conflict-who').textContent = whoOf(d) + ' (v' + d.version + ')';
+  qs('#conflict-bar').style.display = '';
+  setStatus('⚠ conflit de version');
 }
-// The transient, web-only view state (sort, filters) — not used for the final work.
-function getPresentation() {
-  return {
-    sort: ($('#cat-sort') && $('#cat-sort').value) || 'count',
-    search: $('#search').value,
-    onlyUndecided: $('#only-undecided').checked,
-  };
-}
-// One file, two parts: "activites" (data + result, for the final work) and
-// "presentation" (transient site view, just so a recipient sees the same thing).
-function buildShare() {
-  return { version: 1, activites: { state, final: buildDecision() }, presentation: getPresentation() };
-}
-// Multi-activity categories still undecided (and not fully discarded) = not yet treated.
-function untreatedCategories() {
-  return state.groups.filter(g => g.ids.length > 1 && !g.decision && g.ids.some(id => !isDiscarded(id)));
-}
-$('#btn-export-state').onclick = () => {
-  $('#share-text').value = JSON.stringify(buildShare(), null, 2);
-  const un = untreatedCategories();
-  const el = $('#export-alert');
-  if (un.length) {
-    const nb = un.reduce((s, g) => s + g.ids.filter(id => !isDiscarded(id)).length, 0);
-    el.className = 'alert warn';
-    el.innerHTML = '⚠ <b>' + un.length + ' catégorie' + (un.length > 1 ? 's' : '') + '</b> pas encore tranchée'
-      + (un.length > 1 ? 's' : '') + ' (ni « Fusionner » ni « Garder séparé »), soit <b>' + nb + ' activité'
-      + (nb > 1 ? 's' : '') + '</b> :<br><span class="alist">' + un.map(g => esc(g.name)).join(' · ') + '</span>';
-  } else {
-    el.className = 'alert ok';
-    el.innerHTML = '✓ Toutes les catégories à plusieurs activités ont été tranchées.';
-  }
-  $('#export-state-dlg').showModal();
+qs('#conflict-reload').onclick = () => {
+  if (!conflictData) return;
+  let st = null;
+  try { st = JSON.parse(conflictData.state); } catch {}
+  if (!st || !Array.isArray(st.groups)) { setStatus('⚠ version distante illisible'); return; }
+  remoteVersion = conflictData.version;
+  const author = whoOf(conflictData);
+  conflictData = null;
+  pending = null; // local now mirrors remote
+  qs('#conflict-bar').style.display = 'none';
+  window.__applyRemote(st);
+  okStatus(author);
 };
 
-render();
-updateUndoBtn();
-syncHeaderH();
+// Debounced push: the page calls this on every save() (each user action).
+window.__cloudSave = (json) => {
+  pending = json;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => { void flush(); }, 1200);
+};
+
+// Transactional write: refuses to overwrite a version we haven't seen. The
+// version check is also enforced server-side by firestore.rules (version must
+// increment by exactly 1), so a stale page can never silently clobber the doc.
+async function flush() {
+  if (saving || pending == null || conflictData) return;
+  const payload = pending;
+  pending = null;
+  saving = true;
+  setStatus('☁ enregistrement…');
+  try {
+    const next = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(triRef);
+      const d = snap.exists() ? snap.data() : null;
+      const cur = (d && d.version) || 0;
+      if (cur !== remoteVersion) {
+        const err = new Error('version conflict');
+        err.conflictDoc = d;
+        throw err;
+      }
+      tx.set(triRef, {
+        version: cur + 1,
+        state: payload,
+        updatedAt: serverTimestamp(),
+        updatedBy: { uid: auth.currentUser.uid, name: myName() },
+      });
+      return cur + 1;
+    });
+    remoteVersion = next;
+    okStatus(null);
+  } catch (e) {
+    if (e && e.conflictDoc !== undefined) {
+      if (e.conflictDoc) showConflict(e.conflictDoc);
+      else { remoteVersion = 0; pending = payload; } // doc vanished: recreate as v1
+    } else {
+      if (pending == null) pending = payload; // keep the latest, retry later
+      setStatus('⚠ enregistrement échoué — nouvel essai…');
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(() => { void flush(); }, 5000);
+    }
+  } finally {
+    saving = false;
+    if (pending != null && !conflictData) {
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(() => { void flush(); }, 400);
+    }
+  }
+}
+
+onAuthStateChanged(auth, (u) => { void onAuth(u); });
+async function onAuth(u) {
+  if (!u) {
+    qs('#auth-gate').style.display = '';
+    qs('#btn-signout').style.display = 'none';
+    setStatus('☁ non connecté');
+    return;
+  }
+  qs('#btn-signout').style.display = '';
+  if (booted) { qs('#auth-gate').style.display = 'none'; return; }
+  setStatus('☁ chargement…');
+  try {
+    const snap = await getDoc(triRef);
+    booted = true;
+    if (snap.exists()) {
+      const d = snap.data();
+      remoteVersion = (typeof d.version === 'number' && d.version) || 0;
+      let st = null;
+      try { st = JSON.parse(d.state); } catch {}
+      window.__boot(st && Array.isArray(st.groups) ? st : null);
+      okStatus(whoOf(d));
+    } else {
+      // No doc yet: boot from the local cache / embedded seed, then create v1.
+      const json = window.__boot(null);
+      setStatus('☁ initialisation de la base…');
+      window.__cloudSave(json);
+    }
+    qs('#auth-gate').style.display = 'none';
+  } catch (e) {
+    gateErr('Lecture de la base impossible : ' + ((e && e.message) || e));
+  }
+}
+
+qs('#btn-signin').onclick = () => {
+  gateErr('');
+  signInWithPopup(auth, new GoogleAuthProvider()).catch((e) => gateErr((e && e.message) || String(e)));
+};
+qs('#btn-signout').onclick = () => { void signOut(auth).then(() => location.reload()); };
+
+// ---- Personal weigh-in log (weights/{uid_date}) ----
+// "152,8" and "152.8" both parse to the number 152.8 — stored as a Firestore
+// number, never a string. One doc per user per day (same-day entry replaces).
+const parseWeight = (raw) => {
+  const n = parseFloat(String(raw).trim().replace(',', '.'));
+  return Number.isFinite(n) && n > 0 && n < 1000 ? Math.round(n * 100) / 100 : null;
+};
+async function renderWeights() {
+  const host = qs('#w-list');
+  host.innerHTML = '<p class="hint">Chargement…</p>';
+  try {
+    const snap = await getDocs(query(collection(db, 'weights'), where('uid', '==', auth.currentUser.uid)));
+    const rows = snap.docs.map((d) => d.data()).sort((a, b) => (a.date < b.date ? 1 : -1));
+    host.innerHTML = rows.length
+      ? rows.map((r) => '<div class="w-row" data-date="' + escT(r.date) + '"><span>' + escT(r.date) + '</span><b>' + r.weight + '</b><button class="w-del" title="Supprimer cette pesée">✕</button></div>').join('')
+      : '<p class="hint">Aucune pesée enregistrée.</p>';
+    host.querySelectorAll('.w-del').forEach((btn) => {
+      btn.onclick = async () => {
+        const date = btn.parentElement.dataset.date;
+        try {
+          await deleteDoc(doc(db, 'weights', auth.currentUser.uid + '_' + date));
+          void renderWeights();
+        } catch (e) { qs('#w-err').textContent = 'Suppression impossible : ' + ((e && e.message) || e); }
+      };
+    });
+  } catch (e) {
+    host.innerHTML = '<p class="hint" style="color:#ff6b6b">Lecture impossible : ' + escT((e && e.message) || String(e)) + '</p>';
+  }
+}
+qs('#btn-weight').onclick = () => {
+  if (!auth.currentUser) return;
+  qs('#w-err').textContent = '';
+  qs('#w-value').value = '';
+  qs('#w-date').value = new Date().toISOString().slice(0, 10);
+  qs('#weight-dlg').showModal();
+  void renderWeights();
+};
+qs('#w-close').onclick = () => qs('#weight-dlg').close();
+qs('#w-save').onclick = async () => {
+  const date = qs('#w-date').value;
+  const weight = parseWeight(qs('#w-value').value);
+  if (!date) { qs('#w-err').textContent = 'Choisis une date.'; return; }
+  if (weight == null) { qs('#w-err').textContent = 'Poids invalide — ex. 152.8 ou 152,8.'; return; }
+  qs('#w-err').textContent = '';
+  try {
+    await setDoc(doc(db, 'weights', auth.currentUser.uid + '_' + date), {
+      uid: auth.currentUser.uid,
+      name: myName(),
+      date,
+      weight,
+      updatedAt: serverTimestamp(),
+    });
+    qs('#w-value').value = '';
+    void renderWeights();
+  } catch (e) { qs('#w-err').textContent = 'Enregistrement impossible : ' + ((e && e.message) || e); }
+};
 </script>
 </body>
 </html>

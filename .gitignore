@@ -25,6 +25,9 @@ serviceAccount.json
 # Temp files
 tmp/
 
+# Local working files (shared triage exports, scratch data)
+workdir/
+
 # Playwright
 test-results/
 playwright-report/

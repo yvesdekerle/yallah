@@ -185,6 +185,15 @@ Each activity gets optional lat/lng for the map feature.
 
 The maps themselves use **Leaflet 1.9 + react-leaflet 5** with **CartoDB Voyager raster tiles** (`basemaps.cartocdn.com/rastertiles/voyager`, free, attribution required — OSM + CARTO — baked into TileLayer). The CSS is imported globally in `src/index.css`. Components `ActivityMiniMap` (passive 180 px in DetailModal) and `FullscreenMap` (overlay opened from Résultats) are **lazy-loaded** via `React.lazy` so the Swipe tab stays under ~115 KB gzipped.
 
+## Admin — tri des activités (`/admin/activities`)
+
+A standalone, generated HTML tool (NOT part of the React tree) to merge/split look-alike activities and shrink the curated list. Source of truth is the template inside `scripts/build-duplicates-review.mjs` — **never edit `public/admin/activities.html` by hand**, regenerate it with `node scripts/build-duplicates-review.mjs` (embeds the Firebase web config read from `.env.local`/`.env`, plus the optional fallback state `scripts/admin-seed.json`). Served at `/admin/activities` via a `vercel.json` rewrite, with a relaxed CSP scoped to `/admin/*` (inline scripts + gstatic Firebase SDK + Auth/Firestore endpoints — guarded by `scripts/csp.test.ts`).
+
+- **Google sign-in required** (same Firebase project as the app). The shared triage state lives in Firestore doc **`activityTriage/current`**: `{ version, state (JSON string), updatedAt, updatedBy }`.
+- **Optimistic version lock** — every save runs in a transaction and must write exactly `version + 1` (also enforced in `firestore.rules`), so two editors can't silently overwrite each other. The loser gets a conflict banner with a "Charger sa version" button (their own tri stays recoverable via « ↩ Annuler »). Saves are debounced 1.2 s; `localStorage` (`yallah.dedup.v1`) is only a local cache + single-level undo.
+- **Import/Export buttons were removed** — the DB is the single source. Initial import / forced restore of a JSON export: `npm run seed:triage` (reads `workdir/yallah-tri-partage.json`, `--file=…` / `--force` flags). `workdir/` is gitignored.
+- **Pesées (`⚖ Poids`)** — personal weigh-in log on the same page: date + weight (accepts `152.8` or `152,8`, stored as a Firestore **number**) in collection **`weights/{uid_date}`**, one doc per user per day (same-day entry replaces), owner-only writes.
+
 ## Storage
 
 Keys in `localStorage` (see `STORAGE_KEYS` in `constants/swipe.ts`):
@@ -221,6 +230,9 @@ Keys in `localStorage` (see `STORAGE_KEYS` in `constants/swipe.ts`):
 | `npm run download:photos` | Download + resize + rewrite `photos.json` to local paths |
 | `npm run preview:photos` | Generate + open `preview-photos.html` |
 | `npm run geocode:activities` | Nominatim → `src/data/coords.json` (lat/lng for each activity) |
+| `npm run seed:firestore` | Seed curated activities into Firestore (Admin SDK, needs `GOOGLE_APPLICATION_CREDENTIALS`) |
+| `npm run seed:triage` | Seed/restore `activityTriage/current` from a triage JSON export (`--file=…`, `--force`) |
+| `node scripts/build-duplicates-review.mjs` | Regen `public/admin/activities.html` (the `/admin/activities` tool) |
 
 ## Workflow
 
