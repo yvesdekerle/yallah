@@ -6,11 +6,12 @@
 //
 // Reads src/data/activities.json + src/data/photos.json, computes candidate
 // similarity clusters (union-find over token-overlap pairs), and embeds them in
-// a self-contained HTML page. The page requires Google sign-in and persists the
-// shared triage state to Firestore (`activityTriage/current`) behind an
-// optimistic version lock — see firestore.rules. localStorage is kept as a
-// local cache + single-level undo. The Firebase web config is embedded at build
-// time from .env.local / .env (public values — the app bundle ships the same).
+// a self-contained HTML page. The page persists the shared triage state to
+// Firestore (`activityTriage/current`) behind an optimistic version lock — no
+// sign-in, the doc is deliberately public in firestore.rules. localStorage is
+// kept as a local cache + single-level undo. The Firebase web config is
+// embedded at build time from .env.local / .env (public values — the app
+// bundle ships the same).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -275,10 +276,6 @@ const html = String.raw`<!doctype html>
   #cloud-status b { color: var(--gold); }
   #conflict-bar { margin-top: 10px; background: #e11d2a22; border: 1px solid #e11d2a; color: #ffd7da;
     border-radius: 10px; padding: 9px 12px; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  #auth-gate { position: fixed; inset: 0; z-index: 100; background: #14101af5; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
-  #auth-gate h1 { font-size: 22px; margin: 0; }
-  #auth-gate .btn-primary { font-size: 15px; padding: 11px 20px; }
 </style>
 </head>
 <body>
@@ -292,9 +289,8 @@ const html = String.raw`<!doctype html>
     <span class="stat">Gain estimé : <b id="st-gain">0</b> activités en moins</span>
     <span class="stat">Total après tri : <b id="st-final">0</b></span>
     <span class="spacer"></span>
-    <span class="stat" id="cloud-status">☁ connexion…</span>
+    <span class="stat" id="cloud-status">☁ chargement…</span>
     <button class="btn-ghost" id="btn-undo" style="display:none">↩ Annuler</button>
-    <button class="btn-ghost" id="btn-signout" style="display:none">Se déconnecter</button>
     <button class="btn-ghost" id="btn-reset">Réinitialiser</button>
   </div>
   <div id="conflict-bar" style="display:none">
@@ -367,13 +363,6 @@ const html = String.raw`<!doctype html>
     <button class="btn-primary" id="add-save">Ajouter l'activité</button>
   </div>
 </dialog>
-<div id="auth-gate">
-  <h1>Yallah — Tri des activités</h1>
-  <p class="sub">Le tri est partagé et enregistré en base de données.<br>Connecte-toi pour charger la dernière version.</p>
-  <button class="btn-primary" id="btn-signin">Se connecter avec Google</button>
-  <p class="hint" id="auth-err" style="color:#ff6b6b;max-width:480px"></p>
-</div>
-
 <script id="data" type="application/json">${JSON.stringify(DATA)}</script>
 <script>
 const DATA = JSON.parse(document.getElementById('data').textContent);
@@ -955,29 +944,39 @@ window.__applyRemote = (remoteState) => {
 };
 </script>
 <script type="module">
-// Firebase (CDN, modular build) — Google sign-in gate + shared persistence of
-// the tri in Firestore (activityTriage/current) behind an optimistic version
-// lock.
+// Firebase (CDN, modular build) — shared persistence of the tri in Firestore
+// (activityTriage/current) behind an optimistic version lock. No sign-in: the
+// rules open this single doc to public read/write (trusted-group trade-off);
+// the version lock is still enforced server-side.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 import { getFirestore, doc, getDoc, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 
 const CFG = __FIREBASE_CONFIG__;
 const qs = (s) => document.querySelector(s);
 const setStatus = (h) => { qs('#cloud-status').innerHTML = h; };
-const gateErr = (m) => { qs('#auth-err').textContent = m; };
 const escT = (s) => (s || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 if (!CFG.apiKey) {
-  setStatus('☁ hors ligne');
-  gateErr('Config Firebase absente du build — régénère la page avec les VITE_FIREBASE_* présents dans .env.local (node scripts/build-duplicates-review.mjs).');
+  setStatus('☁ hors ligne — config Firebase absente du build');
+  window.__boot(null); // local-only fallback so the tool still opens
   throw new Error('missing firebase config');
 }
 
 const app = initializeApp(CFG);
-const auth = getAuth(app);
 const db = getFirestore(app);
 const triRef = doc(db, 'activityTriage', 'current');
+
+// Author label for updatedBy / the conflict banner. Asked once, kept locally.
+const AUTHOR_LS = 'yallah.dedup.author.v1';
+function authorName() {
+  let n = '';
+  try { n = (localStorage.getItem(AUTHOR_LS) || '').trim(); } catch {}
+  if (!n) {
+    n = (prompt('Ton prénom ? (affiché aux autres quand tu modifies le tri)') || '').trim() || 'anonyme';
+    try { localStorage.setItem(AUTHOR_LS, n); } catch {}
+  }
+  return n;
+}
 
 let booted = false;
 let remoteVersion = 0;   // version of the doc our local state derives from
@@ -987,7 +986,6 @@ let pushTimer = null;
 let saving = false;
 
 const whoOf = (d) => (d && d.updatedBy && d.updatedBy.name) || 'quelqu’un';
-const myName = () => (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) || '?';
 const okStatus = (suffix) => setStatus('☁ enregistré · <b>v' + remoteVersion + '</b>' + (suffix ? ' · ' + escT(suffix) : ''));
 
 function showConflict(d) {
@@ -1040,7 +1038,7 @@ async function flush() {
         version: cur + 1,
         state: payload,
         updatedAt: serverTimestamp(),
-        updatedBy: { uid: auth.currentUser.uid, name: myName() },
+        updatedBy: { uid: 'web', name: authorName() },
       });
       return cur + 1;
     });
@@ -1065,16 +1063,8 @@ async function flush() {
   }
 }
 
-onAuthStateChanged(auth, (u) => { void onAuth(u); });
-async function onAuth(u) {
-  if (!u) {
-    qs('#auth-gate').style.display = '';
-    qs('#btn-signout').style.display = 'none';
-    setStatus('☁ non connecté');
-    return;
-  }
-  qs('#btn-signout').style.display = '';
-  if (booted) { qs('#auth-gate').style.display = 'none'; return; }
+// Initial load — no sign-in: read the doc straight away.
+(async () => {
   setStatus('☁ chargement…');
   try {
     const snap = await getDoc(triRef);
@@ -1092,17 +1082,14 @@ async function onAuth(u) {
       setStatus('☁ initialisation de la base…');
       window.__cloudSave(json);
     }
-    qs('#auth-gate').style.display = 'none';
   } catch (e) {
-    gateErr('Lecture de la base impossible : ' + ((e && e.message) || e));
+    // Offline / rules not deployed: open on the local cache; the first save
+    // will retry against the base and surface a conflict if it diverged.
+    booted = true;
+    window.__boot(null);
+    setStatus('⚠ lecture de la base impossible — mode local');
   }
-}
-
-qs('#btn-signin').onclick = () => {
-  gateErr('');
-  signInWithPopup(auth, new GoogleAuthProvider()).catch((e) => gateErr((e && e.message) || String(e)));
-};
-qs('#btn-signout').onclick = () => { void signOut(auth).then(() => location.reload()); };
+})();
 </script>
 </body>
 </html>`;

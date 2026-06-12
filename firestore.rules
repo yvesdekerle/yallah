@@ -69,13 +69,16 @@ service cloud.firestore {
     // page reads the doc in a transaction, sees the mismatch, and surfaces a
     // conflict instead). The state itself is an opaque JSON string — rules
     // can't validate inside it, the page re-validates on parse.
+    //
+    // DELIBERATELY PUBLIC (no signedIn()): the admin page has no sign-in by
+    // explicit choice — anyone with the URL can read/edit this one doc. The
+    // shape + version-lock validation still applies, and every other
+    // collection keeps requiring auth.
     match /activityTriage/current {
-      allow read: if signedIn();
-      allow create: if signedIn()
-        && validTriage()
+      allow read: if true;
+      allow create: if validTriage()
         && request.resource.data.version == 1;
-      allow update: if signedIn()
-        && validTriage()
+      allow update: if validTriage()
         && request.resource.data.version == resource.data.version + 1;
     }
     function validTriage() {
