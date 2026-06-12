@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yallah — Mise en prod des activités</title>
+<style>
+  :root { --bg: #14101a; --card: #221a2e; --line: #3a3047; --ink: #f4eefb; --mut: #b3a6c4;
+    --coral: #ff6b6b; --gold: #ffcb45; --green: #22c268; --blue: #5b9dff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--ink); }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--mut); font-size: 13.5px; margin: 0 0 22px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 18px; }
+  section h2 { font-size: 15px; margin: 0 0 10px; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+  .stat { background: #00000033; border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; font-size: 13.5px; }
+  .stat b { color: var(--gold); font-size: 16px; }
+  .alert { border-radius: 10px; padding: 11px 13px; margin: 12px 0 0; font-size: 13px; line-height: 1.5; }
+  .alert.warn { background: #e11d2a22; border: 1px solid #e11d2a; color: #ffd7da; }
+  .alert.ok { background: #22c26822; border: 1px solid var(--green); color: #c8f5d8; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; font-size: 13.5px; color: var(--mut); }
+  summary b { color: var(--ink); }
+  ul { margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: var(--mut); }
+  li b { color: var(--ink); font-weight: 600; }
+  li .to { color: var(--blue); }
+  button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink); padding: 10px 16px; }
+  button:hover { border-color: var(--mut); }
+  button:disabled { opacity: .5; cursor: default; }
+  .btn-primary { background: var(--coral); border-color: var(--coral); color: #fff; font-weight: 700; font-size: 15px; }
+  .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+  #msg { font-size: 13.5px; margin-top: 12px; }
+  #msg.ok { color: var(--green); }
+  #msg.err { color: var(--coral); }
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mise en prod des activités</h1>
+  <p class="sub">Applique le résultat du <a href="/admin/activities">tri</a> à l'application : les catégories
+    « Fusionner » ne gardent que le <b>représentant ★</b>, les activités fusionnées (croix rouge) et les
+    <b>💀 écartées</b> sont retirées, les activités ajoutées dans l'outil rejoignent le deck.
+    Les votes déjà émis sur une activité fusionnée suivent automatiquement son représentant.</p>
+
+  <section id="sec-prod">
+    <h2>Actuellement en prod</h2>
+    <div id="prod-now">Chargement…</div>
+  </section>
+
+  <section id="sec-plan">
+    <h2>Ce qui sera mis en prod (tri actuel)</h2>
+    <div id="plan">Chargement…</div>
+  </section>
+
+  <div class="actions">
+    <button class="btn-primary" id="btn-publish" disabled>Mettre en prod les nouvelles activités</button>
+    <button id="btn-unpublish" style="display:none">Dépublier (revenir à la liste complète)</button>
+  </div>
+  <p id="msg"></p>
+</main>
+
+<script id="meta" type="application/json">{"total":198,"byId":{"a001":{"t":"Snorkeling à Blue Bay Marine Park","r":5},"a002":{"t":"Plongée sous-marine (baptême ou exploration)","r":5},"a003":{"t":"Sous-marin Blue Safari (vrai sous-marin à -35 m)","r":5},"a004":{"t":"Kayak transparent à Île d'Ambre (mangrove)","r":5},"a005":{"t":"Pêche au gros","r":5},"a006":{"t":"Plongée à l'Île Ronde / Île aux Serpents (requins)","r":5},"a007":{"t":"Canyoning à Tamarin Falls","r":5},"a008":{"t":"Snorkeling avec cachalots / baleines à bosse (saison)","r":5},"a009":{"t":"Sortie pêche traditionnelle avec un pêcheur","r":5},"a010":{"t":"Plongée Cathédrale (Flic-en-Flac)","r":5},"a011":{"t":"Yacht à voile coucher de soleil (Tamarin / Black River)","r":5},"a012":{"t":"Sortie sunset chez Authentiseaty (Cap Malheureux)","r":5},"a013":{"t":"Snorkeling de nuit","r":5},"a014":{"t":"Sortie en pirogue traditionnelle \"à voile latine\"","r":5},"a015":{"t":"Plongée épaves bataille de Grand Port","r":5},"a016":{"t":"Anse aux Aigrettes (snorkeling secret)","r":5},"a017":{"t":"Sub-scooter Blue Safari (scooter sous-marin)","r":4},"a018":{"t":"Seabob (scooter aquatique propulseur)","r":4},"a019":{"t":"Kitesurf au Morne","r":4},"a020":{"t":"Observation/spectateur des pros au Morne + sunset session","r":4},"a021":{"t":"Stand-up paddle dans la rivière Tamarin","r":4},"a022":{"t":"Marche aquatique dans le lagon (sea trekking / aqua trekking)","r":4},"a023":{"t":"Flyboard / Flyn'Dive (jet d'eau sous les pieds)","r":4},"a024":{"t":"Kayak transparent de nuit (bioluminescence)","r":4},"a025":{"t":"Plongée sur épave Stella Maru (Trou aux Biches)","r":4},"a026":{"t":"Apnée / freediving cours","r":4},"a027":{"t":"Voile / régate en lagon","r":4},"a028":{"t":"Surf trip La Prairie / One Eye / Manawa (regarder, pas faire)","r":4},"a030":{"t":"Diving Drift à Belle Mare (plongée de courant)","r":4},"a031":{"t":"Bassins naturels de Saint-Félix","r":4},"a032":{"t":"Sortie crabe trekking (mangroves de l'est)","r":4},"a033":{"t":"Fairy Falls (Mare aux Vacoas)","r":4},"a034":{"t":"Nager avec les dauphins à Tamarin","r":3},"a035":{"t":"Jet ski","r":3},"a036":{"t":"Surf à Tamarin","r":3},"a037":{"t":"Sailfishing / pêche au gros nocturne","r":3},"a038":{"t":"Stand-up paddle yoga au lever du soleil","r":3},"a039":{"t":"Île aux Bénitiers en pirogue traditionnelle","r":5},"a040":{"t":"Îlot Mouchoir Rouge (Mahébourg)","r":5},"a041":{"t":"Île des Deux Cocos (Blue Bay) — île privée","r":5},"a042":{"t":"Île de la Passe (forteresse de la bataille de Grand Port)","r":5},"a043":{"t":"Excursion catamaran île aux Cerfs (journée + BBQ)","r":4},"a044":{"t":"Sortie catamaran îles du Nord (Coin de Mire, Île Plate, Îlot Gabriel)","r":4},"a045":{"t":"Île aux Bénitiers + nage avec dauphins","r":4},"a046":{"t":"Excursion Île aux Bernaches / Île d'Ambre en kayak","r":4},"a047":{"t":"Île aux Phares (Île Marianne)","r":4},"a048":{"t":"Île aux Fouquets (lighthouse)","r":4},"a049":{"t":"Grottes de l'îlot Sanchot","r":4},"a050":{"t":"Îlot Mangénie (côte est, près de Île aux Cerfs)","r":4},"a051":{"t":"Combo \"Cinq Îles\" speedboat (depuis Trou d'Eau Douce)","r":4},"a052":{"t":"Îlot Vacoas (sud-est)","r":3},"a053":{"t":"Île aux Aigrettes (réserve nature MWF)","r":5},"a054":{"t":"Sortie chauves-souris géantes au crépuscule (Black River Gorges)","r":5},"a055":{"t":"Casela Nature Parks","r":4},"a056":{"t":"La Vieille Cheminée (équitation chic à Chamarel)","r":4},"a057":{"t":"Randonnée du Morne Brabant","r":5},"a058":{"t":"Randonnée Piton de la Petite Rivière Noire (point culminant)","r":5},"a059":{"t":"Sentier Pieter Both","r":5},"a060":{"t":"Lever de soleil au Morne (la version sérieuse)","r":5},"a061":{"t":"Randonnée des 7 cascades de Tamarin","r":4},"a062":{"t":"Parc national des Gorges de Rivière Noire","r":4},"a063":{"t":"Sentier des 7 cascades — la version intégrale","r":4},"a064":{"t":"Sentier du Pouce","r":4},"a065":{"t":"Parakeet Trail (Black River Gorges)","r":4},"a066":{"t":"Cascades de la Nicolière (sentier non balisé)","r":4},"a067":{"t":"Sentier des Deux Frères / Domaine Anahita (côte est)","r":4},"a068":{"t":"Quatre Sœurs (montagne ignorée du sud-est)","r":4},"a069":{"t":"La Nicolière + Lion Mountain","r":4},"a070":{"t":"Mare aux Vacoas + Sophie Nature Walk","r":3},"a071":{"t":"Powder Mills + ancien orphelinat (Pamplemousses)","r":3},"a072":{"t":"Sentier Mare aux Joncs","r":3},"a073":{"t":"Cascade Eau Bleue (Cluny) — sans panneau","r":5},"a074":{"t":"Rochester Falls (colonnes basaltiques)","r":5},"a075":{"t":"Plage de Cambuse","r":5},"a076":{"t":"Pointe d'Esny (la plage publique cachée)","r":5},"a077":{"t":"Photo du jacaranda en fleur (novembre = pleine floraison)","r":5},"a078":{"t":"Route des Jacarandas en voiture (boucle plateau central)","r":4},"a079":{"t":"Coucher du soleil à La Prairie","r":5},"a080":{"t":"Gris-Gris (falaises sauvages)","r":5},"a081":{"t":"Plage de Riambel","r":5},"a082":{"t":"Vallée de Ferney + Falaise Ferney","r":5},"a083":{"t":"Cascade de Chamarel + Terre des 7 couleurs","r":4},"a084":{"t":"Cascade 500 Pieds + Lolo Waterfall (sud)","r":4},"a085":{"t":"Vanillart — plantation de vanille à Chamouny","r":4},"a086":{"t":"Jardin botanique Sir Seewoosagur Ramgoolam (Pamplemousses)","r":4},"a087":{"t":"Domaine de Bel Ombre / Réserve Frédérica","r":4},"a088":{"t":"Golf","r":4},"a089":{"t":"Pont Naturel (sud sauvage)","r":4},"a090":{"t":"Le Souffleur de Souillac","r":4},"a091":{"t":"Trou aux Cerfs (volcan éteint de Curepipe)","r":4},"a092":{"t":"Tunnel de lave de Roches Noires","r":4},"a093":{"t":"VTT électrique dans les champs de canne (Grand Port / Bel Ombre)","r":4},"a094":{"t":"Équitation sur la plage au coucher du soleil","r":4},"a095":{"t":"Bois Sec et Mare Longue (sentiers ornitho)","r":4},"a096":{"t":"Petite Cabane bleue (Macondé)","r":4},"a097":{"t":"Plage Poudre d'Or","r":4},"a098":{"t":"Centre de Falaise Rouge (sud-est)","r":4},"a099":{"t":"Plage de Bel Ombre publique (Saint-Martin)","r":4},"a100":{"t":"Baie du Jacotet","r":4},"a101":{"t":"Maconde Pointe (route panoramique)","r":4},"a102":{"t":"Plage Trou d'Eau Sucrée","r":4},"a103":{"t":"Marche du sucre (canne à sucre à Riche en Eau)","r":4},"a104":{"t":"Domaine de l'Étoile (réserve nature + activités)","r":3},"a105":{"t":"Vallée des couleurs Nature Park (sud)","r":3},"a106":{"t":"Tour de Maurice en quad","r":3},"a107":{"t":"Savinia Beach (plage secrète)","r":3},"a108":{"t":"Course / running au Bois Chéri ou Petrin Trail","r":3},"a109":{"t":"Trou Kanaka (puits naturel)","r":3},"a110":{"t":"Marche dans les rizières de Saint Hubert","r":3},"a111":{"t":"La Roche qui Pleure","r":3},"a112":{"t":"Hydravion (la vraie expérience cascade sous-marine)","r":5},"a113":{"t":"Saut en parachute (tandem)","r":5},"a114":{"t":"Vol en hélicoptère au-dessus du sud (incl. cascade sous-marine)","r":4},"a115":{"t":"ULM / paramoteur","r":4},"a116":{"t":"Parachute ascensionnel (parasailing)","r":3},"a117":{"t":"L'Aventure du Sucre — coupe de canne + dégustation 12 sucres + rhums","r":5},"a118":{"t":"Fangourin (jus de canne frais pressé) à Chamarel","r":4},"a119":{"t":"Tour des champs de canne en VTT électrique ou char à bœufs (Saint Aubin)","r":5},"a120":{"t":"Médine Sugar Estate — visite usine en activité (rare)","r":4},"a121":{"t":"Gato sucre artisanal et fangourin au marché de Mahébourg","r":5},"a122":{"t":"Cours de cuisine créole mauricienne","r":5},"a123":{"t":"Dégustation de rhum — Rhumerie de Chamarel","r":5},"a124":{"t":"Distillerie Saint Aubin (rhum + vanille)","r":5},"a125":{"t":"Domaine des Aubineaux + Bois Chéri + Saint Aubin = \"Route du Thé\"","r":5},"a126":{"t":"Dîner créole chez l'habitant (table d'hôte)","r":5},"a127":{"t":"Street food tour à Port-Louis","r":5},"a128":{"t":"Biscuiterie Rault à Mahébourg","r":5},"a129":{"t":"Atelier rhum arrangé chez un artisan","r":5},"a130":{"t":"Cours de pâtisserie / cuisine indo-mauricienne","r":5},"a131":{"t":"Kot Marie-Michelle (table d'hôte de gibier)","r":5},"a132":{"t":"Kwizine Mama (Mahébourg) — table d'hôte de luxe","r":5},"a133":{"t":"Dîner gastronomique dans une bulle (Bois Chéri)","r":5},"a134":{"t":"Dîner-bulle sur l'île aux Cerfs","r":5},"a135":{"t":"Achat de rhum vieux directement à la distillerie","r":5},"a136":{"t":"\"Lakaz Café\" (immersion totale, plateau central)","r":5},"a137":{"t":"Concours culinaire de \"Mama Sega\" chez l'habitant","r":5},"a138":{"t":"Plantation de thé Bois Chéri","r":4},"a139":{"t":"Jardin de la Vanille (Saint-Julien d'Hotman)","r":4},"a140":{"t":"Demeure Saint Antoine (maison coloniale de 1835)","r":4},"a141":{"t":"Tea ceremony chez un planteur","r":4},"a142":{"t":"Dégustation de fromages mauriciens (oui, ça existe)","r":3},"a143":{"t":"Grand Bassin (Ganga Talao) — lac sacré hindou","r":5},"a144":{"t":"Atelier séga (cours de danse traditionnelle)","r":5},"a145":{"t":"Soirée séga \"tipik\" dans un village","r":5},"a146":{"t":"Photo nocturne à Grand Bassin","r":5},"a147":{"t":"Les pyramides de Plaine Magnien","r":5},"a148":{"t":"Courses hippiques au Champ de Mars (Port-Louis)","r":5},"a149":{"t":"Crown Lodge — Loge VIP au Champ de Mars (version premium, journée complète)","r":5},"a151":{"t":"Monument de l'esclave inconnu (pied du Morne)","r":5},"a152":{"t":"Grottes du Morne (cavernes des marrons)","r":5},"a153":{"t":"Bataille de Grand Port — site de la bataille navale (1810)","r":5},"a154":{"t":"Bois des Amourettes (village pêcheurs créole)","r":5},"a155":{"t":"Port-Louis : capitale (Caudan, Aapravasi Ghat, Citadelle)","r":4},"a156":{"t":"Aapravasi Ghat (au-delà du coup d'œil rapide)","r":4},"a157":{"t":"Pagode chinoise Kwan Tee + cimetière chinois","r":4},"a158":{"t":"Église Notre-Dame Auxiliatrice de Cap Malheureux","r":4},"a159":{"t":"Maison Eureka (maison coloniale créole)","r":4},"a160":{"t":"Domaine de Labourdonnais","r":4},"a161":{"t":"Phare d'Albion","r":4},"a162":{"t":"Spectacle de feu et séga sur la plage","r":4},"a163":{"t":"Cimetière des esclaves de Bois Marchand","r":4},"a164":{"t":"Marie Reine de la Paix (Port-Louis)","r":4},"a165":{"t":"Vieux cimetière historique (Port-Louis)","r":4},"a166":{"t":"Tour Martello (La Preneuse)","r":4},"a167":{"t":"Treckbus de Bel Ombre","r":4},"a168":{"t":"Pointe du Diable (forts français + canon)","r":4},"a169":{"t":"Centre Nelson Mandela pour la culture créole","r":4},"a170":{"t":"Temple Kaylasson (Sainte-Croix)","r":4},"a171":{"t":"Pèlerinage du Père Laval (9 septembre, mais tombeau visitable toute l'année)","r":4},"a172":{"t":"Village de pêcheurs Baie du Cap","r":4},"a173":{"t":"Église en bois de Souillac (Saint Jacques)","r":4},"a174":{"t":"Cimetière marin de Souillac","r":4},"a175":{"t":"Musée naval et historique de Mahébourg","r":3},"a176":{"t":"Ruines de Balaclava","r":3},"a177":{"t":"Mosquée Jummah de Port-Louis","r":3},"a178":{"t":"Statue de Notre-Dame de la Salette (Grande Rivière Sud Est)","r":3},"a179":{"t":"Visite d'un temple Tamil pour Tahmasha / Cavadee","r":3},"a180":{"t":"Bassin des Esclaves Noirs (Pamplemousses)","r":3},"a181":{"t":"Tombeau de Malartic (Place d'Armes, Port-Louis)","r":3},"a182":{"t":"Mémorial du Travessa (Bel Ombre)","r":3},"a183":{"t":"Robert Edward Hart Museum (Souillac)","r":3},"a184":{"t":"Cimetière de Saint Martin (pierres tombales coloniales)","r":2},"a185":{"t":"Visite de la prison historique de Mahébourg","r":2},"a186":{"t":"Marché de Mahébourg (lundi matin)","r":5},"a187":{"t":"Marché central de Port-Louis","r":4},"a188":{"t":"Marché de Centre de Flacq (mercredi/dimanche)","r":4},"a189":{"t":"Atelier teinture / artisanat dans un village","r":3},"a190":{"t":"Foire de Quatre-Bornes (jeudi et dimanche)","r":3},"a191":{"t":"Atelier sablage de verre / cristal Phoenix","r":3},"a192":{"t":"Atelier de fabrication de modèles réduits de bateaux","r":3},"a193":{"t":"Atelier de poterie créole","r":3},"a194":{"t":"Coucher de soleil à Flic-en-Flac ou Albion","r":5},"a195":{"t":"Soirée astronomique / observation des étoiles","r":5},"a197":{"t":"Spa / massage à l'hôtel ou indépendant","r":4},"a198":{"t":"Yoga sur la plage / cours collectif","r":3},"a199":{"t":"Escape game \"Save the Last Dodo\"","r":4},"a200":{"t":"Tyrolienne géante","r":3},"a201":{"t":"Cinéma en plein air (drive-in)","r":3}}}</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+
+const CFG = {"apiKey":"AIzaSyCobKTCb5QaWqEvEDOAw42pioPa_PS_l_k","authDomain":"yallah-3251c.firebaseapp.com","projectId":"yallah-3251c","storageBucket":"yallah-3251c.firebasestorage.app","messagingSenderId":"95504450103","appId":"1:95504450103:web:1abd69fdbf11ade8d635b2"};
+const META = JSON.parse(document.getElementById('meta').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const msg = (t, cls) => { const el = $('#msg'); el.textContent = t; el.className = cls || ''; };
+
+const app = initializeApp(CFG);
+const db = getFirestore(app);
+const curRef = doc(db, 'activityTriage', 'current');
+const pubRef = doc(db, 'activityTriage', 'published');
+
+const AUTHOR_LS = 'yallah.dedup.author.v1';
+function authorName() {
+  let n = '';
+  try { n = (localStorage.getItem(AUTHOR_LS) || '').trim(); } catch {}
+  if (!n) {
+    n = (prompt('Ton prénom ? (gardé comme auteur de la mise en prod)') || '').trim() || 'anonyme';
+    try { localStorage.setItem(AUTHOR_LS, n); } catch {}
+  }
+  return n;
+}
+
+// Same semantics as the tri page's computeDrops(): in a "merge" group only the
+// representative (first non-discarded of [rep, ...ids]) survives; every other
+// member is removed — merged into the rep, or null when itself discarded. In
+// keep/undecided groups only the discarded members are removed.
+function computeFinal(state) {
+  const userActs = state.userActivities || [];
+  const userById = {};
+  userActs.forEach((a) => { userById[a.id] = a; });
+  const titleOf = (id) => (META.byId[id] && META.byId[id].t) || (userById[id] && userById[id].title) || id;
+  const disc = new Set(state.discarded || []);
+  const removed = {};
+  (state.groups || []).forEach((g) => {
+    if (g.decision === 'merge') {
+      const order = [g.rep].concat(g.ids).filter((id) => id && g.ids.includes(id));
+      const keep = order.find((id) => !disc.has(id)) || null;
+      g.ids.forEach((id) => { if (id !== keep) removed[id] = disc.has(id) ? null : keep; });
+    } else {
+      g.ids.forEach((id) => { if (disc.has(id)) removed[id] = null; });
+    }
+  });
+  disc.forEach((id) => { if (!(id in removed)) removed[id] = null; }); // defensive
+  const allIds = Object.keys(META.byId).concat(userActs.map((a) => a.id));
+  const keptIds = allIds.filter((id) => !(id in removed));
+  const added = userActs
+    .filter((a) => !(a.id in removed))
+    .map((a) => { const c = Object.assign({}, a); delete c.photo; delete c.userAdded; return c; });
+  const untreated = (state.groups || []).filter((g) => g.ids.length > 1 && !g.decision && g.ids.some((id) => !disc.has(id)));
+  return { removed, keptIds, added, untreated, titleOf };
+}
+
+function renderProd(pub) {
+  const host = $('#prod-now');
+  if (!pub) {
+    host.innerHTML = '<span style="color:var(--mut)">Aucune publication — l’app montre la liste complète (' + META.total + ' activités).</span>';
+    $('#btn-unpublish').style.display = 'none';
+    return;
+  }
+  const when = pub.publishedAt && pub.publishedAt.toDate ? pub.publishedAt.toDate().toLocaleString('fr-FR') : '?';
+  const by = (pub.publishedBy && pub.publishedBy.name) || '?';
+  const removedCount = pub.removed ? Object.keys(pub.removed).length : 0;
+  const addedCount = pub.added ? pub.added.length : 0;
+  host.innerHTML =
+    '<div class="stats">' +
+    '<span class="stat"><b>' + (pub.keptCount != null ? pub.keptCount : '?') + '</b> activités en prod</span>' +
+    '<span class="stat"><b>' + removedCount + '</b> retirées</span>' +
+    '<span class="stat"><b>' + addedCount + '</b> ajoutées</span>' +
+    '<span class="stat">publié le <b>' + esc(when) + '</b> par <b>' + esc(by) + '</b> (tri v' + (pub.sourceVersion || '?') + ')</span>' +
+    '</div>';
+  $('#btn-unpublish').style.display = '';
+}
+
+function renderPlan(fin, triVersion) {
+  const merged = Object.entries(fin.removed).filter((e) => e[1] !== null);
+  const discarded = Object.entries(fin.removed).filter((e) => e[1] === null);
+  const list = (items) => '<ul>' + items.join('') + '</ul>';
+  let h =
+    '<div class="stats">' +
+    '<span class="stat"><b>' + fin.keptIds.length + '</b> activités gardées</span>' +
+    '<span class="stat"><b>' + merged.length + '</b> fusionnées</span>' +
+    '<span class="stat"><b>' + discarded.length + '</b> écartées</span>' +
+    '<span class="stat"><b>' + fin.added.length + '</b> ajoutées</span>' +
+    '<span class="stat">tri <b>v' + triVersion + '</b></span>' +
+    '</div>';
+  if (merged.length) {
+    h += '<details><summary><b>' + merged.length + '</b> fusionnées (le vote suit le représentant)</summary>' +
+      list(merged.map((e) => '<li>' + esc(fin.titleOf(e[0])) + ' <span class="to">→ ' + esc(fin.titleOf(e[1])) + '</span></li>')) + '</details>';
+  }
+  if (discarded.length) {
+    h += '<details><summary><b>' + discarded.length + '</b> écartées (retirées, votes supprimés)</summary>' +
+      list(discarded.map((e) => '<li>' + esc(fin.titleOf(e[0])) + '</li>')) + '</details>';
+  }
+  if (fin.added.length) {
+    h += '<details><summary><b>' + fin.added.length + '</b> ajoutées au deck</summary>' +
+      list(fin.added.map((a) => '<li><b>' + esc(a.title) + '</b></li>')) + '</details>';
+  }
+  if (fin.untreated.length) {
+    h += '<div class="alert warn">⚠ <b>' + fin.untreated.length + '</b> catégorie(s) à plusieurs activités pas encore tranchée(s) (ni « Fusionner » ni « Garder séparé ») : ' +
+      fin.untreated.map((g) => esc(g.name)).join(' · ') + '. Elles resteront toutes en prod telles quelles.</div>';
+  } else {
+    h += '<div class="alert ok">✓ Toutes les catégories à plusieurs activités ont été tranchées.</div>';
+  }
+  $('#plan').innerHTML = h;
+}
+
+let plan = null;
+let triVersion = 0;
+
+async function load() {
+  try {
+    const cur = await getDoc(curRef);
+    if (!cur.exists()) { $('#plan').innerHTML = '<span class="alert warn">Aucun tri en base (activityTriage/current absent).</span>'; }
+    else {
+      const d = cur.data();
+      triVersion = d.version || 0;
+      let st = null;
+      try { st = JSON.parse(d.state); } catch {}
+      if (!st || !Array.isArray(st.groups)) { $('#plan').innerHTML = '<span class="alert warn">Tri illisible.</span>'; }
+      else { plan = computeFinal(st); renderPlan(plan, triVersion); $('#btn-publish').disabled = false; }
+    }
+    const pub = await getDoc(pubRef);
+    renderProd(pub.exists() ? pub.data() : null);
+  } catch (e) {
+    msg('Lecture impossible : ' + ((e && e.message) || e), 'err');
+  }
+}
+
+$('#btn-publish').onclick = async () => {
+  if (!plan) return;
+  const removedCount = Object.keys(plan.removed).length;
+  if (!confirm('Mettre en prod ? ' + plan.keptIds.length + ' activités gardées, ' + removedCount + ' retirées, ' + plan.added.length + ' ajoutées.\n\nLes utilisateurs verront la nouvelle liste au prochain chargement de l’app.')) return;
+  $('#btn-publish').disabled = true;
+  msg('Publication…');
+  try {
+    await setDoc(pubRef, {
+      sourceVersion: triVersion,
+      removed: plan.removed,
+      added: plan.added,
+      keptCount: plan.keptIds.length,
+      publishedAt: serverTimestamp(),
+      publishedBy: { name: authorName() },
+    });
+    msg('✓ Mis en prod — l’app appliquera la nouvelle liste au prochain chargement.', 'ok');
+    void load();
+  } catch (e) {
+    msg('Publication impossible : ' + ((e && e.message) || e), 'err');
+  } finally {
+    $('#btn-publish').disabled = false;
+  }
+};
+
+$('#btn-unpublish').onclick = async () => {
+  if (!confirm('Dépublier ? L’app reviendra à la liste complète (' + META.total + ' activités) au prochain chargement.')) return;
+  msg('Dépublication…');
+  try {
+    await deleteDoc(pubRef);
+    msg('✓ Dépublié — retour à la liste complète.', 'ok');
+    void load();
+  } catch (e) {
+    msg('Dépublication impossible : ' + ((e && e.message) || e), 'err');
+  }
+};
+
+void load();
+</script>
+</body>
+</html>

@@ -89,6 +89,25 @@ service cloud.firestore {
         && request.resource.data.updatedBy.name is string;
     }
 
+    // activityTriage/published — the OUTCOME of the triage, written by the
+    // /admin/goprod button: retired activity ids (merged → representative id,
+    // écartée → null) + the triage-added activities. The app applies it at
+    // boot (src/utils/catalog.ts). Public like `current` (same deliberate
+    // trade-off); deletable = « Dépublier » (the app falls back to the full
+    // bundled list).
+    match /activityTriage/published {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(
+          ['sourceVersion', 'removed', 'added', 'keptCount', 'publishedAt', 'publishedBy'])
+        && request.resource.data.sourceVersion is int
+        && request.resource.data.removed is map
+        && request.resource.data.added is list
+        && request.resource.data.keptCount is int
+        && request.resource.data.publishedBy is map
+        && request.resource.data.publishedBy.name is string;
+      allow delete: if true;
+    }
+
     // activities/{id} — curated (seeded) + user-added. A user may only create
     // or modify activities they own (createdBy.uid == their uid). Curated docs
     // have no createdBy, so they're read-only to clients.

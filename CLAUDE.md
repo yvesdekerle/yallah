@@ -192,6 +192,8 @@ A standalone, generated HTML tool (NOT part of the React tree) to merge/split lo
 - **No sign-in** (deliberate choice): the shared triage doc **`activityTriage/current`** (`{ version, state (JSON string), updatedAt, updatedBy }`) is **publicly readable/writable** in `firestore.rules` — anyone with the URL can edit it; every other collection still requires auth. The save author's name is asked once via `prompt()` and kept in `localStorage` `yallah.dedup.author.v1`.
 - **Optimistic version lock** — every save runs in a transaction and must write exactly `version + 1` (also enforced in `firestore.rules`), so two editors can't silently overwrite each other. The loser gets a conflict banner with a "Charger sa version" button (their own tri stays recoverable via « ↩ Annuler »). Saves are debounced 1.2 s; `localStorage` (`yallah.dedup.v1`) is only a local cache + single-level undo.
 - **Import/Export buttons were removed** — the DB is the single source. Initial import / forced restore of a JSON export: `npm run seed:triage` (reads `workdir/yallah-tri-partage.json`, `--file=…` / `--force` flags). `workdir/` is gitignored.
+- **`/admin/goprod`** (same generator, `public/admin/goprod.html`) publishes the triage **outcome** to the app: merge groups keep ONLY the ★ representative (red-cross merged-out + 💀 discarded are retired), triage-added activities join the deck. Writes **`activityTriage/published`** `{ sourceVersion, removed (id → repId|null), added (Activity[]), keptCount, publishedAt, publishedBy }` (public read/write/delete like `current`). « Dépublier » deletes the doc → app falls back to the full bundled list.
+- **App side** (`src/utils/catalog.ts`, pure — no Firebase import): `main.tsx` applies the **cached** publication (`yallah.catalog.v1`) before first render (deck = bundled − removed + added; persisted history remapped: merged vote → representative, écartée → dropped), then background-fetches the live doc and **reloads once** when it changed (save-then-reload, loop-guarded). `getMyVotes` / `subscribeGroupVotes` remap Firestore votes the same way, so group counts and re-hydration never resurface retired ids. No publication / demo mode ⇒ everything is a no-op.
 
 ## Storage
 
@@ -202,6 +204,7 @@ Keys in `localStorage` (see `STORAGE_KEYS` in `constants/swipe.ts`):
 - `yallah.googleUser.v1` — the Google SSO profile (Firebase Auth is the source of truth; this mirrors it). Exclusive with `yallah.userId.v1`.
 - `yallah.tagFilter.v1` — the persisted tag-facet filter (`string[]`).
 - `yallah.tigerSeen.v1` — `boolean`. True once the one-time **"Tié un tigre !"** welcome has played on the very first identification (Google sign-in **or** demo pick). A "seen once, ever" flag: **never cleared** — not on logout, not on reset — so the animation shows exactly once per device.
+- `yallah.catalog.v1` — cached `PublishedCatalog` (mirror of Firestore `activityTriage/published`). Applied at boot by `main.tsx`; refreshed in the background (reload-on-change). Absent ⇒ full bundled list.
 
 **Legacy migration**: when `App.tsx` loads history, any entry with `verdict: 'neutre'` is rewritten to `'whynot'` (the id was renamed in the source tree). Existing users keep their votes.
 

@@ -40,6 +40,7 @@ import {
   parseVotesDoc,
   sanitizeVoteValues,
 } from './votesConverter.ts'
+import { loadCachedCatalog, remapVoteValues } from '../../utils/catalog.ts'
 
 let app: FirebaseApp | undefined
 let authInstance: Auth | undefined
@@ -163,11 +164,14 @@ export async function clearVotes(uid: string): Promise<void> {
   )
 }
 
-/** One-shot read of the user's own verdicts, for rehydrating local history on sign-in. */
+/** One-shot read of the user's own verdicts, for rehydrating local history on
+    sign-in. Voted ids are remapped through the published catalog (merged →
+    representative, écartée → dropped) so retired activities never resurface. */
 export async function getMyVotes(uid: string): Promise<VoteEntry[]> {
   const snap = await getDoc(doc(db(), 'votes', uid))
   const data = parseVotesDoc(uid, snap.data() as Record<string, unknown> | undefined)
-  return Object.entries(data.activities).map(([id, v]) => ({
+  const activities = remapVoteValues(data.activities, loadCachedCatalog())
+  return Object.entries(activities).map(([id, v]) => ({
     id,
     verdict: v.verdict,
     ...(v.quotaHit ? { quotaHit: true } : {}),
@@ -185,15 +189,24 @@ export async function upsertActivity(
   )
 }
 
-/** Listen to every user's votes (group screen). */
+/** Listen to every user's votes (group screen). Ids are remapped through the
+    published catalog so merged activities count for their representative. */
 export function subscribeGroupVotes(
   cb: (votes: VotesDoc[]) => void,
 ): () => void {
   return onSnapshot(collection(db(), 'votes'), (snap) => {
+    const catalog = loadCachedCatalog()
     cb(
-      snap.docs.map((d) =>
-        parseVotesDoc(d.id, d.data() as Record<string, unknown> | undefined),
-      ),
+      snap.docs.map((d) => {
+        const votes = parseVotesDoc(
+          d.id,
+          d.data() as Record<string, unknown> | undefined,
+        )
+        return {
+          ...votes,
+          activities: remapVoteValues(votes.activities, catalog),
+        }
+      }),
     )
   })
 }
@@ -222,4 +235,16 @@ export async function publishAppVersion(version: string): Promise<void> {
     { version, updatedAt: serverTimestamp() },
     { merge: true },
   )
+}
+
+/** One-shot read of the published catalog (`activityTriage/published`) — the
+    outcome of the activity triage, written by /admin/goprod. Returns the raw
+    payload (validated by `parseCatalog` on the caller side) or null when no
+    publication exists. */
+export async function getPublishedCatalog(): Promise<unknown> {
+  const snap = await getDoc(doc(db(), 'activityTriage', 'published'))
+  if (!snap.exists()) return null
+  const data = snap.data() as Record<string, unknown>
+  const ts = data.publishedAt as { toMillis?: () => number } | undefined
+  return { ...data, publishedAtMs: ts?.toMillis?.() ?? 0 }
 }

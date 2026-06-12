@@ -122,3 +122,9 @@ export async function publishAppVersion(version: string): Promise<void> {
   if (!firebaseAvailable) return
   await (await loadClient()).publishAppVersion(version)
 }
+
+/** Raw published-catalog payload, or null (no publication / Firebase off). */
+export async function getPublishedCatalog(): Promise<unknown> {
+  if (!firebaseAvailable) return null
+  return (await loadClient()).getPublishedCatalog()
+}

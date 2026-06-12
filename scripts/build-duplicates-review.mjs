@@ -1141,4 +1141,259 @@ const webOut = join(adminDir, 'activities.html');
 writeFileSync(webOut, webHtml);
 console.log(`Wrote ${webOut}  (→ served at /admin/activities)`);
 
+// --- /admin/goprod — publish the triage outcome to the app -----------------
+// Reads activityTriage/current, computes the final list (merge groups keep
+// ONLY the representative; red-cross merged-out and 💀 discarded activities are
+// removed), and writes activityTriage/published. The app applies that doc at
+// boot (src/main.tsx + utils/catalog.ts): retired activities leave the deck,
+// triage-added ones join it, and votes on merged activities follow their
+// representative. Reversible via « Dépublier ».
+const GOPROD_META = {
+  total: activities.length,
+  byId: Object.fromEntries(activities.map((a) => [a.id, { t: a.title, r: a.rating || 0 }])),
+};
+
+const goprodHtml = String.raw`<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yallah — Mise en prod des activités</title>
+<style>
+  :root { --bg: #14101a; --card: #221a2e; --line: #3a3047; --ink: #f4eefb; --mut: #b3a6c4;
+    --coral: #ff6b6b; --gold: #ffcb45; --green: #22c268; --blue: #5b9dff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--ink); }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--mut); font-size: 13.5px; margin: 0 0 22px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 18px; }
+  section h2 { font-size: 15px; margin: 0 0 10px; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+  .stat { background: #00000033; border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; font-size: 13.5px; }
+  .stat b { color: var(--gold); font-size: 16px; }
+  .alert { border-radius: 10px; padding: 11px 13px; margin: 12px 0 0; font-size: 13px; line-height: 1.5; }
+  .alert.warn { background: #e11d2a22; border: 1px solid #e11d2a; color: #ffd7da; }
+  .alert.ok { background: #22c26822; border: 1px solid var(--green); color: #c8f5d8; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; font-size: 13.5px; color: var(--mut); }
+  summary b { color: var(--ink); }
+  ul { margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: var(--mut); }
+  li b { color: var(--ink); font-weight: 600; }
+  li .to { color: var(--blue); }
+  button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink); padding: 10px 16px; }
+  button:hover { border-color: var(--mut); }
+  button:disabled { opacity: .5; cursor: default; }
+  .btn-primary { background: var(--coral); border-color: var(--coral); color: #fff; font-weight: 700; font-size: 15px; }
+  .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+  #msg { font-size: 13.5px; margin-top: 12px; }
+  #msg.ok { color: var(--green); }
+  #msg.err { color: var(--coral); }
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mise en prod des activités</h1>
+  <p class="sub">Applique le résultat du <a href="/admin/activities">tri</a> à l'application : les catégories
+    « Fusionner » ne gardent que le <b>représentant ★</b>, les activités fusionnées (croix rouge) et les
+    <b>💀 écartées</b> sont retirées, les activités ajoutées dans l'outil rejoignent le deck.
+    Les votes déjà émis sur une activité fusionnée suivent automatiquement son représentant.</p>
+
+  <section id="sec-prod">
+    <h2>Actuellement en prod</h2>
+    <div id="prod-now">Chargement…</div>
+  </section>
+
+  <section id="sec-plan">
+    <h2>Ce qui sera mis en prod (tri actuel)</h2>
+    <div id="plan">Chargement…</div>
+  </section>
+
+  <div class="actions">
+    <button class="btn-primary" id="btn-publish" disabled>Mettre en prod les nouvelles activités</button>
+    <button id="btn-unpublish" style="display:none">Dépublier (revenir à la liste complète)</button>
+  </div>
+  <p id="msg"></p>
+</main>
+
+<script id="meta" type="application/json">${JSON.stringify(GOPROD_META)}</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+
+const CFG = __FIREBASE_CONFIG__;
+const META = JSON.parse(document.getElementById('meta').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const msg = (t, cls) => { const el = $('#msg'); el.textContent = t; el.className = cls || ''; };
+
+const app = initializeApp(CFG);
+const db = getFirestore(app);
+const curRef = doc(db, 'activityTriage', 'current');
+const pubRef = doc(db, 'activityTriage', 'published');
+
+const AUTHOR_LS = 'yallah.dedup.author.v1';
+function authorName() {
+  let n = '';
+  try { n = (localStorage.getItem(AUTHOR_LS) || '').trim(); } catch {}
+  if (!n) {
+    n = (prompt('Ton prénom ? (gardé comme auteur de la mise en prod)') || '').trim() || 'anonyme';
+    try { localStorage.setItem(AUTHOR_LS, n); } catch {}
+  }
+  return n;
+}
+
+// Same semantics as the tri page's computeDrops(): in a "merge" group only the
+// representative (first non-discarded of [rep, ...ids]) survives; every other
+// member is removed — merged into the rep, or null when itself discarded. In
+// keep/undecided groups only the discarded members are removed.
+function computeFinal(state) {
+  const userActs = state.userActivities || [];
+  const userById = {};
+  userActs.forEach((a) => { userById[a.id] = a; });
+  const titleOf = (id) => (META.byId[id] && META.byId[id].t) || (userById[id] && userById[id].title) || id;
+  const disc = new Set(state.discarded || []);
+  const removed = {};
+  (state.groups || []).forEach((g) => {
+    if (g.decision === 'merge') {
+      const order = [g.rep].concat(g.ids).filter((id) => id && g.ids.includes(id));
+      const keep = order.find((id) => !disc.has(id)) || null;
+      g.ids.forEach((id) => { if (id !== keep) removed[id] = disc.has(id) ? null : keep; });
+    } else {
+      g.ids.forEach((id) => { if (disc.has(id)) removed[id] = null; });
+    }
+  });
+  disc.forEach((id) => { if (!(id in removed)) removed[id] = null; }); // defensive
+  const allIds = Object.keys(META.byId).concat(userActs.map((a) => a.id));
+  const keptIds = allIds.filter((id) => !(id in removed));
+  const added = userActs
+    .filter((a) => !(a.id in removed))
+    .map((a) => { const c = Object.assign({}, a); delete c.photo; delete c.userAdded; return c; });
+  const untreated = (state.groups || []).filter((g) => g.ids.length > 1 && !g.decision && g.ids.some((id) => !disc.has(id)));
+  return { removed, keptIds, added, untreated, titleOf };
+}
+
+function renderProd(pub) {
+  const host = $('#prod-now');
+  if (!pub) {
+    host.innerHTML = '<span style="color:var(--mut)">Aucune publication — l’app montre la liste complète (' + META.total + ' activités).</span>';
+    $('#btn-unpublish').style.display = 'none';
+    return;
+  }
+  const when = pub.publishedAt && pub.publishedAt.toDate ? pub.publishedAt.toDate().toLocaleString('fr-FR') : '?';
+  const by = (pub.publishedBy && pub.publishedBy.name) || '?';
+  const removedCount = pub.removed ? Object.keys(pub.removed).length : 0;
+  const addedCount = pub.added ? pub.added.length : 0;
+  host.innerHTML =
+    '<div class="stats">' +
+    '<span class="stat"><b>' + (pub.keptCount != null ? pub.keptCount : '?') + '</b> activités en prod</span>' +
+    '<span class="stat"><b>' + removedCount + '</b> retirées</span>' +
+    '<span class="stat"><b>' + addedCount + '</b> ajoutées</span>' +
+    '<span class="stat">publié le <b>' + esc(when) + '</b> par <b>' + esc(by) + '</b> (tri v' + (pub.sourceVersion || '?') + ')</span>' +
+    '</div>';
+  $('#btn-unpublish').style.display = '';
+}
+
+function renderPlan(fin, triVersion) {
+  const merged = Object.entries(fin.removed).filter((e) => e[1] !== null);
+  const discarded = Object.entries(fin.removed).filter((e) => e[1] === null);
+  const list = (items) => '<ul>' + items.join('') + '</ul>';
+  let h =
+    '<div class="stats">' +
+    '<span class="stat"><b>' + fin.keptIds.length + '</b> activités gardées</span>' +
+    '<span class="stat"><b>' + merged.length + '</b> fusionnées</span>' +
+    '<span class="stat"><b>' + discarded.length + '</b> écartées</span>' +
+    '<span class="stat"><b>' + fin.added.length + '</b> ajoutées</span>' +
+    '<span class="stat">tri <b>v' + triVersion + '</b></span>' +
+    '</div>';
+  if (merged.length) {
+    h += '<details><summary><b>' + merged.length + '</b> fusionnées (le vote suit le représentant)</summary>' +
+      list(merged.map((e) => '<li>' + esc(fin.titleOf(e[0])) + ' <span class="to">→ ' + esc(fin.titleOf(e[1])) + '</span></li>')) + '</details>';
+  }
+  if (discarded.length) {
+    h += '<details><summary><b>' + discarded.length + '</b> écartées (retirées, votes supprimés)</summary>' +
+      list(discarded.map((e) => '<li>' + esc(fin.titleOf(e[0])) + '</li>')) + '</details>';
+  }
+  if (fin.added.length) {
+    h += '<details><summary><b>' + fin.added.length + '</b> ajoutées au deck</summary>' +
+      list(fin.added.map((a) => '<li><b>' + esc(a.title) + '</b></li>')) + '</details>';
+  }
+  if (fin.untreated.length) {
+    h += '<div class="alert warn">⚠ <b>' + fin.untreated.length + '</b> catégorie(s) à plusieurs activités pas encore tranchée(s) (ni « Fusionner » ni « Garder séparé ») : ' +
+      fin.untreated.map((g) => esc(g.name)).join(' · ') + '. Elles resteront toutes en prod telles quelles.</div>';
+  } else {
+    h += '<div class="alert ok">✓ Toutes les catégories à plusieurs activités ont été tranchées.</div>';
+  }
+  $('#plan').innerHTML = h;
+}
+
+let plan = null;
+let triVersion = 0;
+
+async function load() {
+  try {
+    const cur = await getDoc(curRef);
+    if (!cur.exists()) { $('#plan').innerHTML = '<span class="alert warn">Aucun tri en base (activityTriage/current absent).</span>'; }
+    else {
+      const d = cur.data();
+      triVersion = d.version || 0;
+      let st = null;
+      try { st = JSON.parse(d.state); } catch {}
+      if (!st || !Array.isArray(st.groups)) { $('#plan').innerHTML = '<span class="alert warn">Tri illisible.</span>'; }
+      else { plan = computeFinal(st); renderPlan(plan, triVersion); $('#btn-publish').disabled = false; }
+    }
+    const pub = await getDoc(pubRef);
+    renderProd(pub.exists() ? pub.data() : null);
+  } catch (e) {
+    msg('Lecture impossible : ' + ((e && e.message) || e), 'err');
+  }
+}
+
+$('#btn-publish').onclick = async () => {
+  if (!plan) return;
+  const removedCount = Object.keys(plan.removed).length;
+  if (!confirm('Mettre en prod ? ' + plan.keptIds.length + ' activités gardées, ' + removedCount + ' retirées, ' + plan.added.length + ' ajoutées.\n\nLes utilisateurs verront la nouvelle liste au prochain chargement de l’app.')) return;
+  $('#btn-publish').disabled = true;
+  msg('Publication…');
+  try {
+    await setDoc(pubRef, {
+      sourceVersion: triVersion,
+      removed: plan.removed,
+      added: plan.added,
+      keptCount: plan.keptIds.length,
+      publishedAt: serverTimestamp(),
+      publishedBy: { name: authorName() },
+    });
+    msg('✓ Mis en prod — l’app appliquera la nouvelle liste au prochain chargement.', 'ok');
+    void load();
+  } catch (e) {
+    msg('Publication impossible : ' + ((e && e.message) || e), 'err');
+  } finally {
+    $('#btn-publish').disabled = false;
+  }
+};
+
+$('#btn-unpublish').onclick = async () => {
+  if (!confirm('Dépublier ? L’app reviendra à la liste complète (' + META.total + ' activités) au prochain chargement.')) return;
+  msg('Dépublication…');
+  try {
+    await deleteDoc(pubRef);
+    msg('✓ Dépublié — retour à la liste complète.', 'ok');
+    void load();
+  } catch (e) {
+    msg('Dépublication impossible : ' + ((e && e.message) || e), 'err');
+  }
+};
+
+void load();
+</script>
+</body>
+</html>`;
+
+const goprodOut = join(adminDir, 'goprod.html');
+writeFileSync(goprodOut, goprodHtml.replace('__FIREBASE_CONFIG__', JSON.stringify(fbConfig)));
+console.log(`Wrote ${goprodOut}  (→ served at /admin/goprod)`);
+
 console.log(`Suggested groups: ${groups.length}, covering ${inGroup.size} activities; ${singletons.length} singletons.`);

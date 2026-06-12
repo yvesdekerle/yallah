@@ -32,4 +32,8 @@ export const STORAGE_KEYS = {
   // True once the one-time "Tié un tigre !" welcome has played. Never cleared
   // (not on logout/reset) — it's a "seen once, ever" flag per device.
   tigerSeen: 'yallah.tigerSeen.v1',
+  // Cached copy of the published catalog (Firestore activityTriage/published):
+  // retired curated activities (removed/merged) + the triage-added ones.
+  // Applied at boot in main.tsx; refreshed in the background.
+  catalog: 'yallah.catalog.v1',
 } as const
